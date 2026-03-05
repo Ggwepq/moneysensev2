@@ -31,8 +31,9 @@ class PsBottomNav extends StatelessWidget {
   // Gap between the three buttons
   static const double _gap = 12.0;
 
-  // Fixed button height — width is driven by Expanded
-  static const double _buttonHeight = 58.0;
+  // Height of each button. Width is driven by Expanded so on most phones
+  // each button ends up close to square (screen_width - 2*padding - 2*gaps) / 3.
+  static const double _buttonHeight = 70.0;
 
   @override
   Widget build(BuildContext context) {
