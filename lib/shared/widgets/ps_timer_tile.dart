@@ -5,6 +5,9 @@ import '../../core/constants/app_spacing.dart';
 
 /// A settings tile that shows a toggle plus a numeric counter badge.
 /// Used for "Go Back Timer on Result".
+///
+/// When [enabled] is false the counter badge is visually dimmed and
+/// non-interactive — the user must enable the toggle first.
 class PsTimerTile extends StatelessWidget {
   const PsTimerTile({
     super.key,
@@ -14,7 +17,7 @@ class PsTimerTile extends StatelessWidget {
     required this.value,
     required this.onToggle,
     required this.onValueChanged,
-    this.min = 0,
+    this.min = 5,
     this.max = 60,
   });
 
@@ -32,8 +35,18 @@ class PsTimerTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Text colours dim when disabled
+    final titleColor =
+        (isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface)
+            .withOpacity(enabled ? 1.0 : 0.4);
+    final subtitleColor =
+        (isDark
+                ? AppColors.darkOnSurfaceVariant
+                : AppColors.lightOnSurfaceVariant)
+            .withOpacity(enabled ? 1.0 : 0.4);
+
     return Semantics(
-      label: '$title: $value seconds',
+      label: '$title: ${enabled ? '$value seconds' : 'disabled'}',
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.base,
@@ -41,6 +54,7 @@ class PsTimerTile extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // ── Title + subtitle ───────────────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,9 +62,7 @@ class PsTimerTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: isDark
-                          ? AppColors.darkOnSurface
-                          : AppColors.lightOnSurface,
+                      color: titleColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -59,15 +71,14 @@ class PsTimerTile extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.darkOnSurfaceVariant
-                            : AppColors.lightOnSurfaceVariant,
+                        color: subtitleColor,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
+            // ── Toggle ─────────────────────────────────────────────────
             Switch(
               value: enabled,
               onChanged: (v) {
@@ -76,26 +87,47 @@ class PsTimerTile extends StatelessWidget {
               },
             ),
             const SizedBox(width: AppSpacing.sm),
-            // Counter badge — tapping opens a dialog to change the value
-            GestureDetector(
-              onTap: () => _showTimerPicker(context),
-              child: Container(
-                width: 44,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkSurfaceVariant
-                      : AppColors.lightSurfaceVariant,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '$value',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: isDark
-                          ? AppColors.darkOnSurface
-                          : AppColors.lightOnSurface,
-                      fontWeight: FontWeight.w700,
+            // ── Counter badge ──────────────────────────────────────────
+            // Tappable only when enabled; greyed out when disabled.
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: enabled ? 1.0 : 0.35,
+              child: GestureDetector(
+                onTap: enabled ? () => _showTimerPicker(context) : null,
+                child: Container(
+                  width: 48,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: enabled
+                        ? (isDark
+                              ? AppColors.darkSurfaceVariant
+                              : AppColors.lightSurfaceVariant)
+                        : (isDark
+                              ? AppColors.darkBorder
+                              : AppColors.lightBorder),
+                    borderRadius: BorderRadius.circular(8),
+                    border: enabled
+                        ? Border.all(
+                            color: isDark
+                                ? AppColors.darkBorder
+                                : AppColors.lightBorder,
+                            width: 1,
+                          )
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$value',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: enabled
+                            ? (isDark
+                                  ? AppColors.darkOnSurface
+                                  : AppColors.lightOnSurface)
+                            : (isDark
+                                  ? AppColors.darkOnSurfaceVariant
+                                  : AppColors.lightOnSurfaceVariant),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -144,7 +176,7 @@ class _TimerPickerDialogState extends State<_TimerPickerDialog> {
   @override
   void initState() {
     super.initState();
-    _value = widget.current;
+    _value = widget.current.clamp(widget.min, widget.max);
   }
 
   @override
@@ -154,12 +186,17 @@ class _TimerPickerDialogState extends State<_TimerPickerDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('$_value seconds'),
+          Text(
+            '$_value seconds',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
           Slider(
             value: _value.toDouble(),
             min: widget.min.toDouble(),
             max: widget.max.toDouble(),
             divisions: widget.max - widget.min,
+            label: '$_value s',
             onChanged: (v) => setState(() => _value = v.round()),
           ),
         ],

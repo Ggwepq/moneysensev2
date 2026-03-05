@@ -24,15 +24,17 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(
-          onPressed: () => Navigator.maybePop(context),
-        ),
+        // Flutter automatically inserts a back button and wires it to
+        // Navigator.pop when this screen is pushed onto the stack.
+        // No manual leading / onPressed needed.
         title: Text(l10n.settings),
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline_rounded),
             tooltip: 'Help',
-            onPressed: () {/* TODO: show global help */},
+            onPressed: () {
+              /* TODO: show global help */
+            },
           ),
         ],
       ),
@@ -44,152 +46,171 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // ── General ────────────────────────────────────────────────────
           PsSectionHeader(title: l10n.sectionGeneral),
-          PsSettingsCard(children: [
-            // Theme selector
-            _ThemeTile(
-              label: l10n.theme,
-              subtitle: l10n.settingSubtitle,
-              themeMode: settings.themeMode,
-              l10n: l10n,
-              onChanged: notifier.setThemeMode,
-            ),
-            // Language selector
-            _LanguageTile(
-              label: l10n.language,
-              subtitle: l10n.settingSubtitle,
-              language: settings.language,
-              l10n: l10n,
-              onChanged: notifier.setLanguage,
-            ),
-            // Font Size slider
-            PsSliderTile(
-              title: l10n.fontSize,
-              subtitle: l10n.fontSizeSubtitle,
-              value: settings.fontScale,
-              min: 0.8,
-              max: 2.0,
-              onChanged: notifier.setFontScale,
-              displayLabel:
-                  '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
-            ),
-          ]),
+          PsSettingsCard(
+            children: [
+              // Theme selector
+              _ThemeTile(
+                label: l10n.theme,
+                subtitle: l10n.settingSubtitle,
+                themeMode: settings.themeMode,
+                l10n: l10n,
+                onChanged: notifier.setThemeMode,
+              ),
+              // Language selector
+              _LanguageTile(
+                label: l10n.language,
+                subtitle: l10n.settingSubtitle,
+                language: settings.language,
+                l10n: l10n,
+                onChanged: notifier.setLanguage,
+              ),
+              // Font Size slider
+              PsSliderTile(
+                title: l10n.fontSize,
+                subtitle: l10n.fontSizeSubtitle,
+                value: settings.fontScale,
+                min: 0.8,
+                max: 2.0,
+                onChanged: notifier.setFontScale,
+                displayLabel:
+                    '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
+              ),
+            ],
+          ),
 
           // ── Scanning ───────────────────────────────────────────────────
           PsSectionHeader(title: l10n.sectionScanning),
-          PsSettingsCard(children: [
-            PsToggleTile(
-              title: l10n.useFrontCamera,
-              subtitle: l10n.settingSubtitle,
-              value: settings.useFrontCamera,
-              onChanged: notifier.toggleFrontCamera,
-            ),
-            PsToggleTile(
-              title: l10n.useFlashlight,
-              subtitle: l10n.settingSubtitle,
-              value: settings.useFlashlight,
-              onChanged: notifier.toggleFlashlight,
-            ),
-            PsToggleTile(
-              title: l10n.denominationVibration,
-              subtitle: l10n.settingSubtitle,
-              value: settings.denominationVibration,
-              onChanged: notifier.toggleDenominationVibration,
-              showHelpButton: true,
-              onHelpTap: () => _showHelp(
-                context,
-                l10n.denominationVibration,
-                'Each Philippine denomination produces a unique vibration pattern '
-                'so you can identify it without looking at the screen.',
+          PsSettingsCard(
+            children: [
+              PsToggleTile(
+                title: l10n.useFrontCamera,
+                subtitle: l10n.settingSubtitle,
+                value: settings.useFrontCamera,
+                onChanged: notifier.toggleFrontCamera,
               ),
-            ),
-          ]),
+              PsToggleTile(
+                title: l10n.useFlashlight,
+                subtitle: l10n.settingSubtitle,
+                value: settings.useFlashlight,
+                onChanged: notifier.toggleFlashlight,
+              ),
+              PsToggleTile(
+                title: l10n.denominationVibration,
+                subtitle: l10n.settingSubtitle,
+                value: settings.denominationVibration,
+                onChanged: notifier.toggleDenominationVibration,
+                showHelpButton: true,
+                onHelpTap: () => _showHelp(
+                  context,
+                  l10n.denominationVibration,
+                  'Each Philippine denomination produces a unique vibration pattern '
+                  'so you can identify it without looking at the screen.',
+                ),
+              ),
+            ],
+          ),
 
           // ── Navigation ─────────────────────────────────────────────────
           PsSectionHeader(title: l10n.sectionNavigation),
-          PsSettingsCard(children: [
-            PsToggleTile(
-              title: l10n.shakeToGoBack,
-              subtitle: l10n.settingSubtitle,
-              value: settings.shakeToGoBack,
-              onChanged: notifier.toggleShakeToGoBack,
-              showHelpButton: true,
-              onHelpTap: () => _showHelp(
-                context,
-                l10n.shakeToGoBack,
-                'Shake your phone to navigate back from any screen.',
+          PsSettingsCard(
+            children: [
+              PsToggleTile(
+                title: l10n.shakeToGoBack,
+                subtitle: l10n.settingSubtitle,
+                value: settings.shakeToGoBack,
+                onChanged: notifier.toggleShakeToGoBack,
+                showHelpButton: true,
+                onHelpTap: () => _showHelp(
+                  context,
+                  l10n.shakeToGoBack,
+                  'Shake your phone to navigate back from any screen.',
+                ),
               ),
-            ),
-            PsTimerTile(
-              title: l10n.goBackTimerOnResult,
-              subtitle: l10n.settingSubtitle,
-              enabled: settings.goBackTimerSeconds > 0,
-              value: settings.goBackTimerSeconds,
-              onToggle: (v) =>
-                  notifier.setGoBackTimer(v ? 20 : 0),
-              onValueChanged: notifier.setGoBackTimer,
-            ),
-            PsToggleTile(
-              title: l10n.gesturalNavigation,
-              subtitle: l10n.settingSubtitle,
-              value: settings.gesturalNavigation,
-              onChanged: notifier.toggleGesturalNavigation,
-              showHelpButton: true,
-              onHelpTap: () => _showHelp(
-                context,
-                l10n.gesturalNavigation,
-                'Swipe left to open Settings, right to open Tutorial, '
-                'swipe up to toggle flash, and double-tap to force scan.',
+              PsTimerTile(
+                title: l10n.goBackTimerOnResult,
+                subtitle: l10n.settingSubtitle,
+                enabled: settings.goBackTimerSeconds > 0,
+                value: settings.goBackTimerSeconds > 0
+                    ? settings.goBackTimerSeconds
+                    : 20,
+                onToggle: notifier.toggleGoBackTimer,
+                onValueChanged: notifier.setGoBackTimer,
               ),
-            ),
-            PsToggleTile(
-              title: l10n.inertialNavigation,
-              subtitle: l10n.settingSubtitle,
-              value: settings.inertialNavigation,
-              onChanged: notifier.toggleInertialNavigation,
-              showHelpButton: true,
-              onHelpTap: () => _showHelp(
-                context,
-                l10n.inertialNavigation,
-                'Tilt your phone left to open Settings, '
-                'tilt right to open the Tutorial screen.',
+              PsToggleTile(
+                title: l10n.gesturalNavigation,
+                subtitle: l10n.settingSubtitle,
+                value: settings.gesturalNavigation,
+                onChanged: notifier.toggleGesturalNavigation,
+                showHelpButton: true,
+                onHelpTap: () => _showHelp(
+                  context,
+                  l10n.gesturalNavigation,
+                  'Swipe left to open Settings, right to open Tutorial, '
+                  'swipe up to toggle flash, and double-tap to force scan.',
+                ),
               ),
-            ),
-          ]),
+              PsToggleTile(
+                title: l10n.inertialNavigation,
+                subtitle: l10n.settingSubtitle,
+                value: settings.inertialNavigation,
+                onChanged: notifier.toggleInertialNavigation,
+                showHelpButton: true,
+                onHelpTap: () => _showHelp(
+                  context,
+                  l10n.inertialNavigation,
+                  'Tilt your phone left to open Settings, '
+                  'tilt right to open the Tutorial screen.',
+                ),
+              ),
+            ],
+          ),
 
           // ── Help & Support ─────────────────────────────────────────────
           PsSectionHeader(title: l10n.sectionHelpSupport),
-          PsSettingsCard(children: [
-            PsActionTile(
-              title: l10n.checkForUpdates,
-              subtitle: l10n.settingSubtitle,
-              icon: Icons.refresh_rounded,
-              onTap: () {/* TODO */},
-            ),
-            PsActionTile(
-              title: l10n.playOnboardingSetup,
-              subtitle: l10n.settingSubtitle,
-              icon: Icons.play_arrow_rounded,
-              onTap: () {/* TODO: navigate to onboarding */},
-            ),
-            PsActionTile(
-              title: l10n.appInformation,
-              subtitle: l10n.settingSubtitle,
-              icon: Icons.info_outline_rounded,
-              onTap: () {/* TODO */},
-            ),
-            PsActionTile(
-              title: l10n.leaveAFeedback,
-              subtitle: l10n.settingSubtitle,
-              icon: Icons.campaign_outlined,
-              onTap: () {/* TODO */},
-            ),
-            PsActionTile(
-              title: l10n.termsOfServices,
-              subtitle: l10n.settingSubtitle,
-              icon: Icons.description_outlined,
-              onTap: () {/* TODO */},
-            ),
-          ]),
+          PsSettingsCard(
+            children: [
+              PsActionTile(
+                title: l10n.checkForUpdates,
+                subtitle: l10n.settingSubtitle,
+                icon: Icons.refresh_rounded,
+                onTap: () {
+                  /* TODO */
+                },
+              ),
+              PsActionTile(
+                title: l10n.playOnboardingSetup,
+                subtitle: l10n.settingSubtitle,
+                icon: Icons.play_arrow_rounded,
+                onTap: () {
+                  /* TODO: navigate to onboarding */
+                },
+              ),
+              PsActionTile(
+                title: l10n.appInformation,
+                subtitle: l10n.settingSubtitle,
+                icon: Icons.info_outline_rounded,
+                onTap: () {
+                  /* TODO */
+                },
+              ),
+              PsActionTile(
+                title: l10n.leaveAFeedback,
+                subtitle: l10n.settingSubtitle,
+                icon: Icons.campaign_outlined,
+                onTap: () {
+                  /* TODO */
+                },
+              ),
+              PsActionTile(
+                title: l10n.termsOfServices,
+                subtitle: l10n.settingSubtitle,
+                icon: Icons.description_outlined,
+                onTap: () {
+                  /* TODO */
+                },
+              ),
+            ],
+          ),
 
           const SizedBox(height: AppSpacing.xxxl),
         ],
@@ -248,17 +269,13 @@ class _ThemeTile extends StatelessWidget {
             label,
             style: theme.textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w500,
-              color: isDark
-                  ? const Color(0xFFFFFFFF)
-                  : const Color(0xFF0E0E0E),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E0E0E),
             ),
           ),
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark
-                  ? const Color(0xFFAAAAAA)
-                  : const Color(0xFF555555),
+              color: isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -313,17 +330,13 @@ class _LanguageTile extends StatelessWidget {
             label,
             style: theme.textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w500,
-              color: isDark
-                  ? const Color(0xFFFFFFFF)
-                  : const Color(0xFF0E0E0E),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E0E0E),
             ),
           ),
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark
-                  ? const Color(0xFFAAAAAA)
-                  : const Color(0xFF555555),
+              color: isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
