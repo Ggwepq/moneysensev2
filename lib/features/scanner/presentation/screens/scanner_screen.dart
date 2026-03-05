@@ -11,6 +11,16 @@ import '../widgets/camera_viewfinder.dart';
 
 /// Main scanner / home screen.
 ///
+/// Layout (top to bottom):
+///   ┌─────────────────────────────┐
+///   │                             │
+///   │   CameraViewfinder (flex)   │
+///   │                             │
+///   └─────────────────────────────┘
+///
+/// The bottom navigation bar lives in [HomeShell]'s Scaffold so it is
+/// never part of this widget tree. This screen only owns the viewfinder body.
+///
 /// Gesture handling (when [gesturalNavigation] is enabled):
 ///   swipe left  → Settings
 ///   swipe right → Tutorial
@@ -22,7 +32,6 @@ class ScannerScreen extends ConsumerStatefulWidget {
     required this.onNavigate,
   });
 
-  /// Called with index 0=settings, 2=tutorial.
   final ValueChanged<int> onNavigate;
 
   @override
@@ -30,9 +39,6 @@ class ScannerScreen extends ConsumerStatefulWidget {
 }
 
 class _ScannerScreenState extends ConsumerState<ScannerScreen> {
-  static const double _swipeThreshold = 80.0;
-  Offset? _dragStart;
-
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
@@ -49,30 +55,28 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     }
 
     return GestureDetector(
-      onTap: () {
-        // No-op: double tap is handled by onDoubleTap
-      },
-      onDoubleTap: settings.gesturalNavigation
-          ? () => _handleDoubleTap()
-          : null,
-      onPanStart: settings.gesturalNavigation
-          ? (d) => _dragStart = d.globalPosition
-          : null,
+      onDoubleTap: settings.gesturalNavigation ? _handleDoubleTap : null,
       onPanEnd: settings.gesturalNavigation
           ? (d) => _handleSwipe(d.velocity.pixelsPerSecond)
           : null,
-      child: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.base),
-            child: CameraViewfinder(
-              scannerState: cameraOpen ? scannerState : ScannerState.idle,
-              isDark: isDark,
-              statusLabel: statusLabel,
-              child: cameraOpen
-                  ? _CameraPreviewPlaceholder(isDark: isDark)
-                  : _IdlePlaceholder(l10n: l10n, isDark: isDark),
-            ),
+      // SafeArea is handled by HomeShell's Scaffold, but we add top here
+      // so the viewfinder doesn't bleed under the status bar.
+      child: SafeArea(
+        bottom: false, // bottom safe area is handled by HomeShell + PsBottomNav
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.base,
+            AppSpacing.base,
+            AppSpacing.base,
+            AppSpacing.base,
+          ),
+          child: CameraViewfinder(
+            scannerState: cameraOpen ? scannerState : ScannerState.idle,
+            isDark: isDark,
+            statusLabel: statusLabel,
+            child: cameraOpen
+                ? _CameraPreviewPlaceholder(isDark: isDark)
+                : _IdlePlaceholder(l10n: l10n, isDark: isDark),
           ),
         ),
       ),
@@ -84,7 +88,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     final state = ref.read(scannerStateProvider);
     if (state == ScannerState.previewing) {
       scannerNotifier.startScanning();
-      // Simulate processing after 2s (replace with real ML pipeline)
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           scannerNotifier.startProcessing();
@@ -97,13 +100,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
   }
 
   void _handleSwipe(Offset velocity) {
-    if (velocity.dx.abs() > _swipeThreshold) {
+    const threshold = 300.0;
+    if (velocity.dx.abs() > threshold) {
       if (velocity.dx < 0) {
-        widget.onNavigate(0); // left → settings
+        widget.onNavigate(0); // swipe left → settings
       } else {
-        widget.onNavigate(2); // right → tutorial
+        widget.onNavigate(2); // swipe right → tutorial
       }
-    } else if (velocity.dy < -_swipeThreshold) {
+    } else if (velocity.dy < -threshold) {
       // Swipe up → toggle flash
       final notifier = ref.read(appSettingsProvider.notifier);
       final current = ref.read(appSettingsProvider).useFlashlight;
@@ -122,12 +126,24 @@ class _IdlePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(
-        l10n.tapToScan,
-        style: TextStyle(
-          color: isDark ? const Color(0xFF555555) : const Color(0xFFAAAAAA),
-          fontSize: 14,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.currency_exchange_rounded,
+            size: 56,
+            color: isDark ? const Color(0xFF2E2E2E) : const Color(0xFFCCCCCC),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.tapToScan,
+            style: TextStyle(
+              color: isDark ? const Color(0xFF555555) : const Color(0xFFAAAAAA),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -139,7 +155,7 @@ class _CameraPreviewPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Replace with actual CameraPreview widget when wiring up camera package
+    // Replace with actual CameraPreview widget from the camera package.
     return Container(
       color: isDark ? Colors.black : const Color(0xFFEEEEEE),
       child: Center(

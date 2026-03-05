@@ -3,15 +3,19 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// Custom bottom navigation bar matching the PesoSense design.
+/// Bottom navigation bar for PesoSense.
 ///
-/// Three buttons:
-///  - [0] Settings  — gear icon, yellow square
-///  - [1] Scan      — play icon, blue circle (larger, CTA)
-///  - [2] Help      — question mark, yellow square
+/// Three equal-width buttons that together span the full screen width
+/// (minus horizontal page padding). The layout matches the design:
 ///
-/// The center button is intentionally larger to draw attention as the
-/// primary action.
+///   |← pagePadding →|  [⚙]  gap  [▶]  gap  [?]  |← pagePadding →|
+///
+/// All three buttons are the same size — driven by [Expanded] so they
+/// automatically divide the available width equally on every device.
+///
+/// Colors (both light & dark, matching design):
+///   [⚙] and [?] → yellow background, dark icon
+///   [▶]         → blue background,  white icon
 class PsBottomNav extends StatelessWidget {
   const PsBottomNav({
     super.key,
@@ -22,107 +26,127 @@ class PsBottomNav extends StatelessWidget {
 
   final int currentIndex;
   final ValueChanged<int> onTap;
-
-  /// When [isCameraOpen] is true the center button shows a stop icon.
   final bool isCameraOpen;
+
+  // Gap between the three buttons
+  static const double _gap = 12.0;
+
+  // Fixed button height — width is driven by Expanded
+  static const double _buttonHeight = 58.0;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
 
     return SafeArea(
       top: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.base,
-        ),
-        color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Settings
-            _NavButton(
-              icon: Icons.settings,
-              isSelected: currentIndex == 0,
-              isDark: isDark,
-              semanticLabel: 'Settings',
-              size: 52,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onTap(0);
-              },
-            ),
-            const SizedBox(width: AppSpacing.xl),
-            // Scan (center, larger)
-            _NavButton(
-              icon: isCameraOpen
-                  ? Icons.stop_circle_outlined
-                  : Icons.play_circle_fill_rounded,
-              isSelected: currentIndex == 1,
-              isDark: isDark,
-              semanticLabel: isCameraOpen ? 'Stop Camera' : 'Open Camera',
-              size: 64,
-              isCircle: true,
-              accentColor: AppColors.accentBlue,
-              iconColor: Colors.white,
-              onTap: () {
-                HapticFeedback.mediumImpact();
-                onTap(1);
-              },
-            ),
-            const SizedBox(width: AppSpacing.xl),
-            // Tutorial / Help
-            _NavButton(
-              icon: Icons.help_outline_rounded,
-              isSelected: currentIndex == 2,
-              isDark: isDark,
-              semanticLabel: 'Tutorial',
-              size: 52,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onTap(2);
-              },
-            ),
-          ],
+      child: ColoredBox(
+        color: bg,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.pagePadding,
+            AppSpacing.sm,
+            AppSpacing.pagePadding,
+            AppSpacing.base,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ── Settings ────────────────────────────────────────────────
+              Expanded(
+                child: _EqualButton(
+                  icon: Icons.settings_rounded,
+                  semanticLabel: 'Settings',
+                  height: _buttonHeight,
+                  bgColor: AppColors.accentYellow,
+                  iconColor: AppColors.darkBackground,
+                  isSelected: currentIndex == 0,
+                  glowColor: AppColors.accentYellow,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTap(0);
+                  },
+                ),
+              ),
+              const SizedBox(width: _gap),
+              // ── Scan / Stop ─────────────────────────────────────────────
+              Expanded(
+                child: _EqualButton(
+                  icon: isCameraOpen
+                      ? Icons.stop_rounded
+                      : Icons.play_arrow_rounded,
+                  semanticLabel: isCameraOpen ? 'Stop Camera' : 'Open Camera',
+                  height: _buttonHeight,
+                  bgColor: AppColors.accentBlue,
+                  iconColor: Colors.white,
+                  isSelected: currentIndex == 1,
+                  isRound: true,
+                  glowColor: AppColors.accentBlue,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    onTap(1);
+                  },
+                ),
+              ),
+              const SizedBox(width: _gap),
+              // ── Tutorial / Help ─────────────────────────────────────────
+              Expanded(
+                child: _EqualButton(
+                  icon: Icons.help_outline_rounded,
+                  semanticLabel: 'Tutorial',
+                  height: _buttonHeight,
+                  bgColor: AppColors.accentYellow,
+                  iconColor: AppColors.darkBackground,
+                  isSelected: currentIndex == 2,
+                  glowColor: AppColors.accentYellow,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTap(2);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ── Individual Button ────────────────────────────────────────────────────────
+// ── Equal-width button ───────────────────────────────────────────────────────
 
-class _NavButton extends StatelessWidget {
-  const _NavButton({
+/// A button that fills its parent's width (used inside [Expanded]).
+/// Height is fixed; width is unconstrained so [Expanded] can size it.
+class _EqualButton extends StatelessWidget {
+  const _EqualButton({
     required this.icon,
-    required this.isSelected,
-    required this.isDark,
     required this.semanticLabel,
-    required this.size,
+    required this.height,
+    required this.bgColor,
+    required this.iconColor,
+    required this.glowColor,
+    required this.isSelected,
     required this.onTap,
-    this.isCircle = false,
-    this.accentColor,
-    this.iconColor,
+    this.isRound = false,
   });
 
   final IconData icon;
-  final bool isSelected;
-  final bool isDark;
   final String semanticLabel;
-  final double size;
+  final double height;
+  final Color bgColor;
+  final Color iconColor;
+  final Color glowColor;
+  final bool isSelected;
+  final bool isRound;
   final VoidCallback onTap;
-  final bool isCircle;
-  final Color? accentColor;
-  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
-    final defaultAccent =
-        isDark ? AppColors.accentYellow : AppColors.accentBlue;
-    final bg = accentColor ?? defaultAccent;
-    final ic = iconColor ??
-        (isDark ? AppColors.darkBackground : Colors.white);
+    // Border radius: pill/round for center, rounded-rect for sides
+    final radius = isRound
+        ? BorderRadius.circular(height / 2)
+        : BorderRadius.circular(AppSpacing.buttonRadius);
 
     return Semantics(
       label: semanticLabel,
@@ -131,25 +155,29 @@ class _NavButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: size,
-          height: size,
+          duration: const Duration(milliseconds: 180),
+          height: height,
+          // width is unconstrained — Expanded handles it
           decoration: BoxDecoration(
-            color: bg,
-            borderRadius: isCircle
-                ? BorderRadius.circular(size / 2)
-                : BorderRadius.circular(AppSpacing.buttonRadius),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: bg.withOpacity(0.4),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    )
-                  ]
-                : null,
+            color: bgColor,
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: glowColor.withOpacity(isSelected ? 0.6 : 0.28),
+                blurRadius: isSelected ? 18 : 8,
+                spreadRadius: isSelected ? 2 : 0,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          child: Icon(icon, color: ic, size: size * 0.45),
+          child: Center(
+            child: Icon(
+              icon,
+              color: iconColor,
+              // Icon scales with button height
+              size: height * 0.44,
+            ),
+          ),
         ),
       ),
     );

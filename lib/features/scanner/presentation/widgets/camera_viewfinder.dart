@@ -5,11 +5,15 @@ import '../../domain/entities/scanner_state.dart';
 
 /// Animated camera viewfinder that reflects the current [ScannerState].
 ///
-/// Border colors per state:
-///   idle/previewing → [AppColors.darkBorder]      (neutral dark)
-///   scanning        → [AppColors.accentYellow]    (yellow, pulsing)
-///   processing      → [AppColors.accentBlue]      (blue, pulsing)
-///   result          → [AppColors.success]         (green)
+/// Border colors per state (consistent in both light & dark — matches design):
+///   idle/previewing → subtle grey
+///   scanning        → [AppColors.accentYellow]  (pulsing)
+///   processing      → [AppColors.accentBlue]    (pulsing)
+///   result          → [AppColors.success]       (solid)
+///
+/// The border is drawn OUTSIDE the content via a wrapping container with
+/// padding equal to the border width, so it is never clipped by the screen
+/// edge. The Scanner screen must give this widget enough margin.
 class CameraViewfinder extends StatefulWidget {
   const CameraViewfinder({
     super.key,
@@ -20,13 +24,8 @@ class CameraViewfinder extends StatefulWidget {
   });
 
   final ScannerState scannerState;
-
-  /// The camera preview widget (or placeholder if camera is off).
   final Widget? child;
-
-  /// Optional label shown at the bottom of the viewfinder.
   final String? statusLabel;
-
   final bool isDark;
 
   @override
@@ -35,6 +34,9 @@ class CameraViewfinder extends StatefulWidget {
 
 class _CameraViewfinderState extends State<CameraViewfinder>
     with SingleTickerProviderStateMixin {
+  static const double _borderWidth = 5.0;
+  static const double _radius = 20.0;
+
   late AnimationController _pulseController;
   late Animation<double> _opacityAnimation;
 
@@ -43,9 +45,9 @@ class _CameraViewfinderState extends State<CameraViewfinder>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 800),
     );
-    _opacityAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _opacityAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _updateAnimation();
@@ -60,7 +62,8 @@ class _CameraViewfinderState extends State<CameraViewfinder>
   }
 
   void _updateAnimation() {
-    final shouldPulse = widget.scannerState == ScannerState.scanning ||
+    final shouldPulse =
+        widget.scannerState == ScannerState.scanning ||
         widget.scannerState == ScannerState.processing;
     if (shouldPulse) {
       _pulseController.repeat(reverse: true);
@@ -79,20 +82,43 @@ class _CameraViewfinderState extends State<CameraViewfinder>
   Color get _borderColor {
     switch (widget.scannerState) {
       case ScannerState.scanning:
-        return AppColors.scannerBorderScanning;
+        return AppColors.accentYellow;
       case ScannerState.processing:
-        return AppColors.scannerBorderProcessing;
+        return AppColors.accentBlue;
       case ScannerState.result:
         return AppColors.success;
       default:
         return widget.isDark
-            ? AppColors.darkBorder
-            : AppColors.lightBorder;
+            ? const Color(0xFF2E2E2E)
+            : const Color(0xFFCCCCCC);
     }
   }
 
   Color get _backgroundColor {
     return widget.isDark ? Colors.black : AppColors.lightSurfaceVariant;
+  }
+
+  // Glow is only shown during active states
+  List<BoxShadow> get _glow {
+    final Color? glowColor;
+    switch (widget.scannerState) {
+      case ScannerState.scanning:
+        glowColor = AppColors.accentYellow;
+        break;
+      case ScannerState.processing:
+        glowColor = AppColors.accentBlue;
+        break;
+      default:
+        glowColor = null;
+    }
+    if (glowColor == null) return const [];
+    return [
+      BoxShadow(
+        color: glowColor.withOpacity(_opacityAnimation.value * 0.6),
+        blurRadius: 18,
+        spreadRadius: 2,
+      ),
+    ];
   }
 
   @override
@@ -101,47 +127,51 @@ class _CameraViewfinderState extends State<CameraViewfinder>
       animation: _opacityAnimation,
       builder: (context, child) {
         return Container(
+          // The border + glow are on this outer container.
+          // Content is inset so the border is never hidden behind clip.
           decoration: BoxDecoration(
-            color: _backgroundColor,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
               color: _borderColor.withOpacity(_opacityAnimation.value),
-              width: 3,
+              width: _borderWidth,
             ),
+            boxShadow: _glow,
           ),
-          clipBehavior: Clip.hardEdge,
           child: child,
         );
       },
-      child: Stack(
-        children: [
-          // Camera preview (or placeholder)
-          Positioned.fill(
-            child: widget.child ?? const SizedBox.expand(),
-          ),
-          // Status label at the bottom
-          if (widget.statusLabel != null)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.sm,
-                ),
-                color: Colors.black.withOpacity(0.6),
-                child: Text(
-                  widget.statusLabel!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_radius - _borderWidth),
+        child: Stack(
+          children: [
+            // Background + camera preview
+            Container(
+              color: _backgroundColor,
+              child: widget.child ?? const SizedBox.expand(),
+            ),
+            // Status label at the bottom
+            if (widget.statusLabel != null)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  color: Colors.black.withOpacity(0.6),
+                  child: Text(
+                    widget.statusLabel!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
