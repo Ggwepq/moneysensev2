@@ -22,7 +22,6 @@ class TutorialScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => Navigator.maybePop(context)),
         title: Text(l10n.navTutorial),
         actions: [
           IconButton(
