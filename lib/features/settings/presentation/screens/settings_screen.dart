@@ -259,6 +259,12 @@ class _ThemeTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final selectedLabel = themeMode == AppThemeMode.system
+        ? l10n.themeSystem
+        : themeMode == AppThemeMode.light
+        ? l10n.themeLight
+        : l10n.themeDark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.base,
@@ -267,20 +273,36 @@ class _ThemeTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E0E0E),
-            ),
-          ),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555),
+          // Title row — read as heading by TalkBack
+          Semantics(
+            header: true,
+            label: '$label. $subtitle. Currently: $selectedLabel',
+            excludeSemantics: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : const Color(0xFF0E0E0E),
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? const Color(0xFFAAAAAA)
+                        : const Color(0xFF555555),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
+          // Each option is its own button node in the selector
           PsSegmentedSelector<AppThemeMode>(
             options: AppThemeMode.values,
             labels: [l10n.themeSystem, l10n.themeLight, l10n.themeDark],
@@ -320,6 +342,10 @@ class _LanguageTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final selectedLabel = language == AppLanguage.english
+        ? l10n.languageEnglish
+        : l10n.languageTagalog;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.base,
@@ -328,20 +354,36 @@ class _LanguageTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E0E0E),
-            ),
-          ),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555),
+          // Title heading — one node: name + subtitle + current value
+          Semantics(
+            header: true,
+            label: '$label. $subtitle. Currently: $selectedLabel',
+            excludeSemantics: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : const Color(0xFF0E0E0E),
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? const Color(0xFFAAAAAA)
+                        : const Color(0xFF555555),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
+          // Each option is its own button node
           PsSegmentedSelector<AppLanguage>(
             options: AppLanguage.values,
             labels: [l10n.languageEnglish, l10n.languageTagalog],

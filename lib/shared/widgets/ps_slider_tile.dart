@@ -3,9 +3,17 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A settings tile containing a [Slider] with minus/plus buttons.
+/// A settings tile with a [Slider] and ± step buttons.
 ///
-/// Matches the "Font Size" row in the design with ─ slider + buttons.
+/// TalkBack / accessibility design:
+///   Node 1 — title heading:
+///     "Font Size. Setting subtitle. Currently: 100%"
+///   Node 2 — decrement button:
+///     "Decrease Font Size, button"
+///   Node 3 — slider:
+///     "Font Size: 100%, slider" (Android reads this natively)
+///   Node 4 — increment button:
+///     "Increase Font Size, button"
 class PsSliderTile extends StatelessWidget {
   const PsSliderTile({
     super.key,
@@ -24,9 +32,6 @@ class PsSliderTile extends StatelessWidget {
   final double min;
   final double max;
   final ValueChanged<double> onChanged;
-
-  /// Override the label shown in the center (e.g. "100%"). If null, shows
-  /// the raw percentage.
   final String? displayLabel;
 
   @override
@@ -44,52 +49,74 @@ class PsSliderTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: isDark
-                      ? AppColors.darkOnSurface
-                      : AppColors.lightOnSurface,
-                  fontWeight: FontWeight.w500,
+          // ── Node 1: heading with current value ──────────────────────
+          Semantics(
+            header: true,
+            label: subtitle != null
+                ? '$title. $subtitle. Currently: $label'
+                : '$title. Currently: $label',
+            excludeSemantics: true,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: isDark
+                              ? AppColors.darkOnSurface
+                              : AppColors.lightOnSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.darkOnSurfaceVariant
+                                : AppColors.lightOnSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant
-                      : AppColors.lightOnSurfaceVariant,
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.darkOnSurfaceVariant
+                        : AppColors.lightOnSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 2),
-            Text(
-              subtitle!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.lightOnSurfaceVariant,
-              ),
+              ],
             ),
-          ],
+          ),
           const SizedBox(height: AppSpacing.sm),
-          // Slider row with – and + buttons
+          // ── Nodes 2 / 3 / 4: ─ slider + ─────────────────────────────
           Row(
             children: [
-              _RoundButton(
-                icon: Icons.remove,
-                isDark: isDark,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onChanged((value - (max - min) / 10).clamp(min, max));
-                },
+              // Node 2: decrement
+              Semantics(
+                label: 'Decrease $title',
+                button: true,
+                excludeSemantics: true,
+                child: _RoundButton(
+                  icon: Icons.remove,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onChanged((value - (max - min) / 10).clamp(min, max));
+                  },
+                ),
               ),
+              // Node 3: slider (Flutter exposes this natively as a slider node)
               Expanded(
                 child: Semantics(
                   label: '$title: $label',
@@ -102,13 +129,19 @@ class PsSliderTile extends StatelessWidget {
                   ),
                 ),
               ),
-              _RoundButton(
-                icon: Icons.add,
-                isDark: isDark,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onChanged((value + (max - min) / 10).clamp(min, max));
-                },
+              // Node 4: increment
+              Semantics(
+                label: 'Increase $title',
+                button: true,
+                excludeSemantics: true,
+                child: _RoundButton(
+                  icon: Icons.add,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onChanged((value + (max - min) / 10).clamp(min, max));
+                  },
+                ),
               ),
             ],
           ),
@@ -130,16 +163,13 @@ class _RoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = isDark ? AppColors.accentYellow : AppColors.accentBlue;
+    final accent = isDark ? AppColors.accentYellow : AppColors.accentBlue;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
-        decoration: BoxDecoration(
-          color: accentColor,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
         child: Icon(
           icon,
           size: 20,

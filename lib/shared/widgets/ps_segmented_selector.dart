@@ -15,8 +15,8 @@ class PsSegmentedSelector<T> extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     this.leadingIcons,
-  })  : assert(options.length == labels.length),
-        assert(leadingIcons == null || leadingIcons.length == options.length);
+  }) : assert(options.length == labels.length),
+       assert(leadingIcons == null || leadingIcons.length == options.length);
 
   final List<T> options;
   final List<String> labels;
@@ -29,14 +29,14 @@ class PsSegmentedSelector<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor =
-        isDark ? AppColors.accentYellow : AppColors.accentBlue;
-    final activeTextColor =
-        isDark ? AppColors.darkBackground : Colors.white;
-    final inactiveColor =
-        isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
-    final inactiveTextColor =
-        isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final activeColor = isDark ? AppColors.accentYellow : AppColors.accentBlue;
+    final activeTextColor = isDark ? AppColors.darkBackground : Colors.white;
+    final inactiveColor = isDark
+        ? AppColors.darkSurfaceVariant
+        : AppColors.lightSurfaceVariant;
+    final inactiveTextColor = isDark
+        ? AppColors.darkOnSurface
+        : AppColors.lightOnSurface;
 
     return Container(
       padding: const EdgeInsets.all(3),
@@ -50,8 +50,11 @@ class PsSegmentedSelector<T> extends StatelessWidget {
           return Expanded(
             child: Semantics(
               selected: isSelected,
-              label: labels[i],
+              label: isSelected ? '${labels[i]}, selected' : labels[i],
               button: true,
+              // Suppress icon + text children — they must not appear as
+              // separate nodes next to the button node.
+              excludeSemantics: true,
               child: GestureDetector(
                 onTap: () {
                   HapticFeedback.selectionClick();
@@ -65,14 +68,14 @@ class PsSegmentedSelector<T> extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected ? activeColor : Colors.transparent,
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.buttonRadius - 3),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.buttonRadius - 3,
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (leadingIcons != null &&
-                          leadingIcons![i] != null) ...[
+                      if (leadingIcons != null && leadingIcons![i] != null) ...[
                         Icon(
                           leadingIcons![i],
                           size: 16,

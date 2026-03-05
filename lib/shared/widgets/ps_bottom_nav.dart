@@ -33,7 +33,7 @@ class PsBottomNav extends StatelessWidget {
 
   // Height of each button. Width is driven by Expanded so on most phones
   // each button ends up close to square (screen_width - 2*padding - 2*gaps) / 3.
-  static const double _buttonHeight = 70.0;
+  static const double _buttonHeight = 100.0;
 
   @override
   Widget build(BuildContext context) {

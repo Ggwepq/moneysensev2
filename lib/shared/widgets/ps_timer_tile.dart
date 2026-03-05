@@ -3,11 +3,22 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A settings tile that shows a toggle plus a numeric counter badge.
-/// Used for "Go Back Timer on Result".
+/// A settings tile: [Title / Subtitle]  [Switch]  [Counter badge]
 ///
-/// When [enabled] is false the counter badge is visually dimmed and
-/// non-interactive — the user must enable the toggle first.
+/// TalkBack / accessibility design:
+///   Node 1 — the tile (label + switch):
+///     "Go Back Timer on Result. 20 seconds. Switch, on"
+///     Double-tap → toggles the switch
+///   Node 2 — the counter badge (only when enabled):
+///     "Timer value: 20 seconds. Tap to change. Button"
+///     Double-tap → opens the picker dialog
+///
+/// Node order in the a11y tree matches reading order (LTR):
+///   tile node → badge node
+///
+/// When disabled, the badge node is still present but marked
+/// [enabled: false] so TalkBack announces "dimmed" and skips it
+/// in linear navigation on most Android versions.
 class PsTimerTile extends StatelessWidget {
   const PsTimerTile({
     super.key,
@@ -35,65 +46,99 @@ class PsTimerTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Text colours dim when disabled
-    final titleColor =
+    final dimmedTitle =
         (isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface)
             .withOpacity(enabled ? 1.0 : 0.4);
-    final subtitleColor =
+    final dimmedSub =
         (isDark
                 ? AppColors.darkOnSurfaceVariant
                 : AppColors.lightOnSurfaceVariant)
             .withOpacity(enabled ? 1.0 : 0.4);
 
-    return Semantics(
-      label: '$title: ${enabled ? '$value seconds' : 'disabled'}',
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base,
-          vertical: AppSpacing.md,
-        ),
-        child: Row(
-          children: [
-            // ── Title + subtitle ───────────────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: titleColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: subtitleColor,
+    // Node 1 label
+    final sub = subtitle != null ? '. $subtitle' : '';
+    final valueText = enabled ? '. $value seconds' : '';
+    final state = enabled ? 'on' : 'off';
+    final tileLabel = '$title$sub$valueText. Switch, $state';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          // ── Node 1: tile + switch ─────────────────────────────────────
+          Expanded(
+            child: Semantics(
+              label: tileLabel,
+              toggled: enabled,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onToggle(!enabled);
+              },
+              // Suppress Switch and Text children — they must not create
+              // their own nodes inside this tile node.
+              excludeSemantics: true,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onToggle(!enabled);
+                },
+                borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: dimmedTitle,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: dimmedSub,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
+                    Switch(
+                      value: enabled,
+                      onChanged: (v) {
+                        HapticFeedback.lightImpact();
+                        onToggle(v);
+                      },
+                    ),
                   ],
-                ],
+                ),
               ),
             ),
-            // ── Toggle ─────────────────────────────────────────────────
-            Switch(
-              value: enabled,
-              onChanged: (v) {
-                HapticFeedback.lightImpact();
-                onToggle(v);
-              },
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            // ── Counter badge ──────────────────────────────────────────
-            // Tappable only when enabled; greyed out when disabled.
-            AnimatedOpacity(
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // ── Node 2: counter badge ────────────────────────────────────
+          Semantics(
+            label: enabled
+                ? 'Timer value: $value seconds. Tap to change.'
+                : 'Timer disabled',
+            button: enabled,
+            enabled: enabled,
+            // excludeSemantics keeps the badge text from leaking into
+            // the surrounding tree.
+            excludeSemantics: true,
+            child: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: enabled ? 1.0 : 0.35,
               child: GestureDetector(
-                onTap: enabled ? () => _showTimerPicker(context) : null,
+                onTap: enabled ? () => _showPicker(context) : null,
                 child: Container(
                   width: 48,
                   height: 38,
@@ -111,14 +156,13 @@ class PsTimerTile extends StatelessWidget {
                             color: isDark
                                 ? AppColors.darkBorder
                                 : AppColors.lightBorder,
-                            width: 1,
                           )
                         : null,
                   ),
                   child: Center(
                     child: Text(
                       '$value',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         color: enabled
                             ? (isDark
                                   ? AppColors.darkOnSurface
@@ -133,13 +177,13 @@ class PsTimerTile extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showTimerPicker(BuildContext context) {
+  void _showPicker(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (_) => _TimerPickerDialog(
@@ -152,7 +196,7 @@ class PsTimerTile extends StatelessWidget {
   }
 }
 
-// ── Timer Picker Dialog ──────────────────────────────────────────────────────
+// ── Timer picker ───────────────────────────────────────────────────────────────
 
 class _TimerPickerDialog extends StatefulWidget {
   const _TimerPickerDialog({
@@ -191,13 +235,17 @@ class _TimerPickerDialogState extends State<_TimerPickerDialog> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          Slider(
-            value: _value.toDouble(),
-            min: widget.min.toDouble(),
-            max: widget.max.toDouble(),
-            divisions: widget.max - widget.min,
-            label: '$_value s',
-            onChanged: (v) => setState(() => _value = v.round()),
+          Semantics(
+            label: 'Timer duration $_value seconds',
+            slider: true,
+            child: Slider(
+              value: _value.toDouble(),
+              min: widget.min.toDouble(),
+              max: widget.max.toDouble(),
+              divisions: widget.max - widget.min,
+              label: '$_value s',
+              onChanged: (v) => setState(() => _value = v.round()),
+            ),
           ),
         ],
       ),
