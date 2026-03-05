@@ -11,33 +11,32 @@ dependencies:
     sdk: flutter
 
   # State Management
-  flutter_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
 
   # Navigation
-  go_router: ^13.2.0
+  go_router: ^14.8.1
 
   # Storage/Persistence
-  shared_preferences: ^2.2.2
-  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.5.3
+  flutter_secure_storage: ^9.2.4
 
   # Camera
-  camera: ^0.10.5+9
+  camera: ^0.11.1
 
-  # Haptics & Sensors
-  vibration: ^1.8.4
-  sensors_plus: ^4.0.2
+  vibration: ^2.0.0
+  sensors_plus: ^6.1.1
 
   # TTS
-  flutter_tts: ^4.0.2
+  flutter_tts: ^4.2.3
 
   # Accessibility
-  flutter_screenutil: ^5.9.0
+  flutter_screenutil: ^5.9.3
 
   # Internationalization
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.0
+  intl: ^0.20.1
 
   # UI Helpers
   gap: ^3.0.1
@@ -45,10 +44,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^6.0.0
-  riverpod_generator: ^2.3.9
-  build_runner: ^2.4.8
+  riverpod_generator: ^2.6.1
+  build_runner: ^2.4.14
 
 flutter:
   uses-material-design: true

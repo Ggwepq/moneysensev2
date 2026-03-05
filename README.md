@@ -1,4 +1,4 @@
-# PesoSense 🇵🇭
+# MoneySense
 
 **An accessible, bilingual Philippine currency identifier for visually impaired users.**
 
@@ -16,7 +16,7 @@
 
 ## Overview
 
-PesoSense uses real-time camera-based ML inference to identify and announce Philippine bills and coins. It is built with accessibility at the core — every feature is designed for users with low vision, partial blindness, or full blindness.
+MoneySense uses real-time camera-based ML inference to identify and announce Philippine bills and coins. It is built with accessibility at the core — every feature is designed for users with low vision, partial blindness, or full blindness.
 
 ---
 
@@ -168,7 +168,7 @@ flutter build apk --release
 
 | Prefix | Meaning |
 |---|---|
-| `Ps` | PesoSense custom widget (e.g. `PsToggleTile`) |
+| `Ps` | MoneySense custom widget (e.g. `PsToggleTile`) |
 | `App` | App-wide constant/theme (e.g. `AppColors`) |
 | `*Screen` | Full-page screen widget |
 | `*Provider` | Riverpod provider file |
