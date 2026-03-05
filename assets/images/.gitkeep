@@ -1,0 +1,18 @@
+# PesoSense Assets
+
+Place the following assets in their respective subdirectories:
+
+## assets/images/
+- `logo.png` — App logo
+- `onboarding_1.png` — Welcome illustration
+- `onboarding_2.png` — Vision profile illustration
+- `bill_*.png` — Denomination reference images
+- `coin_*.png` — Coin reference images
+
+## assets/lottie/
+- `scanning.json` — Lottie animation for scanning state
+- `processing.json` — Lottie animation for processing state
+- `success.json` — Lottie animation for successful detection
+
+## assets/audio/
+- Audio files for TTS fallback (if flutter_tts is unavailable)

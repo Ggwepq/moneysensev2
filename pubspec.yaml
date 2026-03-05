@@ -1,0 +1,60 @@
+name: moneysensev2
+description: "A bilingual, accessible Philippine currency identifier for visually impaired users."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Storage/Persistence
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+
+  # Camera
+  camera: ^0.10.5+9
+
+  # Haptics & Sensors
+  vibration: ^1.8.4
+  sensors_plus: ^4.0.2
+
+  # TTS
+  flutter_tts: ^4.0.2
+
+  # Accessibility
+  flutter_screenutil: ^5.9.0
+
+  # Internationalization
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.0
+
+  # UI Helpers
+  gap: ^3.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^2.3.9
+  build_runner: ^2.4.8
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/lottie/
+    - assets/audio/
