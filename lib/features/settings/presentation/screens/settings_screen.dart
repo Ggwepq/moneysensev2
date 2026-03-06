@@ -417,7 +417,7 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return; // more vertical than horizontal
         if (ay / ax > _maxCrossRatio) return; // too diagonal
-        if (v.dx < 0) Navigator.of(context).maybePop(); // swipe right = back
+        if (v.dx < 0) Navigator.of(context).maybePop(); // swipe to right = back
       },
       child: child,
     );
