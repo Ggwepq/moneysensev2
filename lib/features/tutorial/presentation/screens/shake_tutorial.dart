@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/shake_service.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../widgets/ps_tutorial_scaffold.dart';
 
 class ShakeTutorial extends ConsumerStatefulWidget {
@@ -56,18 +58,17 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
     return PsTutorialScaffold(
-      title: 'Shake to Go Back',
-      badge: 'Navigation',
-      description:
-          'Give your phone a quick, intentional shake and PesoSense will '
-          'navigate back to the previous screen — no button press needed.',
-      steps: const [
-        'Enable "Shake to Go Back" in Settings → Navigation.',
-        'Open any screen (Settings, Tutorial, or a scan result).',
-        'Shake your phone once with a confident wrist flick.',
-        'Feel the vibration confirmation and watch the screen go back.',
+      title: l10n.tutorialCardShakeTitle,
+      badge: l10n.shakeTutorialBadge,
+      description: l10n.shakeTutorialDescription,
+      steps: [
+        l10n.shakeTutorialStep1,
+        l10n.shakeTutorialStep2,
+        l10n.shakeTutorialStep3,
+        l10n.shakeTutorialStep4,
       ],
       hero: _ShakeHero(isDark: isDark, justShook: _justShook),
       accentColor: AppColors.accentBlue,
@@ -75,6 +76,7 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
         shakeCount: _shakeCount,
         justShook: _justShook,
         isDark: isDark,
+        l10n: l10n,
       ),
     );
   }
@@ -274,11 +276,13 @@ class _ShakeDemo extends StatelessWidget {
     required this.shakeCount,
     required this.justShook,
     required this.isDark,
+    required this.l10n,
   });
 
   final int shakeCount;
   final bool justShook;
   final bool isDark;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +314,7 @@ class _ShakeDemo extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            justShook ? '✓ Shake detected!' : 'Try it now',
+            justShook ? l10n.shakeDetected : l10n.shakeTryItTitle,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleSmall?.copyWith(
               color: justShook ? AppColors.accentBlue : onSurface,
@@ -319,14 +323,14 @@ class _ShakeDemo extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Shake your phone with a quick wrist flick',
+            l10n.shakeTryItHint,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(color: onVariant),
           ),
           if (shakeCount > 0) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
-              '$shakeCount shake${shakeCount == 1 ? '' : 's'} detected',
+              l10n.shakeCount(shakeCount),
               textAlign: TextAlign.center,
               style: theme.textTheme.labelMedium?.copyWith(
                 color: AppColors.accentBlue,

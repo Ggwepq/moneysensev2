@@ -52,7 +52,7 @@ class TutorialScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Learn the features',
+                    l10n.tutorialScreenTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: onSurface,
                       fontWeight: FontWeight.w800,
@@ -60,8 +60,7 @@ class TutorialScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Tap any tutorial below to learn how each feature works '
-                    'with live, interactive examples.',
+                    l10n.tutorialScreenSubtitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: onVariant,
                       height: 1.5,
@@ -72,15 +71,13 @@ class TutorialScreen extends ConsumerWidget {
             ),
 
             // ── Scanning section ─────────────────────────────────────────
-            _SectionLabel(label: 'SCANNING', isDark: isDark),
+            _SectionLabel(label: l10n.tutorialSectionScanning, isDark: isDark),
             const SizedBox(height: AppSpacing.sm),
             _TutorialCard(
               route: TutorialRoute.denominationVibration,
               icon: Icons.vibration_rounded,
-              title: 'Denomination Vibration',
-              description:
-                  'Learn each denomination\'s unique vibration pattern '
-                  'and play them to feel the difference.',
+              title: l10n.tutorialCardDenomTitle,
+              description: l10n.tutorialCardDenomDesc,
               accentColor: AppColors.accentYellow,
               isDark: isDark,
             ),
@@ -88,15 +85,16 @@ class TutorialScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Navigation section ───────────────────────────────────────
-            _SectionLabel(label: 'NAVIGATION', isDark: isDark),
+            _SectionLabel(
+              label: l10n.tutorialSectionNavigation,
+              isDark: isDark,
+            ),
             const SizedBox(height: AppSpacing.sm),
             _TutorialCard(
               route: TutorialRoute.shakeToGoBack,
               icon: Icons.screen_rotation_rounded,
-              title: 'Shake to Go Back',
-              description:
-                  'Shake your phone to navigate back '
-                  'from any screen — no buttons required.',
+              title: l10n.tutorialCardShakeTitle,
+              description: l10n.tutorialCardShakeDesc,
               accentColor: AppColors.accentBlue,
               isDark: isDark,
             ),
@@ -104,10 +102,8 @@ class TutorialScreen extends ConsumerWidget {
             _TutorialCard(
               route: TutorialRoute.gesturalNavigation,
               icon: Icons.swipe_rounded,
-              title: 'Gestural Navigation',
-              description:
-                  'Swipe in any direction on the scanner screen '
-                  'to jump between screens and toggle the flash.',
+              title: l10n.tutorialCardGestureTitle,
+              description: l10n.tutorialCardGestureDesc,
               accentColor: AppColors.accentYellow,
               isDark: isDark,
             ),

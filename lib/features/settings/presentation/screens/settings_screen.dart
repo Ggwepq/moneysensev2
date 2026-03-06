@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:moneysensev2/features/tutorial/presentation/screens/tutorial_navigator.dart';
 
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
@@ -12,6 +11,7 @@ import '../../../../shared/widgets/ps_slider_tile.dart';
 import '../../../../shared/widgets/ps_timer_tile.dart';
 import '../../../../shared/widgets/ps_toggle_tile.dart';
 import '../../../tutorial/domain/tutorial_route.dart';
+import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 
@@ -27,6 +27,9 @@ class SettingsScreen extends ConsumerWidget {
     return _SwipeBackWrapper(
       child: Scaffold(
         appBar: AppBar(
+          // Flutter automatically inserts a back button and wires it to
+          // Navigator.pop when this screen is pushed onto the stack.
+          // No manual leading / onPressed needed.
           title: Text(l10n.settings),
           actions: [
             IconButton(
@@ -51,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
                 // Theme selector
                 _ThemeTile(
                   label: l10n.theme,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.themeSubtitle,
                   themeMode: settings.themeMode,
                   l10n: l10n,
                   onChanged: notifier.setThemeMode,
@@ -59,7 +62,7 @@ class SettingsScreen extends ConsumerWidget {
                 // Language selector
                 _LanguageTile(
                   label: l10n.language,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.languageSubtitle,
                   language: settings.language,
                   l10n: l10n,
                   onChanged: notifier.setLanguage,
@@ -84,19 +87,19 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 PsToggleTile(
                   title: l10n.useFrontCamera,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.useFrontCameraSubtitle,
                   value: settings.useFrontCamera,
                   onChanged: notifier.toggleFrontCamera,
                 ),
                 PsToggleTile(
                   title: l10n.useFlashlight,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.useFlashlightSubtitle,
                   value: settings.useFlashlight,
                   onChanged: notifier.toggleFlashlight,
                 ),
                 PsToggleTile(
                   title: l10n.denominationVibration,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.denominationVibrationSubtitle,
                   value: settings.denominationVibration,
                   onChanged: notifier.toggleDenominationVibration,
                   showHelpButton: true,
@@ -114,7 +117,7 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 PsToggleTile(
                   title: l10n.shakeToGoBack,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.shakeToGoBackSubtitle,
                   value: settings.shakeToGoBack,
                   onChanged: notifier.toggleShakeToGoBack,
                   showHelpButton: true,
@@ -125,7 +128,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsTimerTile(
                   title: l10n.goBackTimerOnResult,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.goBackTimerSubtitle,
                   enabled: settings.goBackTimerSeconds > 0,
                   value: settings.goBackTimerSeconds > 0
                       ? settings.goBackTimerSeconds
@@ -135,7 +138,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsToggleTile(
                   title: l10n.gesturalNavigation,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.gesturalNavigationSubtitle,
                   value: settings.gesturalNavigation,
                   onChanged: notifier.toggleGesturalNavigation,
                   showHelpButton: true,
@@ -146,7 +149,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsToggleTile(
                   title: l10n.inertialNavigation,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.inertialNavigationSubtitle,
                   value: settings.inertialNavigation,
                   onChanged: notifier.toggleInertialNavigation,
                   showHelpButton: true,
@@ -154,15 +157,11 @@ class SettingsScreen extends ConsumerWidget {
                     context: context,
                     builder: (_) => AlertDialog(
                       title: Text(l10n.inertialNavigation),
-                      content: const Text(
-                        'Tilt your phone left to open Settings or right to open '
-                        'Tutorial — no tapping required.\n\n'
-                        'An interactive tutorial for this feature is coming soon.',
-                      ),
+                      content: Text(l10n.inertialDialogBody),
                       actions: [
                         FilledButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Got it'),
+                          child: Text(l10n.gotIt),
                         ),
                       ],
                     ),
@@ -177,7 +176,7 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 PsActionTile(
                   title: l10n.checkForUpdates,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.checkForUpdatesSubtitle,
                   icon: Icons.refresh_rounded,
                   onTap: () {
                     /* TODO */
@@ -185,7 +184,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsActionTile(
                   title: l10n.playOnboardingSetup,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.playOnboardingSubtitle,
                   icon: Icons.play_arrow_rounded,
                   onTap: () {
                     /* TODO: navigate to onboarding */
@@ -193,7 +192,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsActionTile(
                   title: l10n.appInformation,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.appInformationSubtitle,
                   icon: Icons.info_outline_rounded,
                   onTap: () {
                     /* TODO */
@@ -201,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsActionTile(
                   title: l10n.leaveAFeedback,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.leaveAFeedbackSubtitle,
                   icon: Icons.campaign_outlined,
                   onTap: () {
                     /* TODO */
@@ -209,7 +208,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 PsActionTile(
                   title: l10n.termsOfServices,
-                  subtitle: l10n.settingSubtitle,
+                  subtitle: l10n.termsOfServicesSubtitle,
                   icon: Icons.description_outlined,
                   onTap: () {
                     /* TODO */
@@ -389,8 +388,8 @@ class _LanguageTile extends StatelessWidget {
 
 // ── Swipe-back wrapper ────────────────────────────────────────────────────────
 
-/// Wraps any pushed screen so a right-swipe pops the route — consistent with
-/// the home screen's gestural navigation where right-swipe opens this screen.
+/// Wraps any pushed screen so a LEFT-swipe pops the route — Settings slides in
+/// from the left, so the natural reverse gesture is a left swipe to push it back.
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});
   final Widget child;
@@ -408,7 +407,7 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return; // more vertical than horizontal
         if (ay / ax > _maxCrossRatio) return; // too diagonal
-        if (v.dx > 0) Navigator.of(context).maybePop(); // swipe right = back
+        if (v.dx < 0) Navigator.of(context).maybePop(); // swipe LEFT = back
       },
       child: child,
     );

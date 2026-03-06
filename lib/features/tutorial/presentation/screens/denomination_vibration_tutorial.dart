@@ -2,15 +2,28 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/l10n/app_localizations.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../widgets/ps_tutorial_scaffold.dart';
 
 // ---------------------------------------------------------------------------
-// vibration patterns
+// Vibration patterns
 // ---------------------------------------------------------------------------
+// Each denomination has a distinctive rhythmic pattern so users can identify
+// currency by feel alone.
+//
+// Pattern encoding: list of [duration_ms, pause_ms, duration_ms, …]
+//   Long pulse  = 350 ms
+//   Short pulse = 100 ms
+//   Pause       = 120 ms between pulses, 300 ms between groups
+//
+// Coins: 1 LONG + N SHORT  (N = coin value tier)
+// Bills: N SHORT            (N = bill value tier)
 
 class _Denomination {
   const _Denomination({
@@ -22,16 +35,19 @@ class _Denomination {
 
   final String label;
   final bool isCoin;
+  // Vibration package pattern: [duration, gap, duration, gap, …]
   final List<int> pattern;
   final String description;
 }
 
+// Long = 350ms, short = 100ms, inner gap = 120ms, group gap = 300ms
 const int _long = 350;
 const int _short = 100;
-const int _igap = 120;
-const int _ggap = 300;
+const int _igap = 120; // gap between pulses in a group
+const int _ggap = 300; // gap between long and short groups
 
 List<int> _coin(int shorts) {
+  // 1 long  +  shorts × short
   final p = <int>[_long];
   if (shorts > 0) {
     p.add(_ggap);
@@ -54,67 +70,68 @@ List<int> _bill(int shorts) {
 
 const _denominations = [
   _Denomination(
-    label: '1 peso coin',
+    label: '1 Peso Coin',
     isCoin: true,
     pattern: [],
     description: '1 long, 1 short',
   ),
   _Denomination(
-    label: '5 peso coin',
+    label: '5 Peso Coin',
     isCoin: true,
     pattern: [],
     description: '1 long, 2 short',
   ),
   _Denomination(
-    label: '10 peso coin',
+    label: '10 Peso Coin',
     isCoin: true,
     pattern: [],
     description: '1 long, 3 short',
   ),
   _Denomination(
-    label: '20 peso coin',
+    label: '20 Peso Coin',
     isCoin: true,
     pattern: [],
     description: '1 long, 4 short',
   ),
   _Denomination(
-    label: '20 peso bill',
+    label: '20 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '1 short',
   ),
   _Denomination(
-    label: '50 peso bill',
+    label: '50 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '2 short',
   ),
   _Denomination(
-    label: '100 peso bill',
+    label: '100 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '3 short',
   ),
   _Denomination(
-    label: '200 peso bill',
+    label: '200 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '4 short',
   ),
   _Denomination(
-    label: '500 peso bill',
+    label: '500 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '5 short',
   ),
   _Denomination(
-    label: '1000 peso bill',
+    label: '1000 Peso Bill',
     isCoin: false,
     pattern: [],
     description: '6 short',
   ),
 ];
 
+// Build patterns at runtime (const List<int> can't call functions)
 List<List<int>> _buildPatterns() => [
   _coin(1),
   _coin(2),
@@ -129,23 +146,24 @@ List<List<int>> _buildPatterns() => [
 ];
 
 // ---------------------------------------------------------------------------
-// screen
+// Screen
 // ---------------------------------------------------------------------------
 
-class DenominationVibrationTutorial extends StatefulWidget {
+class DenominationVibrationTutorial extends ConsumerStatefulWidget {
   const DenominationVibrationTutorial({super.key});
 
   @override
-  State<DenominationVibrationTutorial> createState() =>
+  ConsumerState<DenominationVibrationTutorial> createState() =>
       _DenominationVibrationTutorialState();
 }
 
 class _DenominationVibrationTutorialState
-    extends State<DenominationVibrationTutorial> {
+    extends ConsumerState<DenominationVibrationTutorial> {
   final _patterns = _buildPatterns();
-  int? _playing;
+  int? _playing; // index of the currently playing row
 
   Future<void> _play(int index) async {
+    // Cancel any in-progress vibration
     try {
       await Vibration.cancel();
     } catch (_) {}
@@ -159,10 +177,13 @@ class _DenominationVibrationTutorialState
     try {
       final hasV = await Vibration.hasVibrator() ?? false;
       if (hasV) {
+        // vibration package pattern: alternating [wait, vibrate, wait, vibrate]
+        // We prepend a 0 lead-in so the first element is always a "wait".
         await Vibration.vibrate(pattern: [0, ...pattern]);
       }
     } catch (_) {}
 
+    // Calculate total duration and clear the playing state after
     if (mounted) {
       final total = pattern.fold<int>(0, (s, v) => s + v) + 200;
       await Future.delayed(Duration(milliseconds: total));
@@ -171,6 +192,7 @@ class _DenominationVibrationTutorialState
   }
 
   Future<void> _playDemo() async {
+    // Play all patterns back-to-back with a gap between each
     for (int i = 0; i < _denominations.length; i++) {
       await _play(i);
       await Future.delayed(const Duration(milliseconds: 400));
@@ -188,18 +210,17 @@ class _DenominationVibrationTutorialState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
     return PsTutorialScaffold(
-      title: 'Denomination Vibration',
-      badge: 'Scanning',
-      description:
-          'Each Philippine denomination produces a unique vibration pattern '
-          'so you can identify your currency by touch alone — no screen needed.',
-      steps: const [
-        'Enable denomination vibration in Settings → Scanning.',
-        'Scan a bill or coin with the camera.',
-        'The phone vibrates with the pattern shown below.',
-        'Use the list to learn each denomination\'s pattern.',
+      title: l10n.tutorialCardDenomTitle,
+      badge: l10n.denomTutorialBadge,
+      description: l10n.denomTutorialDescription,
+      steps: [
+        l10n.denomTutorialStep1,
+        l10n.denomTutorialStep2,
+        l10n.denomTutorialStep3,
+        l10n.denomTutorialStep4,
       ],
       hero: _VibrationHero(isDark: isDark),
       interactive: _PatternList(
@@ -209,13 +230,14 @@ class _DenominationVibrationTutorialState
         onPlay: _play,
         onPlayDemo: _playDemo,
         isDark: isDark,
+        l10n: l10n,
       ),
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// hero illustration
+// Hero illustration
 // ---------------------------------------------------------------------------
 
 class _VibrationHero extends StatefulWidget {
@@ -269,6 +291,7 @@ class _VibrationHeroState extends State<_VibrationHero>
           builder: (_, __) => Stack(
             alignment: Alignment.center,
             children: [
+              // Ripple rings
               ...List.generate(3, (i) {
                 final progress = (_ring.value - i * 0.28).clamp(0.0, 1.0);
                 final scale = 1.0 + progress * 1.6;
@@ -290,6 +313,7 @@ class _VibrationHeroState extends State<_VibrationHero>
                   ),
                 );
               }),
+              // Phone icon with shake
               Transform.translate(
                 offset: Offset(_shake.value, 0),
                 child: Container(
@@ -322,7 +346,7 @@ class _VibrationHeroState extends State<_VibrationHero>
 }
 
 // ---------------------------------------------------------------------------
-// pattern list
+// Pattern list
 // ---------------------------------------------------------------------------
 
 class _PatternList extends StatelessWidget {
@@ -333,6 +357,7 @@ class _PatternList extends StatelessWidget {
     required this.onPlay,
     required this.onPlayDemo,
     required this.isDark,
+    required this.l10n,
   });
 
   final List<_Denomination> denominations;
@@ -341,6 +366,7 @@ class _PatternList extends StatelessWidget {
   final void Function(int) onPlay;
   final VoidCallback onPlayDemo;
   final bool isDark;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -357,8 +383,9 @@ class _PatternList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Demo tile
         Semantics(
-          label: 'Play vibration demo. Plays all patterns in sequence. Button',
+          label: '${l10n.denomPlayDemoLabel}. ${l10n.denomPlayDemoSub}. Button',
           button: true,
           excludeSemantics: true,
           child: GestureDetector(
@@ -397,14 +424,14 @@ class _PatternList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Play vibration demo',
+                          l10n.denomPlayDemoLabel,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
-                          'Plays all patterns in sequence',
+                          l10n.denomPlayDemoSub,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: onVariant,
                           ),
@@ -413,7 +440,7 @@ class _PatternList extends StatelessWidget {
                     ),
                   ),
                   if (playing != null)
-                    const SizedBox(
+                    SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -427,13 +454,15 @@ class _PatternList extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
+
+        // Section label
         Padding(
           padding: const EdgeInsets.only(
             left: AppSpacing.xs,
             bottom: AppSpacing.sm,
           ),
           child: Text(
-            'PATTERNS',
+            l10n.denomPatternsLabel,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -442,6 +471,8 @@ class _PatternList extends StatelessWidget {
             ),
           ),
         ),
+
+        // Denomination rows
         Container(
           decoration: BoxDecoration(
             color: surface,
@@ -471,6 +502,7 @@ class _PatternList extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
+                              // Coin / bill indicator pill
                               Container(
                                 width: 6,
                                 height: 24,
@@ -503,6 +535,7 @@ class _PatternList extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                              // Play button
                               AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 200),
                                 child: isPlaying
@@ -563,7 +596,7 @@ class _PatternList extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// pattern dot visualizer
+// Pattern dot visualizer
 // ---------------------------------------------------------------------------
 
 class _PatternDots extends StatelessWidget {
@@ -574,11 +607,12 @@ class _PatternDots extends StatelessWidget {
   });
 
   final bool isCoin;
-  final String description;
+  final String description; // e.g. "1 long, 3 short"
   final bool isPlaying;
 
   @override
   Widget build(BuildContext context) {
+    // Parse the description to build dot shapes
     final parts = description.split(', ');
     final dots = <Widget>[];
 

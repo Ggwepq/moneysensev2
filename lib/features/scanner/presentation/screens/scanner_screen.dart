@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -154,7 +155,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     String? statusLabel;
     switch (scannerState) {
       case ScannerState.paused:
-        statusLabel = 'Paused';
+        statusLabel = l10n.paused;
         break;
       case ScannerState.scanning:
         statusLabel = l10n.scanning;
@@ -210,7 +211,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
           fit: StackFit.expand,
           children: [
             CameraPreview(controller),
-            if (scannerState == ScannerState.paused) const _PausedOverlay(),
+            if (scannerState == ScannerState.paused) _PausedOverlay(l10n: l10n),
           ],
         );
       },
@@ -237,10 +238,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   void _onDoubleTap() {
     final n = ref.read(scannerStateProvider.notifier);
     final s = ref.read(scannerStateProvider);
-    if (s == ScannerState.previewing)
-      n.pausePreview();
-    else if (s == ScannerState.paused)
+    if (s == ScannerState.previewing) {
+      // Double-tap on live preview triggers a scan
+      HapticFeedback.mediumImpact();
+      n.startScanning();
+    } else if (s == ScannerState.paused) {
+      HapticFeedback.lightImpact();
       n.resumePreview();
+    }
   }
 
   void _toggleFlash() {
@@ -266,13 +271,14 @@ class _IdlePlaceholder extends StatelessWidget {
         Icon(
           Icons.currency_exchange_rounded,
           size: 56,
-          color: isDark ? const Color(0xFF2E2E2E) : const Color(0xFFCCCCCC),
+          color: isDark ? const Color(0xFF4A5568) : const Color(0xFFB0B8C4),
         ),
         const SizedBox(height: 16),
         Text(
           l10n.tapToScan,
           style: TextStyle(
-            color: isDark ? const Color(0xFF555555) : const Color(0xFFAAAAAA),
+            // Lightened: was 0xFF555555 / 0xFFAAAAAA — now clearly visible
+            color: isDark ? const Color(0xFF8A9BB0) : const Color(0xFF7A8899),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -339,7 +345,9 @@ class _ErrorView extends StatelessWidget {
 }
 
 class _PausedOverlay extends StatelessWidget {
-  const _PausedOverlay();
+  const _PausedOverlay({required this.l10n});
+  final AppLocalizations l10n;
+
   @override
   Widget build(BuildContext context) => Container(
     color: Colors.black.withOpacity(0.45),
@@ -354,7 +362,7 @@ class _PausedOverlay extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Paused',
+            l10n.paused,
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: 18,
@@ -364,7 +372,7 @@ class _PausedOverlay extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Double-tap to resume',
+            l10n.doubleTapToResume,
             style: TextStyle(
               color: Colors.white.withOpacity(0.55),
               fontSize: 13,

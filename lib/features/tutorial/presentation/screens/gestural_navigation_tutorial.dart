@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/l10n/app_localizations.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../widgets/ps_tutorial_scaffold.dart';
 
-class GesturalNavigationTutorial extends StatefulWidget {
+class GesturalNavigationTutorial extends ConsumerStatefulWidget {
   const GesturalNavigationTutorial({super.key});
 
   @override
-  State<GesturalNavigationTutorial> createState() =>
+  ConsumerState<GesturalNavigationTutorial> createState() =>
       _GesturalNavigationTutorialState();
 }
 
 class _GesturalNavigationTutorialState
-    extends State<GesturalNavigationTutorial> {
+    extends ConsumerState<GesturalNavigationTutorial> {
   _GestureResult? _lastResult;
 
   void _onGesture(_GestureResult result) {
@@ -28,24 +31,25 @@ class _GesturalNavigationTutorialState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
     return PsTutorialScaffold(
-      title: 'Gestural Navigation',
-      badge: 'Navigation',
-      description:
-          'Navigate PesoSense hands-free using swipes and taps on the '
-          'scanner screen — perfect when your other hand is holding currency.',
-      steps: const [
-        'Enable "Gestural Navigation" in Settings → Navigation.',
-        'Swipe RIGHT on the scanner screen to open Settings.',
-        'Swipe LEFT on the scanner screen to open Tutorial.',
-        'Swipe UP on the scanner to toggle the flashlight on or off.',
+      title: l10n.tutorialCardGestureTitle,
+      badge: l10n.gestureTutorialBadge,
+      description: l10n.gestureTutorialDescription,
+      steps: [
+        l10n.gestureTutorialStep1,
+        l10n.gestureTutorialStep2,
+        l10n.gestureTutorialStep3,
+        l10n.gestureTutorialStep4,
+        l10n.gestureTutorialStep5,
       ],
       hero: _GestureHero(isDark: isDark, lastResult: _lastResult),
       interactive: _GesturePlayground(
         isDark: isDark,
         lastResult: _lastResult,
         onGesture: _onGesture,
+        l10n: l10n,
       ),
     );
   }
@@ -55,17 +59,19 @@ class _GesturalNavigationTutorialState
 // Result type
 // ---------------------------------------------------------------------------
 
-enum _GestureResult { swipeRight, swipeLeft, swipeUp }
+enum _GestureResult { swipeRight, swipeLeft, swipeUp, doubleTap }
 
-extension _GestureResultLabel on _GestureResult {
-  String get label {
+extension _GestureResultExt on _GestureResult {
+  String label(AppLocalizations l10n) {
     switch (this) {
       case _GestureResult.swipeRight:
-        return '→ Opens Settings';
+        return l10n.gestureLabelRight;
       case _GestureResult.swipeLeft:
-        return '← Opens Tutorial';
+        return l10n.gestureLabelLeft;
       case _GestureResult.swipeUp:
-        return '↑ Toggles Flashlight';
+        return l10n.gestureLabelUp;
+      case _GestureResult.doubleTap:
+        return l10n.gestureLabelTap;
     }
   }
 
@@ -77,6 +83,8 @@ extension _GestureResultLabel on _GestureResult {
         return AppColors.accentBlue;
       case _GestureResult.swipeUp:
         return const Color(0xFF4CAF50);
+      case _GestureResult.doubleTap:
+        return const Color(0xFFFF6B35);
     }
   }
 
@@ -88,12 +96,14 @@ extension _GestureResultLabel on _GestureResult {
         return Icons.help_outline_rounded;
       case _GestureResult.swipeUp:
         return Icons.flashlight_on_rounded;
+      case _GestureResult.doubleTap:
+        return Icons.touch_app_rounded;
     }
   }
 }
 
 // ---------------------------------------------------------------------------
-// Hero — animated phone showing the four gestures cycling
+// Hero — animated phone showing gestures cycling
 // ---------------------------------------------------------------------------
 
 class _GestureHero extends StatefulWidget {
@@ -114,6 +124,7 @@ class _GestureHeroState extends State<_GestureHero>
     _GestureResult.swipeRight,
     _GestureResult.swipeLeft,
     _GestureResult.swipeUp,
+    _GestureResult.doubleTap,
   ];
 
   @override
@@ -178,7 +189,6 @@ class _PhoneWithGesture extends StatelessWidget {
         : AppColors.lightSurfaceVariant;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
-    // Arrow animation: slides in the direction of the gesture
     final offset = Tween<Offset>(
       begin: Offset.zero,
       end: _arrowEndOffset(result),
@@ -225,16 +235,28 @@ class _PhoneWithGesture extends StatelessWidget {
             ],
           ),
         ),
-        // Animated gesture arrow
+        // Animated gesture indicator
         AnimatedBuilder(
           animation: animController,
-          builder: (_, __) => Transform.translate(
-            offset: Offset(offset.value.dx * 60, offset.value.dy * 60),
-            child: Opacity(
-              opacity: (1.0 - animController.value).clamp(0.0, 1.0),
-              child: _GestureArrow(result: result),
-            ),
-          ),
+          builder: (_, __) {
+            if (result == _GestureResult.doubleTap) {
+              // Double-tap: pulsing ripple instead of directional arrow
+              return Opacity(
+                opacity: (1.0 - animController.value).clamp(0.0, 1.0),
+                child: Transform.scale(
+                  scale: 1.0 + animController.value * 0.6,
+                  child: _GestureArrow(result: result),
+                ),
+              );
+            }
+            return Transform.translate(
+              offset: Offset(offset.value.dx * 60, offset.value.dy * 60),
+              child: Opacity(
+                opacity: (1.0 - animController.value).clamp(0.0, 1.0),
+                child: _GestureArrow(result: result),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -248,6 +270,8 @@ class _PhoneWithGesture extends StatelessWidget {
         return 'Tutorial';
       case _GestureResult.swipeUp:
         return 'Flash';
+      case _GestureResult.doubleTap:
+        return 'Scan';
     }
   }
 
@@ -259,6 +283,8 @@ class _PhoneWithGesture extends StatelessWidget {
         return const Offset(-0.8, 0);
       case _GestureResult.swipeUp:
         return const Offset(0, -0.8);
+      case _GestureResult.doubleTap:
+        return Offset.zero; // stays in place, just scales
     }
   }
 }
@@ -273,6 +299,7 @@ class _GestureArrow extends StatelessWidget {
       _GestureResult.swipeRight => Icons.arrow_forward_rounded,
       _GestureResult.swipeLeft => Icons.arrow_back_rounded,
       _GestureResult.swipeUp => Icons.arrow_upward_rounded,
+      _GestureResult.doubleTap => Icons.touch_app_rounded,
     };
 
     return Container(
@@ -289,7 +316,7 @@ class _GestureArrow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Interactive playground — detect actual swipes
+// Interactive playground — detects actual swipes and double-taps
 // ---------------------------------------------------------------------------
 
 class _GesturePlayground extends StatelessWidget {
@@ -297,11 +324,13 @@ class _GesturePlayground extends StatelessWidget {
     required this.isDark,
     required this.lastResult,
     required this.onGesture,
+    required this.l10n,
   });
 
   final bool isDark;
   final _GestureResult? lastResult;
   final void Function(_GestureResult) onGesture;
+  final AppLocalizations l10n;
 
   static const double _minVelocity = 200.0;
 
@@ -323,8 +352,9 @@ class _GesturePlayground extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Swipe pad
+        // Swipe + double-tap pad
         GestureDetector(
+          onDoubleTap: () => onGesture(_GestureResult.doubleTap),
           onPanEnd: (d) {
             final v = d.velocity.pixelsPerSecond;
             final ax = v.dx.abs();
@@ -374,8 +404,9 @@ class _GesturePlayground extends StatelessWidget {
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: Text(
-                    active ? lastResult!.label : 'Swipe here to try',
+                    active ? lastResult!.label(l10n) : l10n.gestureTryHint,
                     key: ValueKey(lastResult),
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: active ? accent : onVariant,
                       fontWeight: active ? FontWeight.w600 : FontWeight.w400,
@@ -401,8 +432,8 @@ class _GesturePlayground extends StatelessWidget {
               _LegendRow(
                 icon: Icons.arrow_forward_rounded,
                 color: AppColors.accentYellow,
-                label: 'Swipe right',
-                action: 'Opens Settings',
+                label: l10n.gestureSwipeRight,
+                action: l10n.gestureOpensSettings,
                 theme: theme,
                 onSurface: onSurface,
                 onVariant: onVariant,
@@ -411,8 +442,8 @@ class _GesturePlayground extends StatelessWidget {
               _LegendRow(
                 icon: Icons.arrow_back_rounded,
                 color: AppColors.accentBlue,
-                label: 'Swipe left',
-                action: 'Opens Tutorial',
+                label: l10n.gestureSwipeLeft,
+                action: l10n.gestureOpensTutorial,
                 theme: theme,
                 onSurface: onSurface,
                 onVariant: onVariant,
@@ -421,8 +452,18 @@ class _GesturePlayground extends StatelessWidget {
               _LegendRow(
                 icon: Icons.arrow_upward_rounded,
                 color: const Color(0xFF4CAF50),
-                label: 'Swipe up',
-                action: 'Toggles flashlight',
+                label: l10n.gestureSwipeUp,
+                action: l10n.gestureTogglesFlash,
+                theme: theme,
+                onSurface: onSurface,
+                onVariant: onVariant,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _LegendRow(
+                icon: Icons.touch_app_rounded,
+                color: const Color(0xFFFF6B35),
+                label: l10n.gestureDoubleTap,
+                action: l10n.gestureFreezesPreview,
                 theme: theme,
                 onSurface: onSurface,
                 onVariant: onVariant,
