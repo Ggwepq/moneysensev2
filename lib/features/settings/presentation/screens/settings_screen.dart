@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moneysensev2/features/tutorial/presentation/screens/tutorial_navigator.dart';
 
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
@@ -10,6 +11,7 @@ import '../../../../shared/widgets/ps_settings_card.dart';
 import '../../../../shared/widgets/ps_slider_tile.dart';
 import '../../../../shared/widgets/ps_timer_tile.dart';
 import '../../../../shared/widgets/ps_toggle_tile.dart';
+import '../../../tutorial/domain/tutorial_route.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 
@@ -25,9 +27,6 @@ class SettingsScreen extends ConsumerWidget {
     return _SwipeBackWrapper(
       child: Scaffold(
         appBar: AppBar(
-          // Flutter automatically inserts a back button and wires it to
-          // Navigator.pop when this screen is pushed onto the stack.
-          // No manual leading / onPressed needed.
           title: Text(l10n.settings),
           actions: [
             IconButton(
@@ -101,11 +100,9 @@ class SettingsScreen extends ConsumerWidget {
                   value: settings.denominationVibration,
                   onChanged: notifier.toggleDenominationVibration,
                   showHelpButton: true,
-                  onHelpTap: () => _showHelp(
+                  onHelpTap: () => TutorialNavigator.push(
                     context,
-                    l10n.denominationVibration,
-                    'Each Philippine denomination produces a unique vibration pattern '
-                    'so you can identify it without looking at the screen.',
+                    TutorialRoute.denominationVibration,
                   ),
                 ),
               ],
@@ -121,10 +118,9 @@ class SettingsScreen extends ConsumerWidget {
                   value: settings.shakeToGoBack,
                   onChanged: notifier.toggleShakeToGoBack,
                   showHelpButton: true,
-                  onHelpTap: () => _showHelp(
+                  onHelpTap: () => TutorialNavigator.push(
                     context,
-                    l10n.shakeToGoBack,
-                    'Shake your phone to navigate back from any screen.',
+                    TutorialRoute.shakeToGoBack,
                   ),
                 ),
                 PsTimerTile(
@@ -143,11 +139,9 @@ class SettingsScreen extends ConsumerWidget {
                   value: settings.gesturalNavigation,
                   onChanged: notifier.toggleGesturalNavigation,
                   showHelpButton: true,
-                  onHelpTap: () => _showHelp(
+                  onHelpTap: () => TutorialNavigator.push(
                     context,
-                    l10n.gesturalNavigation,
-                    'Swipe left to open Settings, right to open Tutorial, '
-                    'swipe up to toggle flash, and double-tap to force scan.',
+                    TutorialRoute.gesturalNavigation,
                   ),
                 ),
                 PsToggleTile(
@@ -156,11 +150,22 @@ class SettingsScreen extends ConsumerWidget {
                   value: settings.inertialNavigation,
                   onChanged: notifier.toggleInertialNavigation,
                   showHelpButton: true,
-                  onHelpTap: () => _showHelp(
-                    context,
-                    l10n.inertialNavigation,
-                    'Tilt your phone left to open Settings, '
-                    'tilt right to open the Tutorial screen.',
+                  onHelpTap: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text(l10n.inertialNavigation),
+                      content: const Text(
+                        'Tilt your phone left to open Settings or right to open '
+                        'Tutorial — no tapping required.\n\n'
+                        'An interactive tutorial for this feature is coming soon.',
+                      ),
+                      actions: [
+                        FilledButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Got it'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -220,21 +225,7 @@ class SettingsScreen extends ConsumerWidget {
     ); // _SwipeBackWrapper
   }
 
-  void _showHelp(BuildContext context, String title, String body) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
+  // Help buttons now open full feature tutorials via TutorialNavigator.push().
 }
 
 // ── Theme Tile ───────────────────────────────────────────────────────────────
@@ -417,7 +408,7 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return; // more vertical than horizontal
         if (ay / ax > _maxCrossRatio) return; // too diagonal
-        if (v.dx < 0) Navigator.of(context).maybePop(); // swipe to right = back
+        if (v.dx > 0) Navigator.of(context).maybePop(); // swipe right = back
       },
       child: child,
     );
