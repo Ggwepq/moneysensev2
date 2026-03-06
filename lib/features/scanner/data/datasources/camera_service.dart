@@ -7,8 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final availableCamerasProvider = Provider<List<CameraDescription>>((ref) {
   throw UnimplementedError(
-    'availableCamerasProvider must be overridden in ProviderScope',
-  );
+      'availableCamerasProvider must be overridden in ProviderScope');
 });
 
 // ---------------------------------------------------------------------------
@@ -17,8 +16,8 @@ final availableCamerasProvider = Provider<List<CameraDescription>>((ref) {
 
 final cameraControllerProvider =
     AsyncNotifierProvider<CameraControllerNotifier, CameraController?>(
-      CameraControllerNotifier.new,
-    );
+  CameraControllerNotifier.new,
+);
 
 class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
   CameraController? _controller;
@@ -103,10 +102,9 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
   }
 
   CameraDescription _pickCamera(
-    List<CameraDescription> cameras,
-    bool useFront,
-  ) {
-    final dir = useFront ? CameraLensDirection.front : CameraLensDirection.back;
+      List<CameraDescription> cameras, bool useFront) {
+    final dir =
+        useFront ? CameraLensDirection.front : CameraLensDirection.back;
     return cameras.firstWhere(
       (c) => c.lensDirection == dir,
       orElse: () => cameras.first,

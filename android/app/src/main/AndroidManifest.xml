@@ -17,7 +17,7 @@
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
     <application
-        android:label="PesoSense"
+        android:label="MoneySense"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

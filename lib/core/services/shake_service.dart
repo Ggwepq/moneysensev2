@@ -30,22 +30,22 @@ import 'package:sensors_plus/sensors_plus.dart';
 /// The [onShake] callback is guaranteed to be called on the UI isolate.
 class ShakeService {
   // ── Tuning ────────────────────────────────────────────────────────────────
-  static const double _threshold = 15.0; // m/s² dynamic magnitude
-  static const int _requiredShakes = 2; // jolts needed in window
-  static const int _window = 800; // ms — confirmation window
-  static const int _eventCooldown = 150; // ms — debounce per jolt
-  static const int _callbackCooldown = 1200; // ms — min time between callbacks
-  static const double _alpha = 0.85; // low-pass filter constant
+  static const double _threshold       = 15.0; // m/s² dynamic magnitude
+  static const int    _requiredShakes  = 2;    // jolts needed in window
+  static const int    _window          = 800;  // ms — confirmation window
+  static const int    _eventCooldown   = 150;  // ms — debounce per jolt
+  static const int    _callbackCooldown = 1200; // ms — min time between callbacks
+  static const double _alpha           = 0.85; // low-pass filter constant
 
   // ── State ─────────────────────────────────────────────────────────────────
   StreamSubscription<AccelerometerEvent>? _sub;
   VoidCallback? _onShake;
 
   double _gx = 0, _gy = 0, _gz = 0; // gravity estimate
-  final List<int> _events = []; // recent jolt timestamps (ms)
-  int _lastJoltMs = 0;
-  int _lastFireMs = 0;
-  bool _running = false;
+  final List<int> _events = [];       // recent jolt timestamps (ms)
+  int _lastJoltMs    = 0;
+  int _lastFireMs    = 0;
+  bool _running      = false;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -57,16 +57,13 @@ class ShakeService {
     _running = true;
     _onShake = onShake;
 
-    _sub =
-        accelerometerEventStream(
-          samplingPeriod: const Duration(milliseconds: 20),
-        ).listen(
-          _tick,
-          onError: (_) {
-            /* accelerometer unavailable on this device — ignore */
-          },
-          cancelOnError: false,
-        );
+    _sub = accelerometerEventStream(
+      samplingPeriod: const Duration(milliseconds: 20),
+    ).listen(
+      _tick,
+      onError: (_) {/* accelerometer unavailable on this device — ignore */},
+      cancelOnError: false,
+    );
   }
 
   /// Stop listening.  Safe to call when already stopped.

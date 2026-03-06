@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Typography scale for PesoSense.
+/// Typography scale for MoneySense.
 ///
 /// Sizes are defined at [scaleFactor] = 1.0 (100 %).
 /// The [AppSettingsNotifier] will multiply these by the user-chosen scale.

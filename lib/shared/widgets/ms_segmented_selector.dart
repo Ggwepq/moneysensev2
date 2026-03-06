@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A pill-style segmented selector matching the PesoSense design.
+/// A pill-style segmented selector matching the MoneySense design.
 ///
 /// Font overflow fix: the label inside each pill uses [TextScaler.noScaling]
 /// so it is immune to the user's font-size preference.  The pill has a fixed
@@ -11,16 +11,16 @@ import '../../core/constants/app_spacing.dart';
 /// Long strings are ellipsized rather than overflowing.
 ///
 /// A11y: each pill is one Semantics node — label + selected state.
-class PsSegmentedSelector<T> extends StatelessWidget {
-  const PsSegmentedSelector({
+class MsSegmentedSelector<T> extends StatelessWidget {
+  const MsSegmentedSelector({
     super.key,
     required this.options,
     required this.labels,
     required this.selected,
     required this.onSelected,
     this.leadingIcons,
-  }) : assert(options.length == labels.length),
-       assert(leadingIcons == null || leadingIcons.length == options.length);
+  })  : assert(options.length == labels.length),
+        assert(leadingIcons == null || leadingIcons.length == options.length);
 
   final List<T> options;
   final List<String> labels;
@@ -34,15 +34,11 @@ class PsSegmentedSelector<T> extends StatelessWidget {
     // Yellow is the primary accent on both themes — active pill is always yellow.
     const activeColor = AppColors.accentYellow;
     // Yellow is dark enough to need a dark label in both themes.
-    final activeText = isDark
-        ? AppColors.darkBackground
-        : AppColors.lightOnSurface;
-    final inactiveColor = isDark
-        ? AppColors.darkSurfaceVariant
-        : AppColors.lightSurfaceVariant;
-    final inactiveText = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
+    final activeText  = isDark ? AppColors.darkBackground : AppColors.lightOnSurface;
+    final inactiveColor =
+        isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
+    final inactiveText =
+        isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
 
     return Container(
       padding: const EdgeInsets.all(3),
@@ -76,21 +72,20 @@ class PsSegmentedSelector<T> extends StatelessWidget {
                       horizontal: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: isSelected ? activeColor : Colors.transparent,
+                      color:
+                          isSelected ? activeColor : Colors.transparent,
                       borderRadius: BorderRadius.circular(
-                        AppSpacing.buttonRadius - 3,
-                      ),
+                          AppSpacing.buttonRadius - 3),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (icon != null) ...[
-                          Icon(
-                            icon,
-                            size: 14,
-                            color: isSelected ? activeText : inactiveText,
-                          ),
+                          Icon(icon,
+                              size: 14,
+                              color:
+                                  isSelected ? activeText : inactiveText),
                           const SizedBox(width: 3),
                         ],
                         Flexible(
@@ -109,7 +104,9 @@ class PsSegmentedSelector<T> extends StatelessWidget {
                                 fontWeight: isSelected
                                     ? FontWeight.w700
                                     : FontWeight.w400,
-                                color: isSelected ? activeText : inactiveText,
+                                color: isSelected
+                                    ? activeText
+                                    : inactiveText,
                               ),
                             ),
                           ),

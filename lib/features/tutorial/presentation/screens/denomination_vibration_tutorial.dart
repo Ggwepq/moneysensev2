@@ -9,7 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import '../widgets/ps_tutorial_scaffold.dart';
+import '../widgets/ms_tutorial_scaffold.dart';
 
 // ---------------------------------------------------------------------------
 // Vibration patterns
@@ -41,10 +41,10 @@ class _Denomination {
 }
 
 // Long = 350ms, short = 100ms, inner gap = 120ms, group gap = 300ms
-const int _long = 350;
+const int _long  = 350;
 const int _short = 100;
-const int _igap = 120; // gap between pulses in a group
-const int _ggap = 300; // gap between long and short groups
+const int _igap  = 120; // gap between pulses in a group
+const int _ggap  = 300; // gap between long and short groups
 
 List<int> _coin(int shorts) {
   // 1 long  +  shorts × short
@@ -69,80 +69,22 @@ List<int> _bill(int shorts) {
 }
 
 const _denominations = [
-  _Denomination(
-    label: '1 Peso Coin',
-    isCoin: true,
-    pattern: [],
-    description: '1 long, 1 short',
-  ),
-  _Denomination(
-    label: '5 Peso Coin',
-    isCoin: true,
-    pattern: [],
-    description: '1 long, 2 short',
-  ),
-  _Denomination(
-    label: '10 Peso Coin',
-    isCoin: true,
-    pattern: [],
-    description: '1 long, 3 short',
-  ),
-  _Denomination(
-    label: '20 Peso Coin',
-    isCoin: true,
-    pattern: [],
-    description: '1 long, 4 short',
-  ),
-  _Denomination(
-    label: '20 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '1 short',
-  ),
-  _Denomination(
-    label: '50 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '2 short',
-  ),
-  _Denomination(
-    label: '100 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '3 short',
-  ),
-  _Denomination(
-    label: '200 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '4 short',
-  ),
-  _Denomination(
-    label: '500 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '5 short',
-  ),
-  _Denomination(
-    label: '1000 Peso Bill',
-    isCoin: false,
-    pattern: [],
-    description: '6 short',
-  ),
+  _Denomination(label: '1 Peso Coin',    isCoin: true,  pattern: [],  description: '1 long, 1 short'),
+  _Denomination(label: '5 Peso Coin',    isCoin: true,  pattern: [],  description: '1 long, 2 short'),
+  _Denomination(label: '10 Peso Coin',   isCoin: true,  pattern: [],  description: '1 long, 3 short'),
+  _Denomination(label: '20 Peso Coin',   isCoin: true,  pattern: [],  description: '1 long, 4 short'),
+  _Denomination(label: '20 Peso Bill',   isCoin: false, pattern: [],  description: '1 short'),
+  _Denomination(label: '50 Peso Bill',   isCoin: false, pattern: [],  description: '2 short'),
+  _Denomination(label: '100 Peso Bill',  isCoin: false, pattern: [],  description: '3 short'),
+  _Denomination(label: '200 Peso Bill',  isCoin: false, pattern: [],  description: '4 short'),
+  _Denomination(label: '500 Peso Bill',  isCoin: false, pattern: [],  description: '5 short'),
+  _Denomination(label: '1000 Peso Bill', isCoin: false, pattern: [],  description: '6 short'),
 ];
 
 // Build patterns at runtime (const List<int> can't call functions)
 List<List<int>> _buildPatterns() => [
-  _coin(1),
-  _coin(2),
-  _coin(3),
-  _coin(4),
-  _bill(1),
-  _bill(2),
-  _bill(3),
-  _bill(4),
-  _bill(5),
-  _bill(6),
+  _coin(1), _coin(2), _coin(3), _coin(4),
+  _bill(1), _bill(2), _bill(3), _bill(4), _bill(5), _bill(6),
 ];
 
 // ---------------------------------------------------------------------------
@@ -164,9 +106,7 @@ class _DenominationVibrationTutorialState
 
   Future<void> _play(int index) async {
     // Cancel any in-progress vibration
-    try {
-      await Vibration.cancel();
-    } catch (_) {}
+    try { await Vibration.cancel(); } catch (_) {}
     if (!mounted) return;
 
     setState(() => _playing = index);
@@ -201,9 +141,7 @@ class _DenominationVibrationTutorialState
 
   @override
   void dispose() {
-    try {
-      Vibration.cancel();
-    } catch (_) {}
+    try { Vibration.cancel(); } catch (_) {}
     super.dispose();
   }
 
@@ -212,7 +150,7 @@ class _DenominationVibrationTutorialState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
-    return PsTutorialScaffold(
+    return MsTutorialScaffold(
       title: l10n.tutorialCardDenomTitle,
       badge: l10n.denomTutorialBadge,
       description: l10n.denomTutorialDescription,
@@ -372,13 +310,9 @@ class _PatternList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurface = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
-    final onVariant = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -398,10 +332,7 @@ class _PatternList extends StatelessWidget {
               decoration: BoxDecoration(
                 color: surface,
                 borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
-                border: Border.all(
-                  color: AppColors.accentYellow.withOpacity(0.5),
-                  width: 1.5,
-                ),
+                border: Border.all(color: AppColors.accentYellow.withOpacity(0.5), width: 1.5),
               ),
               child: Row(
                 children: [
@@ -412,41 +343,28 @@ class _PatternList extends StatelessWidget {
                       color: AppColors.accentYellow,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: AppColors.darkBackground,
-                      size: 24,
-                    ),
+                    child: const Icon(Icons.play_arrow_rounded,
+                        color: AppColors.darkBackground, size: 24),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          l10n.denomPlayDemoLabel,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          l10n.denomPlayDemoSub,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: onVariant,
-                          ),
-                        ),
+                        Text(l10n.denomPlayDemoLabel,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                                color: onSurface, fontWeight: FontWeight.w600)),
+                        Text(l10n.denomPlayDemoSub,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: onVariant)),
                       ],
                     ),
                   ),
                   if (playing != null)
                     SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 20, height: 20,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.accentYellow,
-                      ),
+                          strokeWidth: 2, color: AppColors.accentYellow),
                     ),
                 ],
               ),
@@ -457,10 +375,7 @@ class _PatternList extends StatelessWidget {
 
         // Section label
         Padding(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.xs,
-            bottom: AppSpacing.sm,
-          ),
+          padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.sm),
           child: Text(
             l10n.denomPatternsLabel,
             style: TextStyle(
@@ -518,20 +433,16 @@ class _PatternList extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      d.label,
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(
-                                            color: onSurface,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
+                                    Text(d.label,
+                                        style: theme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                                color: onSurface,
+                                                fontWeight: FontWeight.w500)),
                                     const SizedBox(height: 2),
                                     _PatternDots(
-                                      isCoin: d.isCoin,
-                                      description: d.description,
-                                      isPlaying: isPlaying,
-                                    ),
+                                        isCoin: d.isCoin,
+                                        description: d.description,
+                                        isPlaying: isPlaying),
                                   ],
                                 ),
                               ),
@@ -544,9 +455,8 @@ class _PatternList extends StatelessWidget {
                                         width: 32,
                                         height: 32,
                                         child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: AppColors.accentYellow,
-                                        ),
+                                            strokeWidth: 2.5,
+                                            color: AppColors.accentYellow),
                                       )
                                     : GestureDetector(
                                         key: const ValueKey('play'),
@@ -555,12 +465,10 @@ class _PatternList extends StatelessWidget {
                                           width: 32,
                                           height: 32,
                                           decoration: BoxDecoration(
-                                            color: AppColors.accentYellow
-                                                .withOpacity(0.12),
+                                            color: AppColors.accentYellow.withOpacity(0.12),
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: AppColors.accentYellow
-                                                  .withOpacity(0.4),
+                                              color: AppColors.accentYellow.withOpacity(0.4),
                                             ),
                                           ),
                                           child: const Icon(
@@ -577,13 +485,10 @@ class _PatternList extends StatelessWidget {
                       ),
                     ),
                     if (!isLast)
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        indent: AppSpacing.base,
-                        endIndent: AppSpacing.base,
-                        color: border,
-                      ),
+                      Divider(height: 1, thickness: 1,
+                          indent: AppSpacing.base,
+                          endIndent: AppSpacing.base,
+                          color: border),
                   ],
                 );
               }),
@@ -622,22 +527,20 @@ class _PatternDots extends StatelessWidget {
       final isLong = tokens.contains('long');
 
       for (int i = 0; i < count; i++) {
-        dots.add(
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: isLong ? 20 : 8,
-            height: 6,
-            margin: const EdgeInsets.only(right: 4),
-            decoration: BoxDecoration(
-              color: isPlaying
-                  ? AppColors.accentYellow
-                  : (isCoin
-                        ? AppColors.accentYellow.withOpacity(0.5)
-                        : AppColors.accentBlue.withOpacity(0.5)),
-              borderRadius: BorderRadius.circular(3),
-            ),
+        dots.add(AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: isLong ? 20 : 8,
+          height: 6,
+          margin: const EdgeInsets.only(right: 4),
+          decoration: BoxDecoration(
+            color: isPlaying
+                ? AppColors.accentYellow
+                : (isCoin
+                    ? AppColors.accentYellow.withOpacity(0.5)
+                    : AppColors.accentBlue.withOpacity(0.5)),
+            borderRadius: BorderRadius.circular(3),
           ),
-        );
+        ));
       }
     }
 

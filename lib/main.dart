@@ -38,7 +38,7 @@ Future<void> main() async {
         // Seed the cameras list so CameraControllerNotifier can pick a lens.
         availableCamerasProvider.overrideWithValue(cameras),
       ],
-      child: const PesoSenseApp(),
+      child: const MoneySenseApp(),
     ),
   );
 }

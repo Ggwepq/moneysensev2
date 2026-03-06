@@ -21,10 +21,10 @@ enum ScannerState {
 
 /// Represents a detected Philippine currency denomination.
 class DetectionResult {
-  final String denomination; // e.g. "₱1,000"
-  final String type; // "bill" or "coin"
-  final double confidence; // 0.0 – 1.0
-  final String? imagePath; // optional cropped image path
+  final String denomination;  // e.g. "₱1,000"
+  final String type;          // "bill" or "coin"
+  final double confidence;    // 0.0 – 1.0
+  final String? imagePath;    // optional cropped image path
 
   const DetectionResult({
     required this.denomination,

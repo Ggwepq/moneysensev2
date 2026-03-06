@@ -26,22 +26,24 @@ abstract final class TutorialNavigator {
     return switch (route) {
       TutorialRoute.denominationVibration =>
         const DenominationVibrationTutorial(),
-      TutorialRoute.shakeToGoBack => const ShakeTutorial(),
-      TutorialRoute.gesturalNavigation => const GesturalNavigationTutorial(),
+      TutorialRoute.shakeToGoBack =>
+        const ShakeTutorial(),
+      TutorialRoute.gesturalNavigation =>
+        const GesturalNavigationTutorial(),
     };
   }
 
   /// Slide up from bottom — feels like a detail sheet, distinct from the
   /// horizontal slide used for Settings and the main Tutorial screen.
   static PageRoute<void> _slideUp(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0, 1),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 320),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 320),
+      );
 }

@@ -6,25 +6,25 @@ import 'package:vibration/vibration.dart';
 import '../../features/settings/presentation/providers/settings_provider.dart';
 import 'shake_service.dart';
 
-/// Wraps the widget tree and drives [ShakeService] based on the user's
-/// "Shake to Go Back" preference.
+/// Drives [ShakeService] from the widget tree.
 ///
-/// Placement: wrap [MaterialApp] (or the root [HomeShell]) so the navigator
-/// key is accessible.  Provide [navigatorKey] so the widget can call
-/// [NavigatorState.maybePop] from outside the widget tree.
+/// On a confirmed shake:
+///   1. A short haptic pulse (mediumImpact) fires immediately.
+///   2. If the device supports the vibration package a 60 ms motor buzz
+///      follows — gives a tactile "thud" distinct from normal HapticFeedback.
+///   3. The navigator pops the top route (or executes [onShake] if provided).
 ///
-/// Behaviour:
-///   • shakeToGoBack = OFF → service is stopped.  Zero CPU overhead.
-///   • shakeToGoBack = ON  → service runs; a confirmed shake calls
-///     [Navigator.of(context).maybePop()], which pops the top route if
-///     one exists (no-op on the home screen).
-///   • App backgrounded    → service is stopped (WidgetsBindingObserver).
-///   • App foregrounded    → service is restarted if setting is still ON.
-///
-/// Future extensibility: expose the [onShake] callback so callers can do
-/// anything on shake (e.g. force-scan, dismiss a dialog).
+/// Lifecycle:
+///   shakeToGoBack OFF  → accelerometer is fully stopped (zero CPU overhead).
+///   App backgrounded   → accelerometer stopped.
+///   App foregrounded   → accelerometer restarted if setting is ON.
+///   inactive (nav-bar) → do nothing (mirrors camera policy).
 class ShakeDetectorWidget extends ConsumerStatefulWidget {
-  const ShakeDetectorWidget({super.key, required this.child, this.onShake});
+  const ShakeDetectorWidget({
+    super.key,
+    required this.child,
+    this.onShake,
+  });
 
   final Widget child;
 
@@ -39,6 +39,7 @@ class ShakeDetectorWidget extends ConsumerStatefulWidget {
 
 class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
     with WidgetsBindingObserver {
+
   @override
   void initState() {
     super.initState();
@@ -73,7 +74,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
 
   void _sync() {
     final enabled = ref.read(appSettingsProvider).shakeToGoBack;
-    final svc = ref.read(shakeServiceProvider);
+    final svc    = ref.read(shakeServiceProvider);
     if (enabled && !svc.isRunning) {
       svc.start(_handleShake);
     } else if (!enabled && svc.isRunning) {
@@ -114,8 +115,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
   @override
   Widget build(BuildContext context) {
     final enabled = ref.watch(
-      appSettingsProvider.select((s) => s.shakeToGoBack),
-    );
+        appSettingsProvider.select((s) => s.shakeToGoBack));
     final svc = ref.read(shakeServiceProvider);
 
     if (enabled && !svc.isRunning) {

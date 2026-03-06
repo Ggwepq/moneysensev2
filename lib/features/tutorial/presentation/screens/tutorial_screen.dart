@@ -25,17 +25,16 @@ class TutorialScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final onSurface = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
-    final onVariant = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     return _SwipeBackWrapper(
       child: Scaffold(
         backgroundColor: bg,
-        appBar: AppBar(backgroundColor: bg, title: Text(l10n.navTutorial)),
+        appBar: AppBar(
+          backgroundColor: bg,
+          title: Text(l10n.navTutorial),
+        ),
         body: ListView(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.pagePadding,
@@ -45,9 +44,7 @@ class TutorialScreen extends ConsumerWidget {
             // Header
             Padding(
               padding: const EdgeInsets.only(
-                bottom: AppSpacing.xl,
-                top: AppSpacing.sm,
-              ),
+                  bottom: AppSpacing.xl, top: AppSpacing.sm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -85,10 +82,7 @@ class TutorialScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Navigation section ───────────────────────────────────────
-            _SectionLabel(
-              label: l10n.tutorialSectionNavigation,
-              isDark: isDark,
-            ),
+            _SectionLabel(label: l10n.tutorialSectionNavigation, isDark: isDark),
             const SizedBox(height: AppSpacing.sm),
             _TutorialCard(
               route: TutorialRoute.shakeToGoBack,
@@ -126,10 +120,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.xs,
-        bottom: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
       child: Text(
         label,
         style: TextStyle(
@@ -169,12 +160,8 @@ class _TutorialCard extends StatelessWidget {
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurface = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
-    final onVariant = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     return Semantics(
       label: '$title. $description. Button',
@@ -201,12 +188,16 @@ class _TutorialCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     // Light: solid accent fill so the icon (white/dark) reads cleanly.
                     // Dark: subtle tint so the accent icon reads against the dark bg.
-                    color: isDark ? accentColor.withOpacity(0.14) : accentColor,
+                    color: isDark
+                        ? accentColor.withOpacity(0.14)
+                        : accentColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(AppSpacing.tileRadius),
                       bottomLeft: Radius.circular(AppSpacing.tileRadius),
                     ),
-                    border: Border(right: BorderSide(color: border)),
+                    border: Border(
+                      right: BorderSide(color: border),
+                    ),
                   ),
                   child: Center(
                     child: Icon(
@@ -252,11 +243,8 @@ class _TutorialCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.md),
                   child: Center(
-                    child: Icon(
-                      Icons.chevron_right_rounded,
-                      color: onVariant,
-                      size: 22,
-                    ),
+                    child: Icon(Icons.chevron_right_rounded,
+                        color: onVariant, size: 22),
                   ),
                 ),
               ],

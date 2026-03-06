@@ -1,6 +1,7 @@
+/// English (en) string resources for MoneySense.
 abstract final class EnStrings {
   // ── General ───────────────────────────────────────────────────────────────
-  static const String appName = 'PesoSense';
+  static const String appName = 'MoneySense';
 
   // ── Bottom Nav ────────────────────────────────────────────────────────────
   static const String navSettings = 'Settings';
@@ -65,13 +66,13 @@ abstract final class EnStrings {
 
   // Help & Support — subtitles
   static const String checkForUpdatesSubtitle =
-      'See if a newer version of PesoSense is available.';
+      'See if a newer version of MoneySense is available.';
   static const String playOnboardingSubtitle =
       'Replay the first-run setup to change your profile or language.';
   static const String appInformationSubtitle =
       'View version number, licenses, and build details.';
   static const String leaveAFeedbackSubtitle =
-      'Tell us how we can improve PesoSense for you.';
+      'Tell us how we can improve MoneySense for you.';
   static const String termsOfServicesSubtitle =
       'Read the terms and conditions for using this application.';
 
@@ -138,7 +139,7 @@ abstract final class EnStrings {
   // ── Tutorial: Shake to Go Back ────────────────────────────────────────────
   static const String shakeTutorialBadge = 'Navigation';
   static const String shakeTutorialDescription =
-      'Give your phone a quick, intentional shake and PesoSense will '
+      'Give your phone a quick, intentional shake and MoneySense will '
       'navigate back to the previous screen — no button press needed.';
   static const String shakeTutorialStep1 =
       'Enable "Shake to Go Back" in Settings → Navigation.';
@@ -149,8 +150,7 @@ abstract final class EnStrings {
   static const String shakeTutorialStep4 =
       'Feel the vibration confirmation as the screen goes back.';
   static const String shakeTryItTitle = 'Try it now';
-  static const String shakeTryItHint =
-      'Shake your phone with a quick wrist flick';
+  static const String shakeTryItHint = 'Shake your phone with a quick wrist flick';
   static const String shakeDetected = '✓ Shake detected!';
   static const String shakeCountSingle = '1 shake detected';
   static String shakeCountMultiple(int n) => '$n shakes detected';
@@ -158,7 +158,7 @@ abstract final class EnStrings {
   // ── Tutorial: Gestural Navigation ─────────────────────────────────────────
   static const String gestureTutorialBadge = 'Navigation';
   static const String gestureTutorialDescription =
-      'Navigate PesoSense hands-free using swipes and taps on the '
+      'Navigate MoneySense hands-free using swipes and taps on the '
       'scanner screen — perfect when your other hand is holding currency.';
   static const String gestureTutorialStep1 =
       'Enable "Gestural Navigation" in Settings → Navigation.';
@@ -185,7 +185,7 @@ abstract final class EnStrings {
   static const String gestureLabelTap = '⊙ Preview Frozen / Resumed';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
-  static const String onboardingWelcomeTitle = 'Welcome to PesoSense';
+  static const String onboardingWelcomeTitle = 'Welcome to MoneySense';
   static const String onboardingWelcomeSubtitle =
       'Your accessible Philippine currency identifier.';
   static const String onboardingVisionTitle = 'How do you see?';
@@ -197,5 +197,3 @@ abstract final class EnStrings {
   static const String next = 'Next';
   static const String getStarted = 'Get Started';
 }
-
-/// English (en) string resources for PesoSense.

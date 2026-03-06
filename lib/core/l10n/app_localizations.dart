@@ -272,4 +272,3 @@ class AppLocalizations {
   String get getStarted =>
       isTagalog ? TlStrings.getStarted : EnStrings.getStarted;
 }
-

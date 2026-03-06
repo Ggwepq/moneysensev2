@@ -19,8 +19,8 @@ import '../../core/constants/app_spacing.dart';
 /// When disabled, the badge node is still present but marked
 /// [enabled: false] so TalkBack announces "dimmed" and skips it
 /// in linear navigation on most Android versions.
-class PsTimerTile extends StatelessWidget {
-  const PsTimerTile({
+class MsTimerTile extends StatelessWidget {
+  const MsTimerTile({
     super.key,
     required this.title,
     this.subtitle,
@@ -46,13 +46,10 @@ class PsTimerTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final dimmedTitle =
-        (isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface)
-            .withOpacity(enabled ? 1.0 : 0.4);
+    final dimmedTitle = (isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface)
+        .withOpacity(enabled ? 1.0 : 0.4);
     final dimmedSub =
-        (isDark
-                ? AppColors.darkOnSurfaceVariant
-                : AppColors.lightOnSurfaceVariant)
+        (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant)
             .withOpacity(enabled ? 1.0 : 0.4);
 
     // Node 1 label
@@ -91,21 +88,15 @@ class PsTimerTile extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            title,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: dimmedTitle,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          Text(title,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: dimmedTitle,
+                                  fontWeight: FontWeight.w500)),
                           if (subtitle != null) ...[
                             const SizedBox(height: 2),
-                            Text(
-                              subtitle!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: dimmedSub,
-                              ),
-                            ),
+                            Text(subtitle!,
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: dimmedSub)),
                           ],
                         ],
                       ),
@@ -145,18 +136,17 @@ class PsTimerTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: enabled
                         ? (isDark
-                              ? AppColors.darkSurfaceVariant
-                              : AppColors.lightSurfaceVariant)
+                            ? AppColors.darkSurfaceVariant
+                            : AppColors.lightSurfaceVariant)
                         : (isDark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder),
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder),
                     borderRadius: BorderRadius.circular(8),
                     border: enabled
                         ? Border.all(
                             color: isDark
                                 ? AppColors.darkBorder
-                                : AppColors.lightBorder,
-                          )
+                                : AppColors.lightBorder)
                         : null,
                   ),
                   child: Center(
@@ -165,11 +155,11 @@ class PsTimerTile extends StatelessWidget {
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: enabled
                             ? (isDark
-                                  ? AppColors.darkOnSurface
-                                  : AppColors.lightOnSurface)
+                                ? AppColors.darkOnSurface
+                                : AppColors.lightOnSurface)
                             : (isDark
-                                  ? AppColors.darkOnSurfaceVariant
-                                  : AppColors.lightOnSurfaceVariant),
+                                ? AppColors.darkOnSurfaceVariant
+                                : AppColors.lightOnSurfaceVariant),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -187,11 +177,7 @@ class PsTimerTile extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (_) => _TimerPickerDialog(
-        current: value,
-        min: min,
-        max: max,
-        onConfirm: onValueChanged,
-      ),
+          current: value, min: min, max: max, onConfirm: onValueChanged),
     );
   }
 }
@@ -230,10 +216,8 @@ class _TimerPickerDialogState extends State<_TimerPickerDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '$_value seconds',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('$_value seconds',
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Semantics(
             label: 'Timer duration $_value seconds',

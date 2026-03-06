@@ -1,4 +1,4 @@
-# PesoSense — Codebase Documentation
+# MoneySense — Codebase Documentation
 
 > **Version:** 1.0.0+1  
 > **Platform:** Flutter (Android-first, portrait-only)  
@@ -28,7 +28,7 @@
 
 ## 1. Project Goal
 
-PesoSense is a **bilingual, accessibility-first** Flutter application that helps visually impaired Filipino users identify Philippine peso denominations through the camera. The primary users are people with **low vision**, **partial blindness**, or **full blindness** — categories selected during onboarding that inform how the app behaves.
+MoneySense is a **bilingual, accessibility-first** Flutter application that helps visually impaired Filipino users identify Philippine peso denominations through the camera. The primary users are people with **low vision**, **partial blindness**, or **full blindness** — categories selected during onboarding that inform how the app behaves.
 
 Every design decision flows from three non-negotiable requirements:
 
@@ -42,7 +42,7 @@ Every design decision flows from three non-negotiable requirements:
 
 ## 2. Architecture Overview
 
-PesoSense uses **feature-first Clean Architecture** layered with **Riverpod** for reactive state management.
+MoneySense uses **feature-first Clean Architecture** layered with **Riverpod** for reactive state management.
 
 ```
 lib/
@@ -77,7 +77,7 @@ feature/
 
 ### Feature-first over layer-first
 
-A layer-first layout (`screens/`, `providers/`, `models/` at the top level) forces developers to jump between distant folders for every feature change. In PesoSense, where each feature has distinct hardware requirements (camera, accelerometer, vibration), a **feature-first slice** keeps all related code collocated. Adding or removing a feature is as simple as adding or removing one folder.
+A layer-first layout (`screens/`, `providers/`, `models/` at the top level) forces developers to jump between distant folders for every feature change. In MoneySense, where each feature has distinct hardware requirements (camera, accelerometer, vibration), a **feature-first slice** keeps all related code collocated. Adding or removing a feature is as simple as adding or removing one folder.
 
 ### Clean Architecture layers within each feature
 
@@ -89,7 +89,7 @@ The three-layer split (data → domain → presentation) is not academic ceremon
 
 ### Riverpod over BLoC / Provider / setState
 
-Riverpod was chosen over the alternatives for reasons that are specific to PesoSense's needs:
+Riverpod was chosen over the alternatives for reasons that are specific to MoneySense's needs:
 
 | Concern | Why Riverpod wins here |
 |---|---|
@@ -205,18 +205,18 @@ lib/
 │           │   ├── shake_tutorial.dart
 │           │   └── gestural_navigation_tutorial.dart
 │           └── widgets/
-│               └── ps_tutorial_scaffold.dart
+│               └── ms_tutorial_scaffold.dart
 │
 └── shared/
     └── widgets/
-        ├── ps_action_tile.dart
-        ├── ps_bottom_nav.dart
-        ├── ps_section_header.dart
-        ├── ps_segmented_selector.dart
-        ├── ps_settings_card.dart
-        ├── ps_slider_tile.dart
-        ├── ps_timer_tile.dart
-        └── ps_toggle_tile.dart
+        ├── ms_action_tile.dart
+        ├── ms_bottom_nav.dart
+        ├── ms_section_header.dart
+        ├── ms_segmented_selector.dart
+        ├── ms_settings_card.dart
+        ├── ms_slider_tile.dart
+        ├── ms_timer_tile.dart
+        └── ms_toggle_tile.dart
 ```
 
 ---
@@ -242,7 +242,7 @@ The `app/` layer is the composition root. It wires the root widget, the navigati
 
 ---
 
-### `app/app.dart` — `PesoSenseApp`
+### `app/app.dart` — `MoneySenseApp`
 
 **Purpose:** Root `ConsumerWidget` that owns the `MaterialApp`.
 
@@ -263,7 +263,7 @@ The `Builder` widget is required because `MediaQuery.of(context)` must resolve f
 
 **Responsibilities:**
 - Renders `ScannerScreen` as the persistent body (it is never removed from the tree)
-- Renders `PsBottomNav` and handles its three tap actions
+- Renders `MsBottomNav` and handles its three tap actions
 - Pushes `SettingsScreen` with a **left-slide** transition (entering from the left mirrors the right-swipe gesture that triggered it)
 - Pushes `TutorialScreen` with a **right-slide** transition (entering from the right mirrors the left-swipe gesture)
 - Drives camera open/close via three coordinated provider writes on the middle button tap
@@ -564,10 +564,10 @@ The scanner is the core feature of the app. It manages camera hardware, the scan
 
 | Section | Widgets used |
 |---|---|
-| General | `_ThemeTile` (custom), `_LanguageTile` (custom), `PsSliderTile` |
-| Scanning | `PsToggleTile` (×3, one with help button → denomination tutorial) |
-| Navigation | `PsToggleTile` (×3, two with help buttons → shake / gestural tutorials), `PsTimerTile` |
-| Help & Support | `PsActionTile` (×5) |
+| General | `_ThemeTile` (custom), `_LanguageTile` (custom), `MsSliderTile` |
+| Scanning | `MsToggleTile` (×3, one with help button → denomination tutorial) |
+| Navigation | `MsToggleTile` (×3, two with help buttons → shake / gestural tutorials), `MsTimerTile` |
+| Help & Support | `MsActionTile` (×5) |
 
 **Help buttons:** The three `showHelpButton: true` tiles open full interactive tutorials via `TutorialNavigator.push(context, TutorialRoute.*)`. The old `AlertDialog`-based `_showHelp()` has been removed.
 
@@ -666,7 +666,7 @@ The scanner is the core feature of the app. It manages camera hardware, the scan
 
 ---
 
-#### `tutorial/presentation/widgets/ps_tutorial_scaffold.dart` — `PsTutorialScaffold`
+#### `tutorial/presentation/widgets/ms_tutorial_scaffold.dart` — `MsTutorialScaffold`
 
 **Purpose:** Shared layout scaffold for all feature tutorials.
 
@@ -696,7 +696,7 @@ All shared widgets follow these invariants:
 
 ---
 
-### `ps_action_tile.dart` — `PsActionTile`
+### `ms_action_tile.dart` — `MsActionTile`
 
 **Purpose:** Tappable settings row with a leading icon container, title/subtitle, and trailing chevron.
 
@@ -706,7 +706,7 @@ All shared widgets follow these invariants:
 
 ---
 
-### `ps_bottom_nav.dart` — `PsBottomNav`
+### `ms_bottom_nav.dart` — `MsBottomNav`
 
 **Purpose:** Three-button navigation bar at the bottom of the home screen.
 
@@ -718,15 +718,15 @@ All shared widgets follow these invariants:
 
 ---
 
-### `ps_section_header.dart` — `PsSectionHeader`
+### `ms_section_header.dart` — `MsSectionHeader`
 
-**Purpose:** Small uppercased category label placed above a `PsSettingsCard`.
+**Purpose:** Small uppercased category label placed above a `MsSettingsCard`.
 
 **Style:** 12sp, weight 600, letter-spacing 0.8, `onSurfaceVariant` colour — deliberately subdued so it doesn't compete with tile content.
 
 ---
 
-### `ps_segmented_selector.dart` — `PsSegmentedSelector<T>`
+### `ms_segmented_selector.dart` — `MsSegmentedSelector<T>`
 
 **Purpose:** Pill-style multi-option selector (Theme: System/Light/Dark, Language: English/Tagalog).
 
@@ -738,7 +738,7 @@ All shared widgets follow these invariants:
 
 ---
 
-### `ps_settings_card.dart` — `PsSettingsCard`
+### `ms_settings_card.dart` — `MsSettingsCard`
 
 **Purpose:** Rounded container that groups related settings tiles with dividers.
 
@@ -748,7 +748,7 @@ Dividers are wrapped in `ExcludeSemantics`.
 
 ---
 
-### `ps_toggle_tile.dart` — `PsToggleTile`
+### `ms_toggle_tile.dart` — `MsToggleTile`
 
 **Purpose:** Settings row with a switch toggle and an optional help button.
 
@@ -761,20 +761,20 @@ Dividers are wrapped in `ExcludeSemantics`.
 
 ---
 
-### `ps_timer_tile.dart` — `PsTimerTile`
+### `ms_timer_tile.dart` — `MsTimerTile`
 
 **Purpose:** Toggle tile combined with a tappable duration badge (used for "Go Back Timer on Result").
 
 **TalkBack structure — two independent nodes:**
 
-1. Tile node (same pattern as `PsToggleTile`, `container: true`)
+1. Tile node (same pattern as `MsToggleTile`, `container: true`)
 2. Badge node — `Semantics(label: 'Timer value: N seconds. Tap to change.', button: enabled, container: true, excludeSemantics: true)` — only focusable when enabled
 
 The badge taps open a bottom-sheet picker for selecting the timer duration in seconds.
 
 ---
 
-### `ps_slider_tile.dart` — `PsSliderTile`
+### `ms_slider_tile.dart` — `MsSliderTile`
 
 **Purpose:** Settings row with a labelled slider and ± step buttons for coarser adjustment.
 
@@ -835,7 +835,7 @@ final shakeEnabled = ref.watch(
 
 ## 11. Navigation Model
 
-PesoSense uses a **hybrid navigation model**: imperative `Navigator.push()` for the main screens and a static helper (`TutorialNavigator`) for tutorials.
+MoneySense uses a **hybrid navigation model**: imperative `Navigator.push()` for the main screens and a static helper (`TutorialNavigator`) for tutorials.
 
 ### Slide direction convention
 
@@ -920,9 +920,9 @@ The tutorial system is designed to be **zero-boilerplate extensible**. Adding a 
 2. Add a `case` in `TutorialNavigator._buildScreen()` returning the new widget
 3. Add a `_TutorialCard` to `tutorial_screen.dart` pointing to the new route
 
-Everything else — animation, back gesture, scaffold, badge, steps, hero zone — is inherited from `PsTutorialScaffold`.
+Everything else — animation, back gesture, scaffold, badge, steps, hero zone — is inherited from `MsTutorialScaffold`.
 
-### `PsTutorialScaffold` parameters
+### `MsTutorialScaffold` parameters
 
 | Parameter | Type | Purpose |
 |---|---|---|
@@ -951,7 +951,7 @@ The interactive zone receives no props from the scaffold — it is fully self-co
 1. Add the field to `AppSettings` with a default value
 2. Add a `copyWith` parameter for it in `AppSettings.copyWith()`
 3. Add a mutator method to `AppSettingsNotifier`
-4. Add a `PsToggleTile` or other tile widget in the relevant section of `settings_screen.dart`
+4. Add a `MsToggleTile` or other tile widget in the relevant section of `settings_screen.dart`
 5. If it needs a tutorial, add a `TutorialRoute` value and wire it (see Tutorial System above)
 
 ### Adding a new feature screen
@@ -965,8 +965,8 @@ The interactive zone receives no props from the scaffold — it is fully self-co
 
 ### Adding a new shared widget
 
-1. Create `lib/shared/widgets/ps_<name>.dart`
-2. Name the class `Ps<Name>`
+1. Create `lib/shared/widgets/ms_<name>.dart`
+2. Name the class `Ms<Name>`
 3. Accept only plain Dart values (no `WidgetRef`, no providers)
 4. Add explicit `Semantics` nodes — do not rely on Flutter's automatic merging
 5. Adapt to theme brightness via `Theme.of(context).brightness`

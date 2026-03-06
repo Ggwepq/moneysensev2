@@ -6,11 +6,11 @@ import '../../features/scanner/presentation/screens/scanner_screen.dart';
 import '../../features/settings/presentation/providers/settings_provider.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/tutorial/presentation/screens/tutorial_screen.dart';
-import '../../shared/widgets/ps_bottom_nav.dart';
+import '../../shared/widgets/ms_bottom_nav.dart';
 
 /// Root shell — owns the single [Scaffold].
 ///
-/// The scanner body fills all space above [PsBottomNav].
+/// The scanner body fills all space above [MsBottomNav].
 /// Settings and Tutorial are pushed as separate routes so:
 ///   • Bottom nav absent on all non-home screens.
 ///   • Back button and swipe-back work natively on those screens.
@@ -29,7 +29,7 @@ class HomeShell extends ConsumerWidget {
           if (index == 2) _pushTutorial(context);
         },
       ),
-      bottomNavigationBar: PsBottomNav(
+      bottomNavigationBar: MsBottomNav(
         currentIndex: 1,
         isCameraOpen: cameraOpen,
         onTap: (index) {

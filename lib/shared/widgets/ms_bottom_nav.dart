@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// Bottom navigation bar for PesoSense.
+/// Bottom navigation bar for MoneySense.
 ///
 /// Three equal-width buttons that together span the full screen width
 /// (minus horizontal page padding). The layout matches the design:
@@ -15,8 +15,9 @@ import '../../core/constants/app_spacing.dart';
 ///
 /// Colors (both light & dark, matching design):
 ///   [⚙] and [?] → yellow background, dark icon
-class PsBottomNav extends StatelessWidget {
-  const PsBottomNav({
+///   [▶]         → blue background,  white icon
+class MsBottomNav extends StatelessWidget {
+  const MsBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -32,7 +33,7 @@ class PsBottomNav extends StatelessWidget {
 
   // Height of each button. Width is driven by Expanded so on most phones
   // each button ends up close to square (screen_width - 2*padding - 2*gaps) / 3.
-  static const double _buttonHeight = 100.0;
+  static const double _buttonHeight = 70.0;
 
   @override
   Widget build(BuildContext context) {

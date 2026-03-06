@@ -1,4 +1,4 @@
-# MoneySense
+# MoneySense 🇵🇭
 
 **An accessible, bilingual Philippine currency identifier for visually impaired users.**
 
@@ -73,14 +73,14 @@ lib/
 │
 ├── shared/
 │   └── widgets/
-│       ├── ps_bottom_nav.dart         # 3-button bottom bar
-│       ├── ps_settings_card.dart      # Rounded tile group container
-│       ├── ps_section_header.dart     # Section label
-│       ├── ps_toggle_tile.dart        # Switch row + optional help btn
-│       ├── ps_timer_tile.dart         # Switch + numeric counter
-│       ├── ps_action_tile.dart        # Tappable icon row
-│       ├── ps_segmented_selector.dart # Pill-style 2–3 option selector
-│       └── ps_slider_tile.dart        # Slider row with ± buttons
+│       ├── ms_bottom_nav.dart         # 3-button bottom bar
+│       ├── ms_settings_card.dart      # Rounded tile group container
+│       ├── ms_section_header.dart     # Section label
+│       ├── ms_toggle_tile.dart        # Switch row + optional help btn
+│       ├── ms_timer_tile.dart         # Switch + numeric counter
+│       ├── ms_action_tile.dart        # Tappable icon row
+│       ├── ms_segmented_selector.dart # Pill-style 2–3 option selector
+│       └── ms_slider_tile.dart        # Slider row with ± buttons
 │
 └── features/
     ├── onboarding/
@@ -157,10 +157,10 @@ flutter build apk --release
 ## Contributing
 
 1. Each new feature belongs in `lib/features/<feature_name>/`
-2. New shared UI components go in `lib/shared/widgets/` with the `Ps` prefix
+2. New shared UI components go in `lib/shared/widgets/` with the `Ms` prefix
 3. All strings must be added to both `en.dart` and `tl.dart`
 4. New settings fields must be added to `AppSettings` + `AppSettingsNotifier`
-5. Follow Material 3 patterns; custom components are named `Ps*`
+5. Follow Material 3 patterns; custom components are named `Ms*`
 
 ---
 
@@ -168,7 +168,7 @@ flutter build apk --release
 
 | Prefix | Meaning |
 |---|---|
-| `Ps` | MoneySense custom widget (e.g. `PsToggleTile`) |
+| `Ms` | MoneySense custom widget (e.g. `MsToggleTile`) |
 | `App` | App-wide constant/theme (e.g. `AppColors`) |
 | `*Screen` | Full-page screen widget |
 | `*Provider` | Riverpod provider file |

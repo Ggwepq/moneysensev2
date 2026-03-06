@@ -6,7 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import '../widgets/ps_tutorial_scaffold.dart';
+import '../widgets/ms_tutorial_scaffold.dart';
 
 class GesturalNavigationTutorial extends ConsumerStatefulWidget {
   const GesturalNavigationTutorial({super.key});
@@ -33,7 +33,7 @@ class _GesturalNavigationTutorialState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
-    return PsTutorialScaffold(
+    return MsTutorialScaffold(
       title: l10n.tutorialCardGestureTitle,
       badge: l10n.gestureTutorialBadge,
       description: l10n.gestureTutorialDescription,
@@ -64,40 +64,28 @@ enum _GestureResult { swipeRight, swipeLeft, swipeUp, doubleTap }
 extension _GestureResultExt on _GestureResult {
   String label(AppLocalizations l10n) {
     switch (this) {
-      case _GestureResult.swipeRight:
-        return l10n.gestureLabelRight;
-      case _GestureResult.swipeLeft:
-        return l10n.gestureLabelLeft;
-      case _GestureResult.swipeUp:
-        return l10n.gestureLabelUp;
-      case _GestureResult.doubleTap:
-        return l10n.gestureLabelTap;
+      case _GestureResult.swipeRight: return l10n.gestureLabelRight;
+      case _GestureResult.swipeLeft:  return l10n.gestureLabelLeft;
+      case _GestureResult.swipeUp:    return l10n.gestureLabelUp;
+      case _GestureResult.doubleTap:  return l10n.gestureLabelTap;
     }
   }
 
   Color get color {
     switch (this) {
-      case _GestureResult.swipeRight:
-        return AppColors.accentYellow;
-      case _GestureResult.swipeLeft:
-        return AppColors.accentBlue;
-      case _GestureResult.swipeUp:
-        return const Color(0xFF4CAF50);
-      case _GestureResult.doubleTap:
-        return const Color(0xFFFF6B35);
+      case _GestureResult.swipeRight: return AppColors.accentYellow;
+      case _GestureResult.swipeLeft:  return AppColors.accentBlue;
+      case _GestureResult.swipeUp:    return const Color(0xFF4CAF50);
+      case _GestureResult.doubleTap:  return const Color(0xFFFF6B35);
     }
   }
 
   IconData get icon {
     switch (this) {
-      case _GestureResult.swipeRight:
-        return Icons.settings_rounded;
-      case _GestureResult.swipeLeft:
-        return Icons.help_outline_rounded;
-      case _GestureResult.swipeUp:
-        return Icons.flashlight_on_rounded;
-      case _GestureResult.doubleTap:
-        return Icons.touch_app_rounded;
+      case _GestureResult.swipeRight: return Icons.settings_rounded;
+      case _GestureResult.swipeLeft:  return Icons.help_outline_rounded;
+      case _GestureResult.swipeUp:    return Icons.flashlight_on_rounded;
+      case _GestureResult.doubleTap:  return Icons.touch_app_rounded;
     }
   }
 }
@@ -184,9 +172,8 @@ class _PhoneWithGesture extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phoneColor = isDark
-        ? AppColors.darkSurfaceVariant
-        : AppColors.lightSurfaceVariant;
+    final phoneColor =
+        isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     final offset = Tween<Offset>(
@@ -250,7 +237,10 @@ class _PhoneWithGesture extends StatelessWidget {
               );
             }
             return Transform.translate(
-              offset: Offset(offset.value.dx * 60, offset.value.dy * 60),
+              offset: Offset(
+                offset.value.dx * 60,
+                offset.value.dy * 60,
+              ),
               child: Opacity(
                 opacity: (1.0 - animController.value).clamp(0.0, 1.0),
                 child: _GestureArrow(result: result),
@@ -264,27 +254,19 @@ class _PhoneWithGesture extends StatelessWidget {
 
   String _screenLabel(_GestureResult r) {
     switch (r) {
-      case _GestureResult.swipeRight:
-        return 'Settings';
-      case _GestureResult.swipeLeft:
-        return 'Tutorial';
-      case _GestureResult.swipeUp:
-        return 'Flash';
-      case _GestureResult.doubleTap:
-        return 'Scan';
+      case _GestureResult.swipeRight: return 'Settings';
+      case _GestureResult.swipeLeft:  return 'Tutorial';
+      case _GestureResult.swipeUp:    return 'Flash';
+      case _GestureResult.doubleTap:  return 'Scan';
     }
   }
 
   Offset _arrowEndOffset(_GestureResult r) {
     switch (r) {
-      case _GestureResult.swipeRight:
-        return const Offset(0.8, 0);
-      case _GestureResult.swipeLeft:
-        return const Offset(-0.8, 0);
-      case _GestureResult.swipeUp:
-        return const Offset(0, -0.8);
-      case _GestureResult.doubleTap:
-        return Offset.zero; // stays in place, just scales
+      case _GestureResult.swipeRight: return const Offset(0.8, 0);
+      case _GestureResult.swipeLeft:  return const Offset(-0.8, 0);
+      case _GestureResult.swipeUp:    return const Offset(0, -0.8);
+      case _GestureResult.doubleTap:  return Offset.zero; // stays in place, just scales
     }
   }
 }
@@ -297,9 +279,9 @@ class _GestureArrow extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconData = switch (result) {
       _GestureResult.swipeRight => Icons.arrow_forward_rounded,
-      _GestureResult.swipeLeft => Icons.arrow_back_rounded,
-      _GestureResult.swipeUp => Icons.arrow_upward_rounded,
-      _GestureResult.doubleTap => Icons.touch_app_rounded,
+      _GestureResult.swipeLeft  => Icons.arrow_back_rounded,
+      _GestureResult.swipeUp    => Icons.arrow_upward_rounded,
+      _GestureResult.doubleTap  => Icons.touch_app_rounded,
     };
 
     return Container(
@@ -338,13 +320,9 @@ class _GesturePlayground extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurface = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
-    final onVariant = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     final active = lastResult != null;
     final accent = lastResult?.color ?? AppColors.accentYellow;
@@ -361,9 +339,9 @@ class _GesturePlayground extends StatelessWidget {
             final ay = v.dy.abs();
             if (ax < _minVelocity && ay < _minVelocity) return;
             if (ax >= ay) {
-              onGesture(
-                v.dx > 0 ? _GestureResult.swipeRight : _GestureResult.swipeLeft,
-              );
+              onGesture(v.dx > 0
+                  ? _GestureResult.swipeRight
+                  : _GestureResult.swipeLeft);
             } else if (v.dy < 0) {
               onGesture(_GestureResult.swipeUp);
             }
@@ -387,18 +365,12 @@ class _GesturePlayground extends StatelessWidget {
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: active
-                      ? Icon(
-                          lastResult!.icon,
+                      ? Icon(lastResult!.icon,
                           key: ValueKey(lastResult),
-                          color: accent,
-                          size: 32,
-                        )
-                      : Icon(
-                          Icons.swipe_rounded,
+                          color: accent, size: 32)
+                      : Icon(Icons.swipe_rounded,
                           key: const ValueKey('idle'),
-                          color: onVariant,
-                          size: 32,
-                        ),
+                          color: onVariant, size: 32),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AnimatedSwitcher(
@@ -511,21 +483,13 @@ class _LegendRow extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: AppSpacing.md),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: onSurface,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(label,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: onSurface, fontWeight: FontWeight.w500)),
           const Spacer(),
-          Text(
-            action,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(action,
+              style: theme.textTheme.bodySmall?.copyWith(color: color,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );

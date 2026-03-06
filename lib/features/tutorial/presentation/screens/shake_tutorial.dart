@@ -9,7 +9,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/shake_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import '../widgets/ps_tutorial_scaffold.dart';
+import '../widgets/ms_tutorial_scaffold.dart';
 
 class ShakeTutorial extends ConsumerStatefulWidget {
   const ShakeTutorial({super.key});
@@ -20,7 +20,7 @@ class ShakeTutorial extends ConsumerStatefulWidget {
 
 class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
   int _shakeCount = 0;
-  bool _justShook = false; // brief highlight flag
+  bool _justShook  = false; // brief highlight flag
 
   @override
   void initState() {
@@ -60,7 +60,7 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
-    return PsTutorialScaffold(
+    return MsTutorialScaffold(
       title: l10n.tutorialCardShakeTitle,
       badge: l10n.shakeTutorialBadge,
       description: l10n.shakeTutorialDescription,
@@ -107,10 +107,9 @@ class _ShakeHeroState extends State<_ShakeHero>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
-    _float = Tween(
-      begin: -6.0,
-      end: 6.0,
-    ).animate(CurvedAnimation(parent: _idle, curve: Curves.easeInOut));
+    _float = Tween(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _idle, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -151,15 +150,9 @@ class _PhoneGraphic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phoneColor = isDark
-        ? AppColors.darkSurfaceVariant
-        : AppColors.lightSurfaceVariant;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final accent = glowing
-        ? AppColors.accentBlue
-        : (isDark
-              ? AppColors.darkOnSurfaceVariant
-              : AppColors.lightOnSurfaceVariant);
+    final phoneColor = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
+    final border     = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final accent     = glowing ? AppColors.accentBlue : (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant);
 
     return Stack(
       alignment: Alignment.center,
@@ -214,20 +207,20 @@ class _PhoneGraphic extends StatelessWidget {
         ),
         // Motion lines
         if (!glowing) ...[
-          Positioned(left: -18, top: 44, child: _MotionLine(isDark: isDark)),
           Positioned(
-            right: -18,
-            top: 44,
+            left: -18, top: 44,
+            child: _MotionLine(isDark: isDark),
+          ),
+          Positioned(
+            right: -18, top: 44,
             child: _MotionLine(isDark: isDark, flip: true),
           ),
           Positioned(
-            left: -14,
-            top: 70,
+            left: -14, top: 70,
             child: _MotionLine(isDark: isDark, short: true),
           ),
           Positioned(
-            right: -14,
-            top: 70,
+            right: -14, top: 70,
             child: _MotionLine(isDark: isDark, flip: true, short: true),
           ),
         ],
@@ -248,11 +241,8 @@ class _MotionLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        (isDark
-                ? AppColors.darkOnSurfaceVariant
-                : AppColors.lightOnSurfaceVariant)
-            .withOpacity(0.35);
+    final color = (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant)
+        .withOpacity(0.35);
     return Transform.scale(
       scaleX: flip ? -1 : 1,
       child: Container(
@@ -288,13 +278,9 @@ class _ShakeDemo extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurface = isDark
-        ? AppColors.darkOnSurface
-        : AppColors.lightOnSurface;
-    final onVariant = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),

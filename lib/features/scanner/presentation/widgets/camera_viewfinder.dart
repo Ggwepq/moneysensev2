@@ -62,8 +62,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
   }
 
   void _updateAnimation() {
-    final shouldPulse =
-        widget.scannerState == ScannerState.scanning ||
+    final shouldPulse = widget.scannerState == ScannerState.scanning ||
         widget.scannerState == ScannerState.processing;
     if (shouldPulse) {
       _pulseController.repeat(reverse: true);
@@ -156,7 +155,9 @@ class _CameraViewfinderState extends State<CameraViewfinder>
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.sm,
+                  ),
                   color: Colors.black.withOpacity(0.6),
                   child: Text(
                     widget.statusLabel!,

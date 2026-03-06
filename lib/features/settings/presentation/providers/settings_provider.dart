@@ -8,9 +8,8 @@ import '../../domain/entities/app_settings.dart';
 /// Global settings state.
 ///
 /// TODO: Wire up [SharedPreferences] persistence in the notifier.
-final appSettingsProvider = NotifierProvider<AppSettingsNotifier, AppSettings>(
-  AppSettingsNotifier.new,
-);
+final appSettingsProvider =
+    NotifierProvider<AppSettingsNotifier, AppSettings>(AppSettingsNotifier.new);
 
 // ---------------------------------------------------------------------------
 // Notifier
@@ -29,7 +28,8 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       state = state.copyWith(themeMode: mode);
 
   // ── Language ───────────────────────────────────────────────────────────
-  void setLanguage(AppLanguage lang) => state = state.copyWith(language: lang);
+  void setLanguage(AppLanguage lang) =>
+      state = state.copyWith(language: lang);
 
   // ── Font ───────────────────────────────────────────────────────────────
   void setFontScale(double scale) =>

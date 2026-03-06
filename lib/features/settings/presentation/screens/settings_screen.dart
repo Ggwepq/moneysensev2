@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
-import '../../../../shared/widgets/ps_action_tile.dart';
-import '../../../../shared/widgets/ps_section_header.dart';
-import '../../../../shared/widgets/ps_segmented_selector.dart';
-import '../../../../shared/widgets/ps_settings_card.dart';
-import '../../../../shared/widgets/ps_slider_tile.dart';
-import '../../../../shared/widgets/ps_timer_tile.dart';
-import '../../../../shared/widgets/ps_toggle_tile.dart';
+import '../../../../shared/widgets/ms_action_tile.dart';
+import '../../../../shared/widgets/ms_section_header.dart';
+import '../../../../shared/widgets/ms_segmented_selector.dart';
+import '../../../../shared/widgets/ms_settings_card.dart';
+import '../../../../shared/widgets/ms_slider_tile.dart';
+import '../../../../shared/widgets/ms_timer_tile.dart';
+import '../../../../shared/widgets/ms_toggle_tile.dart';
 import '../../../tutorial/domain/tutorial_route.dart';
 import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../domain/entities/app_settings.dart';
@@ -26,201 +26,175 @@ class SettingsScreen extends ConsumerWidget {
 
     return _SwipeBackWrapper(
       child: Scaffold(
-        appBar: AppBar(
-          // Flutter automatically inserts a back button and wires it to
-          // Navigator.pop when this screen is pushed onto the stack.
-          // No manual leading / onPressed needed.
-          title: Text(l10n.settings),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.help_outline_rounded),
-              tooltip: 'Help',
-              onPressed: () {
-                /* TODO: show global help */
-              },
-            ),
-          ],
-        ),
-        body: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.pagePadding,
-            vertical: AppSpacing.base,
+      appBar: AppBar(
+        // Flutter automatically inserts a back button and wires it to
+        // Navigator.pop when this screen is pushed onto the stack.
+        // No manual leading / onPressed needed.
+        title: Text(l10n.settings),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded),
+            tooltip: 'Help',
+            onPressed: () {/* TODO: show global help */},
           ),
-          children: [
-            // ── General ────────────────────────────────────────────────────
-            PsSectionHeader(title: l10n.sectionGeneral),
-            PsSettingsCard(
-              children: [
-                // Theme selector
-                _ThemeTile(
-                  label: l10n.theme,
-                  subtitle: l10n.themeSubtitle,
-                  themeMode: settings.themeMode,
-                  l10n: l10n,
-                  onChanged: notifier.setThemeMode,
-                ),
-                // Language selector
-                _LanguageTile(
-                  label: l10n.language,
-                  subtitle: l10n.languageSubtitle,
-                  language: settings.language,
-                  l10n: l10n,
-                  onChanged: notifier.setLanguage,
-                ),
-                // Font Size slider
-                PsSliderTile(
-                  title: l10n.fontSize,
-                  subtitle: l10n.fontSizeSubtitle,
-                  value: settings.fontScale,
-                  min: 0.8,
-                  max: 2.0,
-                  onChanged: notifier.setFontScale,
-                  displayLabel:
-                      '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
-                ),
-              ],
-            ),
-
-            // ── Scanning ───────────────────────────────────────────────────
-            PsSectionHeader(title: l10n.sectionScanning),
-            PsSettingsCard(
-              children: [
-                PsToggleTile(
-                  title: l10n.useFrontCamera,
-                  subtitle: l10n.useFrontCameraSubtitle,
-                  value: settings.useFrontCamera,
-                  onChanged: notifier.toggleFrontCamera,
-                ),
-                PsToggleTile(
-                  title: l10n.useFlashlight,
-                  subtitle: l10n.useFlashlightSubtitle,
-                  value: settings.useFlashlight,
-                  onChanged: notifier.toggleFlashlight,
-                ),
-                PsToggleTile(
-                  title: l10n.denominationVibration,
-                  subtitle: l10n.denominationVibrationSubtitle,
-                  value: settings.denominationVibration,
-                  onChanged: notifier.toggleDenominationVibration,
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.denominationVibration,
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Navigation ─────────────────────────────────────────────────
-            PsSectionHeader(title: l10n.sectionNavigation),
-            PsSettingsCard(
-              children: [
-                PsToggleTile(
-                  title: l10n.shakeToGoBack,
-                  subtitle: l10n.shakeToGoBackSubtitle,
-                  value: settings.shakeToGoBack,
-                  onChanged: notifier.toggleShakeToGoBack,
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.shakeToGoBack,
-                  ),
-                ),
-                PsTimerTile(
-                  title: l10n.goBackTimerOnResult,
-                  subtitle: l10n.goBackTimerSubtitle,
-                  enabled: settings.goBackTimerSeconds > 0,
-                  value: settings.goBackTimerSeconds > 0
-                      ? settings.goBackTimerSeconds
-                      : 20,
-                  onToggle: notifier.toggleGoBackTimer,
-                  onValueChanged: notifier.setGoBackTimer,
-                ),
-                PsToggleTile(
-                  title: l10n.gesturalNavigation,
-                  subtitle: l10n.gesturalNavigationSubtitle,
-                  value: settings.gesturalNavigation,
-                  onChanged: notifier.toggleGesturalNavigation,
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.gesturalNavigation,
-                  ),
-                ),
-                PsToggleTile(
-                  title: l10n.inertialNavigation,
-                  subtitle: l10n.inertialNavigationSubtitle,
-                  value: settings.inertialNavigation,
-                  onChanged: notifier.toggleInertialNavigation,
-                  showHelpButton: true,
-                  onHelpTap: () => showDialog<void>(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text(l10n.inertialNavigation),
-                      content: Text(l10n.inertialDialogBody),
-                      actions: [
-                        FilledButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.gotIt),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Help & Support ─────────────────────────────────────────────
-            PsSectionHeader(title: l10n.sectionHelpSupport),
-            PsSettingsCard(
-              children: [
-                PsActionTile(
-                  title: l10n.checkForUpdates,
-                  subtitle: l10n.checkForUpdatesSubtitle,
-                  icon: Icons.refresh_rounded,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                PsActionTile(
-                  title: l10n.playOnboardingSetup,
-                  subtitle: l10n.playOnboardingSubtitle,
-                  icon: Icons.play_arrow_rounded,
-                  onTap: () {
-                    /* TODO: navigate to onboarding */
-                  },
-                ),
-                PsActionTile(
-                  title: l10n.appInformation,
-                  subtitle: l10n.appInformationSubtitle,
-                  icon: Icons.info_outline_rounded,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                PsActionTile(
-                  title: l10n.leaveAFeedback,
-                  subtitle: l10n.leaveAFeedbackSubtitle,
-                  icon: Icons.campaign_outlined,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                PsActionTile(
-                  title: l10n.termsOfServices,
-                  subtitle: l10n.termsOfServicesSubtitle,
-                  icon: Icons.description_outlined,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.xxxl),
-          ],
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.pagePadding,
+          vertical: AppSpacing.base,
         ),
-      ), // Scaffold
+        children: [
+          // ── General ────────────────────────────────────────────────────
+          MsSectionHeader(title: l10n.sectionGeneral),
+          MsSettingsCard(children: [
+            // Theme selector
+            _ThemeTile(
+              label: l10n.theme,
+              subtitle: l10n.themeSubtitle,
+              themeMode: settings.themeMode,
+              l10n: l10n,
+              onChanged: notifier.setThemeMode,
+            ),
+            // Language selector
+            _LanguageTile(
+              label: l10n.language,
+              subtitle: l10n.languageSubtitle,
+              language: settings.language,
+              l10n: l10n,
+              onChanged: notifier.setLanguage,
+            ),
+            // Font Size slider
+            MsSliderTile(
+              title: l10n.fontSize,
+              subtitle: l10n.fontSizeSubtitle,
+              value: settings.fontScale,
+              min: 0.8,
+              max: 2.0,
+              onChanged: notifier.setFontScale,
+              displayLabel:
+                  '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
+            ),
+          ]),
+
+          // ── Scanning ───────────────────────────────────────────────────
+          MsSectionHeader(title: l10n.sectionScanning),
+          MsSettingsCard(children: [
+            MsToggleTile(
+              title: l10n.useFrontCamera,
+              subtitle: l10n.useFrontCameraSubtitle,
+              value: settings.useFrontCamera,
+              onChanged: notifier.toggleFrontCamera,
+            ),
+            MsToggleTile(
+              title: l10n.useFlashlight,
+              subtitle: l10n.useFlashlightSubtitle,
+              value: settings.useFlashlight,
+              onChanged: notifier.toggleFlashlight,
+            ),
+            MsToggleTile(
+              title: l10n.denominationVibration,
+              subtitle: l10n.denominationVibrationSubtitle,
+              value: settings.denominationVibration,
+              onChanged: notifier.toggleDenominationVibration,
+              showHelpButton: true,
+              onHelpTap: () => TutorialNavigator.push(
+                  context, TutorialRoute.denominationVibration),
+            ),
+          ]),
+
+          // ── Navigation ─────────────────────────────────────────────────
+          MsSectionHeader(title: l10n.sectionNavigation),
+          MsSettingsCard(children: [
+            MsToggleTile(
+              title: l10n.shakeToGoBack,
+              subtitle: l10n.shakeToGoBackSubtitle,
+              value: settings.shakeToGoBack,
+              onChanged: notifier.toggleShakeToGoBack,
+              showHelpButton: true,
+              onHelpTap: () => TutorialNavigator.push(
+                  context, TutorialRoute.shakeToGoBack),
+            ),
+            MsTimerTile(
+              title: l10n.goBackTimerOnResult,
+              subtitle: l10n.goBackTimerSubtitle,
+              enabled: settings.goBackTimerSeconds > 0,
+              value: settings.goBackTimerSeconds > 0
+                  ? settings.goBackTimerSeconds
+                  : 20,
+              onToggle: notifier.toggleGoBackTimer,
+              onValueChanged: notifier.setGoBackTimer,
+            ),
+            MsToggleTile(
+              title: l10n.gesturalNavigation,
+              subtitle: l10n.gesturalNavigationSubtitle,
+              value: settings.gesturalNavigation,
+              onChanged: notifier.toggleGesturalNavigation,
+              showHelpButton: true,
+              onHelpTap: () => TutorialNavigator.push(
+                  context, TutorialRoute.gesturalNavigation),
+            ),
+            MsToggleTile(
+              title: l10n.inertialNavigation,
+              subtitle: l10n.inertialNavigationSubtitle,
+              value: settings.inertialNavigation,
+              onChanged: notifier.toggleInertialNavigation,
+              showHelpButton: true,
+              onHelpTap: () => showDialog<void>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: Text(l10n.inertialNavigation),
+                  content: Text(l10n.inertialDialogBody),
+                  actions: [
+                    FilledButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(l10n.gotIt),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]),
+
+          // ── Help & Support ─────────────────────────────────────────────
+          MsSectionHeader(title: l10n.sectionHelpSupport),
+          MsSettingsCard(children: [
+            MsActionTile(
+              title: l10n.checkForUpdates,
+              subtitle: l10n.checkForUpdatesSubtitle,
+              icon: Icons.refresh_rounded,
+              onTap: () {/* TODO */},
+            ),
+            MsActionTile(
+              title: l10n.playOnboardingSetup,
+              subtitle: l10n.playOnboardingSubtitle,
+              icon: Icons.play_arrow_rounded,
+              onTap: () {/* TODO: navigate to onboarding */},
+            ),
+            MsActionTile(
+              title: l10n.appInformation,
+              subtitle: l10n.appInformationSubtitle,
+              icon: Icons.info_outline_rounded,
+              onTap: () {/* TODO */},
+            ),
+            MsActionTile(
+              title: l10n.leaveAFeedback,
+              subtitle: l10n.leaveAFeedbackSubtitle,
+              icon: Icons.campaign_outlined,
+              onTap: () {/* TODO */},
+            ),
+            MsActionTile(
+              title: l10n.termsOfServices,
+              subtitle: l10n.termsOfServicesSubtitle,
+              icon: Icons.description_outlined,
+              onTap: () {/* TODO */},
+            ),
+          ]),
+
+          const SizedBox(height: AppSpacing.xxxl),
+        ],
+      ),
+    ), // Scaffold
     ); // _SwipeBackWrapper
   }
 
@@ -252,8 +226,8 @@ class _ThemeTile extends StatelessWidget {
     final selectedLabel = themeMode == AppThemeMode.system
         ? l10n.themeSystem
         : themeMode == AppThemeMode.light
-        ? l10n.themeLight
-        : l10n.themeDark;
+            ? l10n.themeLight
+            : l10n.themeDark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -293,7 +267,7 @@ class _ThemeTile extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           // Each option is its own button node in the selector
-          PsSegmentedSelector<AppThemeMode>(
+          MsSegmentedSelector<AppThemeMode>(
             options: AppThemeMode.values,
             labels: [l10n.themeSystem, l10n.themeLight, l10n.themeDark],
             leadingIcons: [
@@ -374,7 +348,7 @@ class _LanguageTile extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           // Each option is its own button node
-          PsSegmentedSelector<AppLanguage>(
+          MsSegmentedSelector<AppLanguage>(
             options: AppLanguage.values,
             labels: [l10n.languageEnglish, l10n.languageTagalog],
             selected: language,

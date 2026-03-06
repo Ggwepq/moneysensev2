@@ -1,6 +1,7 @@
+/// Tagalog (tl) string resources for MoneySense.
 abstract final class TlStrings {
   // ── General ───────────────────────────────────────────────────────────────
-  static const String appName = 'PesoSense';
+  static const String appName = 'MoneySense';
 
   // ── Bottom Nav ────────────────────────────────────────────────────────────
   static const String navSettings = 'Mga Setting';
@@ -65,13 +66,13 @@ abstract final class TlStrings {
 
   // Help & Support — subtitles
   static const String checkForUpdatesSubtitle =
-      'Tingnan kung may mas bagong bersyon ng PesoSense.';
+      'Tingnan kung may mas bagong bersyon ng MoneySense.';
   static const String playOnboardingSubtitle =
       'Ulitin ang setup para baguhin ang iyong profile o wika.';
   static const String appInformationSubtitle =
       'Tingnan ang numero ng bersyon, mga lisensya, at detalye ng build.';
   static const String leaveAFeedbackSubtitle =
-      'Sabihin sa amin kung paano namin mapabuti ang PesoSense para sa iyo.';
+      'Sabihin sa amin kung paano namin mapabuti ang MoneySense para sa iyo.';
   static const String termsOfServicesSubtitle =
       'Basahin ang mga tuntunin at kondisyon ng paggamit ng application na ito.';
 
@@ -132,14 +133,13 @@ abstract final class TlStrings {
   static const String denomTutorialStep4 =
       'Gamitin ang listahang ito para matutunan ang bawat pattern.';
   static const String denomPlayDemoLabel = 'I-play ang Demo ng Vibrasyon';
-  static const String denomPlayDemoSub =
-      'Pinapalaro ang lahat ng pattern nang sunud-sunod';
+  static const String denomPlayDemoSub = 'Pinapalaro ang lahat ng pattern nang sunud-sunod';
   static const String denomPatternsLabel = 'MGA PATTERN';
 
   // ── Tutorial: Shake to Go Back ────────────────────────────────────────────
   static const String shakeTutorialBadge = 'Nabigasyon';
   static const String shakeTutorialDescription =
-      'Iiling ang telepono nang may layunin at ang PesoSense ay '
+      'Iiling ang telepono nang may layunin at ang MoneySense ay '
       'babalik sa nakaraang screen — hindi na kailangan pang pindutin ang anumang pindutan.';
   static const String shakeTutorialStep1 =
       'I-enable ang "Iling para Bumalik" sa Settings → Nabigasyon.';
@@ -158,7 +158,7 @@ abstract final class TlStrings {
   // ── Tutorial: Gestural Navigation ─────────────────────────────────────────
   static const String gestureTutorialBadge = 'Nabigasyon';
   static const String gestureTutorialDescription =
-      'Mag-navigate sa PesoSense nang walang kamay gamit ang mga swipe at tap '
+      'Mag-navigate sa MoneySense nang walang kamay gamit ang mga swipe at tap '
       'sa scanner screen — perpekto kapag hawak mo ang pera sa iyong kabilang kamay.';
   static const String gestureTutorialStep1 =
       'I-enable ang "Gestural na Nabigasyon" sa Settings → Nabigasyon.';
@@ -170,8 +170,7 @@ abstract final class TlStrings {
       'Mag-swipe PATAAS para i-toggle ang flashlight.';
   static const String gestureTutorialStep5 =
       'Mag-double-tap sa scanner para i-freeze o ituloy ang live preview.';
-  static const String gestureTryHint =
-      'Mag-swipe o mag-double-tap dito para subukan';
+  static const String gestureTryHint = 'Mag-swipe o mag-double-tap dito para subukan';
   static const String gestureSwipeRight = 'Swipe pakanan';
   static const String gestureSwipeLeft = 'Swipe pakaliwa';
   static const String gestureSwipeUp = 'Swipe pataas';
@@ -179,16 +178,14 @@ abstract final class TlStrings {
   static const String gestureOpensSettings = 'Nagbubukas ng Settings';
   static const String gestureOpensTutorial = 'Nagbubukas ng Tutorial';
   static const String gestureTogglesFlash = 'Nag-toggle ng flashlight';
-  static const String gestureFreezesPreview =
-      'Nagpe-freeze / nagpapatuloy ng preview';
+  static const String gestureFreezesPreview = 'Nagpe-freeze / nagpapatuloy ng preview';
   static const String gestureLabelRight = '→ Nagbubukas ng Settings';
   static const String gestureLabelLeft = '← Nagbubukas ng Tutorial';
   static const String gestureLabelUp = '↑ Nag-toggle ng Flashlight';
   static const String gestureLabelTap = '⊙ Preview Frozen / Ipinagpatuloy';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
-  static const String onboardingWelcomeTitle =
-      'Maligayang Pagdating sa PesoSense';
+  static const String onboardingWelcomeTitle = 'Maligayang Pagdating sa MoneySense';
   static const String onboardingWelcomeSubtitle =
       'Ang iyong accessible na identifier ng piso.';
   static const String onboardingVisionTitle = 'Paano ka nakakita?';
@@ -200,5 +197,3 @@ abstract final class TlStrings {
   static const String next = 'Susunod';
   static const String getStarted = 'Magsimula';
 }
-
-/// Tagalog (tl) string resources for PesoSense.

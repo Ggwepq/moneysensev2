@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A small uppercased category label placed above a [PsSettingsCard].
+/// A small uppercased category label placed above a [MsSettingsCard].
 ///
 /// Example:
 /// ```
@@ -11,8 +11,8 @@ import '../../core/constants/app_spacing.dart';
 /// │ Theme  …                 │
 /// └──────────────────────────┘
 /// ```
-class PsSectionHeader extends StatelessWidget {
-  const PsSectionHeader({super.key, required this.title});
+class MsSectionHeader extends StatelessWidget {
+  const MsSectionHeader({super.key, required this.title});
 
   final String title;
 

@@ -3,19 +3,17 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A settings tile with a [Slider] and ± step buttons.
+/// Settings tile with a [Slider] flanked by ± step buttons.
 ///
-/// TalkBack / accessibility design:
-///   Node 1 — title heading:
-///     "Font Size. Setting subtitle. Currently: 100%"
-///   Node 2 — decrement button:
-///     "Decrease Font Size, button"
-///   Node 3 — slider:
-///     "Font Size: 100%, slider" (Android reads this natively)
-///   Node 4 — increment button:
-///     "Increase Font Size, button"
-class PsSliderTile extends StatelessWidget {
-  const PsSliderTile({
+/// The ± buttons are always yellow (primary accent, same on both themes).
+///
+/// TalkBack:
+///   1. Heading  — "Font Size. Subtitle. Currently: 100%"
+///   2. Decrease — "Decrease Font Size, button"
+///   3. Slider   — "Font Size: 100%, slider"  (native Android node)
+///   4. Increase — "Increase Font Size, button"
+class MsSliderTile extends StatelessWidget {
+  const MsSliderTile({
     super.key,
     required this.title,
     this.subtitle,

@@ -17,8 +17,8 @@ import '../../core/constants/app_spacing.dart';
 ///   (which would make the help button invisible to linear navigation).
 ///   [excludeSemantics: true] suppresses descendant nodes (Switch text,
 ///   Icon descriptions) so they don't duplicate content.
-class PsToggleTile extends StatelessWidget {
-  const PsToggleTile({
+class MsToggleTile extends StatelessWidget {
+  const MsToggleTile({
     super.key,
     required this.title,
     this.subtitle,
@@ -61,7 +61,7 @@ class PsToggleTile extends StatelessWidget {
             child: Semantics(
               label: '$base$sub. Switch, $state',
               toggled: value,
-              container: true, // hard boundary — no merging with neighbour
+              container: true,       // hard boundary — no merging with neighbour
               excludeSemantics: true, // hide Switch / Text descendants
               onTap: onChanged == null
                   ? null
@@ -141,7 +141,7 @@ class _HelpButton extends StatelessWidget {
     return Semantics(
       label: 'Help for $settingName',
       button: true,
-      container: true, // own boundary — not merged with sibling tile
+      container: true,       // own boundary — not merged with sibling tile
       excludeSemantics: true, // hide the inner '?' Text
       child: GestureDetector(
         onTap: onTap,
@@ -156,10 +156,9 @@ class _HelpButton extends StatelessWidget {
             child: Text(
               '?',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700),
             ),
           ),
         ),
