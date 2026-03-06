@@ -15,7 +15,6 @@ import '../../core/constants/app_spacing.dart';
 ///
 /// Colors (both light & dark, matching design):
 ///   [⚙] and [?] → yellow background, dark icon
-///   [▶]         → blue background,  white icon
 class PsBottomNav extends StatelessWidget {
   const PsBottomNav({
     super.key,

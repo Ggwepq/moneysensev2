@@ -3,16 +3,20 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A settings tile: [Title / Subtitle]  [Switch]  [Help?]
+/// Settings tile: [Icon?]  [Title / Subtitle]  [Switch]  [? Help]
 ///
-/// TalkBack / accessibility design:
-///   • The entire title+subtitle+switch area is ONE focusable node.
-///     TalkBack announces: "Use Front Camera. Setting subtitle. Switch, off"
-///     Double-tapping the node toggles the switch.
-///   • The Switch widget inside is hidden from the a11y tree (ExcludeSemantics)
-///     to prevent a duplicate "switch, off" node right after the tile node.
-///   • The help button (if shown) is a separate node immediately after:
-///     "Help for Use Front Camera, button"
+/// TalkBack tree — each bullet is one independent focusable node:
+///   • Tile  — "Shake to Go Back. Description. Switch, on"
+///              double-tap → toggles switch
+///   • Help  — "Help for Shake to Go Back. Button"  (only if [showHelpButton])
+///              double-tap → opens help dialog
+///
+/// Implementation notes:
+///   [container: true] on each Semantics node creates a hard boundary that
+///   prevents TalkBack from merging the tile and the help button into one
+///   (which would make the help button invisible to linear navigation).
+///   [excludeSemantics: true] suppresses descendant nodes (Switch text,
+///   Icon descriptions) so they don't duplicate content.
 class PsToggleTile extends StatelessWidget {
   const PsToggleTile({
     super.key,
@@ -40,11 +44,9 @@ class PsToggleTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Build exactly what TalkBack will read for this one node.
-    final baseLabel = semanticLabel ?? title;
+    final base = semanticLabel ?? title;
     final sub = subtitle != null ? '. $subtitle' : '';
     final state = value ? 'on' : 'off';
-    final a11yLabel = '$baseLabel$sub. Switch, $state';
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -54,22 +56,19 @@ class PsToggleTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Tile (one node) ───────────────────────────────────────────
+          // ── Node 1: tile + switch ─────────────────────────────────
           Expanded(
             child: Semantics(
-              label: a11yLabel,
+              label: '$base$sub. Switch, $state',
               toggled: value,
-              // Provide the tap action so TalkBack "double-tap to toggle"
-              // activates the correct callback.
+              container: true, // hard boundary — no merging with neighbour
+              excludeSemantics: true, // hide Switch / Text descendants
               onTap: onChanged == null
                   ? null
                   : () {
                       HapticFeedback.lightImpact();
                       onChanged!(!value);
                     },
-              // Suppress ALL descendant nodes — the Switch and Text widgets
-              // must not create their own a11y nodes inside this tile.
-              excludeSemantics: true,
               child: InkWell(
                 onTap: onChanged == null
                     ? null
@@ -119,7 +118,7 @@ class PsToggleTile extends StatelessWidget {
               ),
             ),
           ),
-          // ── Help button (separate node) ───────────────────────────────
+          // ── Node 2: help button (distinct focusable node) ─────────
           if (showHelpButton) ...[
             const SizedBox(width: AppSpacing.sm),
             _HelpButton(settingName: title, onTap: onHelpTap),
@@ -130,7 +129,7 @@ class PsToggleTile extends StatelessWidget {
   }
 }
 
-// ── Help Button ────────────────────────────────────────────────────────────────
+// ── Help button ────────────────────────────────────────────────────────────────
 
 class _HelpButton extends StatelessWidget {
   const _HelpButton({required this.settingName, this.onTap});
@@ -142,7 +141,8 @@ class _HelpButton extends StatelessWidget {
     return Semantics(
       label: 'Help for $settingName',
       button: true,
-      excludeSemantics: true,
+      container: true, // own boundary — not merged with sibling tile
+      excludeSemantics: true, // hide the inner '?' Text
       child: GestureDetector(
         onTap: onTap,
         child: Container(

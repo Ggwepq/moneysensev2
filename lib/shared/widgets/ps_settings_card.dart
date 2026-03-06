@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A rounded card that groups related settings tiles.
+/// Rounded card grouping related settings tiles.
 ///
-/// Each child is placed inside a [Semantics] node with [container]=true.
-/// This creates a hard boundary in the a11y tree so TalkBack cannot merge
-/// content from one tile into the next — each tile is exactly one swipe away.
+/// Does NOT add extra Semantics wrappers — each child widget manages its own
+/// a11y tree.  This lets [PsToggleTile] expose its tile node and its help-
+/// button node as two *separate* focusable items, rather than being collapsed
+/// into one container.
 ///
-/// Dividers are hidden from the a11y tree ([ExcludeSemantics]) because they
-/// carry no meaningful information.
+/// Dividers are hidden from the a11y tree.
 class PsSettingsCard extends StatelessWidget {
   const PsSettingsCard({super.key, required this.children});
   final List<Widget> children;
@@ -31,22 +31,19 @@ class PsSettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: _buildWithDividers(children, isDark),
+          children: _withDividers(children, isDark),
         ),
       ),
     );
   }
 
-  List<Widget> _buildWithDividers(List<Widget> items, bool isDark) {
+  List<Widget> _withDividers(List<Widget> items, bool isDark) {
     if (items.isEmpty) return [];
-    final result = <Widget>[];
+    final out = <Widget>[];
     for (int i = 0; i < items.length; i++) {
-      result.add(
-        // container=true creates a boundary: TalkBack stops merging here.
-        Semantics(container: true, child: items[i]),
-      );
+      out.add(items[i]); // no extra Semantics wrapper
       if (i < items.length - 1) {
-        result.add(
+        out.add(
           ExcludeSemantics(
             child: Divider(
               height: 1,
@@ -59,6 +56,6 @@ class PsSettingsCard extends StatelessWidget {
         );
       }
     }
-    return result;
+    return out;
   }
 }

@@ -73,13 +73,12 @@ class PsTimerTile extends StatelessWidget {
             child: Semantics(
               label: tileLabel,
               toggled: enabled,
+              container: true,
+              excludeSemantics: true,
               onTap: () {
                 HapticFeedback.lightImpact();
                 onToggle(!enabled);
               },
-              // Suppress Switch and Text children — they must not create
-              // their own nodes inside this tile node.
-              excludeSemantics: true,
               child: InkWell(
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -131,6 +130,7 @@ class PsTimerTile extends StatelessWidget {
                 : 'Timer disabled',
             button: enabled,
             enabled: enabled,
+            container: true,
             // excludeSemantics keeps the badge text from leaking into
             // the surrounding tree.
             excludeSemantics: true,

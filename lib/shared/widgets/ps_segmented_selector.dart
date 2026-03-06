@@ -3,10 +3,14 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A pill-style segmented selector that closely matches the design.
+/// A pill-style segmented selector matching the PesoSense design.
 ///
-/// The selected segment is filled with [AppColors.accentYellow] (dark mode)
-/// or [AppColors.accentBlue] (light mode).
+/// Font overflow fix: the label inside each pill uses [TextScaler.noScaling]
+/// so it is immune to the user's font-size preference.  The pill has a fixed
+/// height that can accommodate any of the app's short option strings.
+/// Long strings are ellipsized rather than overflowing.
+///
+/// A11y: each pill is one Semantics node — label + selected state.
 class PsSegmentedSelector<T> extends StatelessWidget {
   const PsSegmentedSelector({
     super.key,
@@ -22,19 +26,21 @@ class PsSegmentedSelector<T> extends StatelessWidget {
   final List<String> labels;
   final T selected;
   final ValueChanged<T> onSelected;
-
-  /// Optional icon per option (shown before the label).
   final List<IconData?>? leadingIcons;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = isDark ? AppColors.accentYellow : AppColors.accentBlue;
-    final activeTextColor = isDark ? AppColors.darkBackground : Colors.white;
+    // Yellow is the primary accent on both themes — active pill is always yellow.
+    const activeColor = AppColors.accentYellow;
+    // Yellow is dark enough to need a dark label in both themes.
+    final activeText = isDark
+        ? AppColors.darkBackground
+        : AppColors.lightOnSurface;
     final inactiveColor = isDark
         ? AppColors.darkSurfaceVariant
         : AppColors.lightSurfaceVariant;
-    final inactiveTextColor = isDark
+    final inactiveText = isDark
         ? AppColors.darkOnSurface
         : AppColors.lightOnSurface;
 
@@ -44,66 +50,78 @@ class PsSegmentedSelector<T> extends StatelessWidget {
         color: inactiveColor,
         borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
       ),
-      child: Row(
-        children: List.generate(options.length, (i) {
-          final isSelected = options[i] == selected;
-          return Expanded(
-            child: Semantics(
-              selected: isSelected,
-              label: isSelected ? '${labels[i]}, selected' : labels[i],
-              button: true,
-              // Suppress icon + text children — they must not appear as
-              // separate nodes next to the button node.
-              excludeSemantics: true,
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onSelected(options[i]);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.sm + 2,
-                    horizontal: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? activeColor : Colors.transparent,
-                    borderRadius: BorderRadius.circular(
-                      AppSpacing.buttonRadius - 3,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: List.generate(options.length, (i) {
+            final isSelected = options[i] == selected;
+            final icon = leadingIcons?[i];
+
+            return Expanded(
+              child: Semantics(
+                selected: isSelected,
+                label: isSelected ? '${labels[i]}, selected' : labels[i],
+                button: true,
+                // Prevent icon + text from becoming separate nodes
+                excludeSemantics: true,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onSelected(options[i]);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm + 2,
+                      horizontal: AppSpacing.xs,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (leadingIcons != null && leadingIcons![i] != null) ...[
-                        Icon(
-                          leadingIcons![i],
-                          size: 16,
-                          color: isSelected
-                              ? activeTextColor
-                              : inactiveTextColor,
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        labels[i],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                          color: isSelected
-                              ? activeTextColor
-                              : inactiveTextColor,
-                        ),
+                    decoration: BoxDecoration(
+                      color: isSelected ? activeColor : Colors.transparent,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.buttonRadius - 3,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(
+                            icon,
+                            size: 14,
+                            color: isSelected ? activeText : inactiveText,
+                          ),
+                          const SizedBox(width: 3),
+                        ],
+                        Flexible(
+                          child: MediaQuery.withNoTextScaling(
+                            // Pill labels are fixed-size UI chrome — they
+                            // should not scale with the accessibility font
+                            // preference.  The setting name in the tile
+                            // above already scales.
+                            child: Text(
+                              labels[i],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
+                                color: isSelected ? activeText : inactiveText,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

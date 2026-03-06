@@ -49,7 +49,7 @@ class PsSliderTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Node 1: heading with current value ──────────────────────
+          // ── Node 1: heading ───────────────────────────────────────────
           Semantics(
             header: true,
             label: subtitle != null
@@ -99,24 +99,21 @@ class PsSliderTile extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          // ── Nodes 2 / 3 / 4: ─ slider + ─────────────────────────────
+          // ── Nodes 2 / 3 / 4 ──────────────────────────────────────────
           Row(
             children: [
-              // Node 2: decrement
               Semantics(
                 label: 'Decrease $title',
                 button: true,
                 excludeSemantics: true,
-                child: _RoundButton(
+                child: _StepButton(
                   icon: Icons.remove,
-                  isDark: isDark,
                   onTap: () {
                     HapticFeedback.lightImpact();
                     onChanged((value - (max - min) / 10).clamp(min, max));
                   },
                 ),
               ),
-              // Node 3: slider (Flutter exposes this natively as a slider node)
               Expanded(
                 child: Semantics(
                   label: '$title: $label',
@@ -129,14 +126,12 @@ class PsSliderTile extends StatelessWidget {
                   ),
                 ),
               ),
-              // Node 4: increment
               Semantics(
                 label: 'Increase $title',
                 button: true,
                 excludeSemantics: true,
-                child: _RoundButton(
+                child: _StepButton(
                   icon: Icons.add,
-                  isDark: isDark,
                   onTap: () {
                     HapticFeedback.lightImpact();
                     onChanged((value + (max - min) / 10).clamp(min, max));
@@ -151,30 +146,27 @@ class PsSliderTile extends StatelessWidget {
   }
 }
 
-class _RoundButton extends StatelessWidget {
-  const _RoundButton({
-    required this.icon,
-    required this.isDark,
-    required this.onTap,
-  });
+// ── Step button (always yellow) ────────────────────────────────────────────────
+
+class _StepButton extends StatelessWidget {
+  const _StepButton({required this.icon, required this.onTap});
   final IconData icon;
-  final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final accent = isDark ? AppColors.accentYellow : AppColors.accentBlue;
+    // Yellow is the primary accent on both themes.
+    // #E2DA00 is dark enough that the near-black darkBackground icon reads well.
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
-        decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-        child: Icon(
-          icon,
-          size: 20,
-          color: isDark ? AppColors.darkBackground : Colors.white,
+        decoration: const BoxDecoration(
+          color: AppColors.accentYellow,
+          shape: BoxShape.circle,
         ),
+        child: Icon(icon, size: 20, color: AppColors.darkBackground),
       ),
     );
   }
