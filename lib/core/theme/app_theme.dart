@@ -17,9 +17,8 @@ import '../constants/app_colors.dart';
 ///   darkOnSurface  (#FFFFFF) on darkSurface  (#1A1A1A) → ~15.7:1 ✓
 ///   lightOnSurface (#0E0E0E) on lightSurface (#F5F5F5) → ~17.3:1 ✓
 ///   accentYellow   (#D4FF00) on darkBackground (#000000)→ ~16.4:1 ✓
-///   accentBlue     (#3D5AFE) on lightBackground(#FFFFFF)→ ~4.6:1  ✓
 abstract final class AppTheme {
-  // ── Shared text theme ─────────────────────────────────────────────────────
+  // ── Shared text theme ──────────────────────────────────────────────────────
 
   static TextTheme _textTheme(Color primary, Color secondary) => TextTheme(
     displayLarge: TextStyle(
@@ -47,7 +46,6 @@ abstract final class AppTheme {
       fontWeight: FontWeight.w600,
       color: primary,
     ),
-    // bodyLarge: tile titles — must be ≥ 16 sp (WCAG minimum for body)
     bodyLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w400,
@@ -58,13 +56,11 @@ abstract final class AppTheme {
       fontWeight: FontWeight.w400,
       color: primary,
     ),
-    // bodySmall: subtitles — ≥ 13 sp so at 80% scale = 10.4 sp (just above 10)
     bodySmall: TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w400,
       color: secondary,
     ),
-    // labelLarge: buttons
     labelLarge: TextStyle(
       fontSize: 15,
       fontWeight: FontWeight.w600,
@@ -75,7 +71,6 @@ abstract final class AppTheme {
       fontWeight: FontWeight.w500,
       color: secondary,
     ),
-    // labelSmall: badges, percentages — floor at 11 sp
     labelSmall: TextStyle(
       fontSize: 11,
       fontWeight: FontWeight.w500,
@@ -83,7 +78,35 @@ abstract final class AppTheme {
     ),
   );
 
-  // ── Dark ──────────────────────────────────────────────────────────────────
+  // ── Shared switch theme ────────────────────────────────────────────────────
+
+  /// Switch track = blue when on, muted when off.
+  /// Switch thumb = contrasting on/off colour.
+  static SwitchThemeData _switchTheme({
+    required Color thumbOn,
+    required Color thumbOff,
+    required Color trackOff,
+  }) => SwitchThemeData(
+    thumbColor: WidgetStateProperty.resolveWith(
+      (s) => s.contains(WidgetState.selected) ? thumbOn : thumbOff,
+    ),
+    trackColor: WidgetStateProperty.resolveWith(
+      (s) => s.contains(WidgetState.selected) ? AppColors.accentBlue : trackOff,
+    ),
+  );
+
+  // ── Shared slider theme ────────────────────────────────────────────────────
+
+  static SliderThemeData _sliderTheme(Color inactive) => SliderThemeData(
+    activeTrackColor: AppColors.accentYellow,
+    inactiveTrackColor: inactive,
+    thumbColor: AppColors.accentYellow,
+    overlayColor: AppColors.accentYellow.withOpacity(0.20),
+    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+    trackHeight: 4,
+  );
+
+  // ── Dark ───────────────────────────────────────────────────────────────────
 
   static ThemeData get dark {
     final base = ThemeData.dark(useMaterial3: true);
@@ -92,8 +115,10 @@ abstract final class AppTheme {
           seedColor: AppColors.accentBlue,
           brightness: Brightness.dark,
         ).copyWith(
+          // Yellow = primary (drives M3 filled buttons, segmented control, etc.)
           primary: AppColors.accentYellow,
           onPrimary: AppColors.darkBackground,
+          // Blue = secondary (switches, FAB, outlined buttons)
           secondary: AppColors.accentBlue,
           onSecondary: Colors.white,
           surface: AppColors.darkSurface,
@@ -122,8 +147,6 @@ abstract final class AppTheme {
         foregroundColor: AppColors.darkOnSurface,
         elevation: 0,
         centerTitle: true,
-        // AppBar title uses titleLarge from textTheme (22 sp) but we want
-        // a slightly smaller, tighter headline — override explicitly.
         titleTextStyle: const TextStyle(
           color: AppColors.darkOnSurface,
           fontSize: 20,
@@ -132,17 +155,10 @@ abstract final class AppTheme {
         ),
         iconTheme: const IconThemeData(color: AppColors.darkOnSurface),
       ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? AppColors.darkBackground
-              : AppColors.darkOnSurfaceVariant,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? AppColors.accentBlue
-              : AppColors.darkSurfaceVariant,
-        ),
+      switchTheme: _switchTheme(
+        thumbOn: AppColors.darkBackground,
+        thumbOff: AppColors.darkOnSurfaceVariant,
+        trackOff: AppColors.darkSurfaceVariant,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.darkBorder,
@@ -153,18 +169,11 @@ abstract final class AppTheme {
         tileColor: Colors.transparent,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.accentYellow,
-        inactiveTrackColor: AppColors.darkSurfaceVariant,
-        thumbColor: AppColors.accentYellow,
-        overlayColor: AppColors.accentYellow.withOpacity(0.2),
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        trackHeight: 4,
-      ),
+      sliderTheme: _sliderTheme(AppColors.darkSurfaceVariant),
     );
   }
 
-  // ── Light ─────────────────────────────────────────────────────────────────
+  // ── Light ──────────────────────────────────────────────────────────────────
 
   static ThemeData get light {
     final base = ThemeData.light(useMaterial3: true);
@@ -173,10 +182,11 @@ abstract final class AppTheme {
           seedColor: AppColors.accentBlue,
           brightness: Brightness.light,
         ).copyWith(
-          primary: AppColors.accentBlue,
-          onPrimary: Colors.white,
-          secondary: AppColors.accentYellow,
-          onSecondary: AppColors.lightOnSurface,
+          // Yellow = primary on light too — fixes blue slider/pill bug
+          primary: AppColors.accentYellow,
+          onPrimary: AppColors.lightOnSurface,
+          secondary: AppColors.accentBlue,
+          onSecondary: Colors.white,
           surface: AppColors.lightSurface,
           onSurface: AppColors.lightOnSurface,
           surfaceContainerHighest: AppColors.lightSurfaceVariant,
@@ -211,17 +221,10 @@ abstract final class AppTheme {
         ),
         iconTheme: const IconThemeData(color: AppColors.lightOnSurface),
       ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? Colors.white
-              : AppColors.lightOnSurfaceVariant,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected)
-              ? AppColors.accentBlue
-              : AppColors.lightSurfaceVariant,
-        ),
+      switchTheme: _switchTheme(
+        thumbOn: Colors.white,
+        thumbOff: AppColors.lightOnSurfaceVariant,
+        trackOff: AppColors.lightSurfaceVariant,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.lightBorder,
@@ -232,14 +235,7 @@ abstract final class AppTheme {
         tileColor: Colors.transparent,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.accentBlue,
-        inactiveTrackColor: AppColors.lightSurfaceVariant,
-        thumbColor: AppColors.accentBlue,
-        overlayColor: AppColors.accentBlue.withOpacity(0.2),
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        trackHeight: 4,
-      ),
+      sliderTheme: _sliderTheme(AppColors.lightSurfaceVariant),
     );
   }
 }
