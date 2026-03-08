@@ -472,7 +472,9 @@ class _LegendRow extends StatelessWidget {
     return Semantics(
       label: '$label — $action',
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Fixed icon chip
           Container(
             width: 32,
             height: 32,
@@ -483,13 +485,32 @@ class _LegendRow extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: AppSpacing.md),
-          Text(label,
+          // Label gets the bulk of the space but never squeezes action to zero
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              softWrap: true,
               style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: onSurface, fontWeight: FontWeight.w500)),
-          const Spacer(),
-          Text(action,
-              style: theme.textTheme.bodySmall?.copyWith(color: color,
-                  fontWeight: FontWeight.w600)),
+                  ?.copyWith(color: onSurface, fontWeight: FontWeight.w500),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // Action badge — fixed flex share, clips to ellipsis only if truly extreme
+          Expanded(
+            flex: 2,
+            child: Text(
+              action,
+              textAlign: TextAlign.end,
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );

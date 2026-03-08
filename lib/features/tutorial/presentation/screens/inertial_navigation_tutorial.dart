@@ -335,21 +335,31 @@ class _TiltPlayground extends StatelessWidget {
 
               const SizedBox(height: AppSpacing.xs + 2),
 
-              // Labels
+              // Labels — Flexible so they never overflow at large font scales
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('← Tutorial',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                          color: AppColors.accentBlue,
-                          fontWeight: FontWeight.w600)),
-                  Text('Hold 1 s',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                          color: onVariant)),
-                  Text('Settings →',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                          color: AppColors.accentYellow,
-                          fontWeight: FontWeight.w600)),
+                  Flexible(
+                    child: Text('← Tutorial',
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.accentBlue,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text('Hold 1 s',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: onVariant)),
+                  ),
+                  Flexible(
+                    child: Text('Settings →',
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.accentYellow,
+                            fontWeight: FontWeight.w600)),
+                  ),
                 ],
               ),
             ],
@@ -387,8 +397,8 @@ class _TiltPlayground extends StatelessWidget {
               _LegendRow(
                 icon: Icons.swap_horiz_rounded,
                 color: const Color(0xFF4CAF50),
-                label: '${l10n.inertialLegendRight} / ${l10n.inertialLegendLeft}',
-                action: l10n.inertialLegendGoBack,
+                label: l10n.inertialLegendGoBack,
+                action: '',
                 theme: theme, onSurface: onSurface, onVariant: onVariant,
               ),
             ],
@@ -536,10 +546,13 @@ class _LegendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasAction = action.isNotEmpty;
     return Semantics(
-      label: '$label — $action',
+      label: hasAction ? '$label — $action' : label,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Fixed icon chip
           Container(
             width: 32, height: 32,
             decoration: BoxDecoration(
@@ -549,14 +562,32 @@ class _LegendRow extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: AppSpacing.md),
+          // Label — gets the bulk of the row
           Expanded(
-            child: Text(label,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: onSurface, fontWeight: FontWeight.w500)),
+            flex: 3,
+            child: Text(
+              label,
+              softWrap: true,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: onSurface, fontWeight: FontWeight.w500),
+            ),
           ),
-          Text(action,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: color, fontWeight: FontWeight.w600)),
+          // Action badge — only shown when non-empty
+          if (hasAction) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              flex: 2,
+              child: Text(
+                action,
+                textAlign: TextAlign.end,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: color, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ],
       ),
     );
