@@ -16,15 +16,15 @@ class MoneySenseApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings      = ref.watch(appSettingsProvider);
+    final settings = ref.watch(appSettingsProvider);
     final routeObserver = ref.read(routeObserverProvider);
 
     return Builder(
       builder: (outerCtx) {
         return MediaQuery(
-          data: MediaQuery.of(outerCtx).copyWith(
-            textScaler: TextScaler.linear(settings.fontScale),
-          ),
+          data: MediaQuery.of(
+            outerCtx,
+          ).copyWith(textScaler: TextScaler.linear(settings.fontScale)),
           child: MaterialApp(
             title: 'MoneySense',
             debugShowCheckedModeBanner: false,
@@ -55,18 +55,17 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   /// Tilt LEFT → Tutorial (mirrored: tutorial is to the right of home in nav
   /// order, but the physical gesture "pushes" to the right visually).
   void _onTiltLeft() {
+    if (!mounted) return;
     final nav = Navigator.of(context, rootNavigator: false);
-    // Only navigate if we are at the root (not already on a pushed route)
     if (nav.canPop()) {
-      // We're on a sub-screen — go back home
       nav.maybePop();
     } else {
       _pushTutorial(context);
     }
   }
 
-  /// Tilt RIGHT → Settings
   void _onTiltRight() {
+    if (!mounted) return;
     final nav = Navigator.of(context, rootNavigator: false);
     if (nav.canPop()) {
       nav.maybePop();
@@ -84,28 +83,28 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(-1.0, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 280),
-      );
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, anim, __, child) => SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(-1.0, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+      child: child,
+    ),
+    transitionDuration: const Duration(milliseconds: 280),
+  );
 
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 280),
-      );
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, anim, __, child) => SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1.0, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+      child: child,
+    ),
+    transitionDuration: const Duration(milliseconds: 280),
+  );
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
@@ -113,7 +112,7 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   Widget build(BuildContext context) {
     return ShakeDetectorWidget(
       child: InertialDetectorWidget(
-        onTiltLeft:  _onTiltLeft,
+        onTiltLeft: _onTiltLeft,
         onTiltRight: _onTiltRight,
         child: const HomeShell(),
       ),
