@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/inertial_detector_widget.dart';
 import '../core/services/shake_detector_widget.dart';
+import '../core/services/tts_service.dart';
 import '../core/theme/app_theme.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
+import '../features/settings/domain/entities/vision_config.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -16,15 +18,20 @@ class MoneySenseApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsProvider);
+    final settings      = ref.watch(appSettingsProvider);
+    final visionConfig  = ref.watch(visionConfigProvider);
     final routeObserver = ref.read(routeObserverProvider);
+    ref.watch(ttsInitProvider); // keeps TTS in sync with language + verbosity
+
+    // Clamp the user's font scale so a profile's floor is always respected.
+    final effectiveScale = visionConfig.effectiveFontScale(settings.fontScale);
 
     return Builder(
       builder: (outerCtx) {
         return MediaQuery(
-          data: MediaQuery.of(
-            outerCtx,
-          ).copyWith(textScaler: TextScaler.linear(settings.fontScale)),
+          data: MediaQuery.of(outerCtx).copyWith(
+            textScaler: TextScaler.linear(effectiveScale),
+          ),
           child: MaterialApp(
             title: 'MoneySense',
             debugShowCheckedModeBanner: false,
@@ -83,28 +90,28 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(-1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
@@ -112,7 +119,7 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   Widget build(BuildContext context) {
     return ShakeDetectorWidget(
       child: InertialDetectorWidget(
-        onTiltLeft: _onTiltLeft,
+        onTiltLeft:  _onTiltLeft,
         onTiltRight: _onTiltRight,
         child: const HomeShell(),
       ),

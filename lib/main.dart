@@ -18,7 +18,7 @@ Future<void> main() async {
     availableCameras().catchError((_) => <CameraDescription>[]),
   ]);
 
-  final prefs = results[0] as SharedPreferences;
+  final prefs   = results[0] as SharedPreferences;
   final cameras = results[1] as List<CameraDescription>;
 
   // Portrait-only — scanning works best in portrait.

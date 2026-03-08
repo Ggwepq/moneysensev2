@@ -9,20 +9,22 @@ import '../../domain/entities/app_settings.dart';
 // Using string constants avoids typos and makes future key renames safe.
 
 abstract final class SettingsKeys {
-  static const themeMode = 'settings.themeMode';
-  static const language = 'settings.language';
-  static const fontScale = 'settings.fontScale';
-  static const useFrontCamera = 'settings.useFrontCamera';
-  static const useFlashlight = 'settings.useFlashlight';
-  static const denominationVibr = 'settings.denominationVibration';
-  static const shakeToGoBack = 'settings.shakeToGoBack';
-  static const goBackTimerSeconds = 'settings.goBackTimerSeconds';
-  static const lastTimerSeconds = 'settings.lastTimerSeconds';
-  static const gesturalNavigation = 'settings.gesturalNavigation';
-  static const inertialNavigation = 'settings.inertialNavigation';
-  static const visionProfile = 'settings.visionProfile';
-  static const ttsEnabled = 'settings.ttsEnabled';
-  static const hapticFeedback = 'settings.hapticFeedback';
+  static const themeMode           = 'settings.themeMode';
+  static const language            = 'settings.language';
+  static const fontScale           = 'settings.fontScale';
+  static const useFrontCamera      = 'settings.useFrontCamera';
+  static const useFlashlight       = 'settings.useFlashlight';
+  static const denominationVibr    = 'settings.denominationVibration';
+  static const shakeToGoBack       = 'settings.shakeToGoBack';
+  static const goBackTimerSeconds  = 'settings.goBackTimerSeconds';
+  static const lastTimerSeconds    = 'settings.lastTimerSeconds';
+  static const gesturalNavigation  = 'settings.gesturalNavigation';
+  static const inertialNavigation  = 'settings.inertialNavigation';
+  static const visionProfile       = 'settings.visionProfile';
+  static const ttsEnabled          = 'settings.ttsEnabled';
+  static const ttsVerbosity        = 'settings.ttsVerbosity';
+  static const hapticFeedback      = 'settings.hapticFeedback';
+  static const hapticIntensity     = 'settings.hapticIntensity';
 }
 
 // ---------------------------------------------------------------------------
@@ -64,24 +66,23 @@ class SettingsStorage {
       ),
       fontScale: _prefs.getDouble(SettingsKeys.fontScale) ?? defaults.fontScale,
       useFrontCamera:
-          _prefs.getBool(SettingsKeys.useFrontCamera) ??
-          defaults.useFrontCamera,
+          _prefs.getBool(SettingsKeys.useFrontCamera) ?? defaults.useFrontCamera,
       useFlashlight:
           _prefs.getBool(SettingsKeys.useFlashlight) ?? defaults.useFlashlight,
       denominationVibration:
           _prefs.getBool(SettingsKeys.denominationVibr) ??
-          defaults.denominationVibration,
+              defaults.denominationVibration,
       shakeToGoBack:
           _prefs.getBool(SettingsKeys.shakeToGoBack) ?? defaults.shakeToGoBack,
       goBackTimerSeconds:
           _prefs.getInt(SettingsKeys.goBackTimerSeconds) ??
-          defaults.goBackTimerSeconds,
+              defaults.goBackTimerSeconds,
       gesturalNavigation:
           _prefs.getBool(SettingsKeys.gesturalNavigation) ??
-          defaults.gesturalNavigation,
+              defaults.gesturalNavigation,
       inertialNavigation:
           _prefs.getBool(SettingsKeys.inertialNavigation) ??
-          defaults.inertialNavigation,
+              defaults.inertialNavigation,
       visionProfile: _readEnum(
         SettingsKeys.visionProfile,
         VisionProfile.values,
@@ -89,9 +90,18 @@ class SettingsStorage {
       ),
       ttsEnabled:
           _prefs.getBool(SettingsKeys.ttsEnabled) ?? defaults.ttsEnabled,
+      ttsVerbosity: _readEnum(
+        SettingsKeys.ttsVerbosity,
+        TtsVerbosity.values,
+        defaults.ttsVerbosity,
+      ),
       hapticFeedback:
-          _prefs.getBool(SettingsKeys.hapticFeedback) ??
-          defaults.hapticFeedback,
+          _prefs.getBool(SettingsKeys.hapticFeedback) ?? defaults.hapticFeedback,
+      hapticIntensity: _readEnum(
+        SettingsKeys.hapticIntensity,
+        HapticIntensity.values,
+        defaults.hapticIntensity,
+      ),
     );
   }
 
@@ -103,19 +113,21 @@ class SettingsStorage {
 
   /// Persist the full [AppSettings] snapshot.  Called after every mutation.
   void save(AppSettings s) {
-    _prefs.setString(SettingsKeys.themeMode, s.themeMode.name);
-    _prefs.setString(SettingsKeys.language, s.language.name);
-    _prefs.setDouble(SettingsKeys.fontScale, s.fontScale);
-    _prefs.setBool(SettingsKeys.useFrontCamera, s.useFrontCamera);
-    _prefs.setBool(SettingsKeys.useFlashlight, s.useFlashlight);
-    _prefs.setBool(SettingsKeys.denominationVibr, s.denominationVibration);
-    _prefs.setBool(SettingsKeys.shakeToGoBack, s.shakeToGoBack);
-    _prefs.setInt(SettingsKeys.goBackTimerSeconds, s.goBackTimerSeconds);
-    _prefs.setBool(SettingsKeys.gesturalNavigation, s.gesturalNavigation);
-    _prefs.setBool(SettingsKeys.inertialNavigation, s.inertialNavigation);
-    _prefs.setString(SettingsKeys.visionProfile, s.visionProfile.name);
-    _prefs.setBool(SettingsKeys.ttsEnabled, s.ttsEnabled);
-    _prefs.setBool(SettingsKeys.hapticFeedback, s.hapticFeedback);
+    _prefs.setString(SettingsKeys.themeMode,           s.themeMode.name);
+    _prefs.setString(SettingsKeys.language,            s.language.name);
+    _prefs.setDouble(SettingsKeys.fontScale,           s.fontScale);
+    _prefs.setBool  (SettingsKeys.useFrontCamera,      s.useFrontCamera);
+    _prefs.setBool  (SettingsKeys.useFlashlight,       s.useFlashlight);
+    _prefs.setBool  (SettingsKeys.denominationVibr,    s.denominationVibration);
+    _prefs.setBool  (SettingsKeys.shakeToGoBack,       s.shakeToGoBack);
+    _prefs.setInt   (SettingsKeys.goBackTimerSeconds,  s.goBackTimerSeconds);
+    _prefs.setBool  (SettingsKeys.gesturalNavigation,  s.gesturalNavigation);
+    _prefs.setBool  (SettingsKeys.inertialNavigation,  s.inertialNavigation);
+    _prefs.setString(SettingsKeys.visionProfile,       s.visionProfile.name);
+    _prefs.setBool  (SettingsKeys.ttsEnabled,          s.ttsEnabled);
+    _prefs.setString(SettingsKeys.ttsVerbosity,        s.ttsVerbosity.name);
+    _prefs.setBool  (SettingsKeys.hapticFeedback,      s.hapticFeedback);
+    _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
   }
 
   /// Persist just [_lastTimerSeconds] separately.

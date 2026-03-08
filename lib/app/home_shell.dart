@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moneysensev2/features/scanner/data/datasources/camera_service.dart';
 
 import '../../features/scanner/presentation/providers/scanner_provider.dart';
 import '../../features/scanner/presentation/screens/scanner_screen.dart';
@@ -80,27 +81,27 @@ class HomeShell extends ConsumerWidget {
 
   /// Settings slides in from the left (swipe-right gesture revealed it).
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(-1.0, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 280),
-      );
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, anim, __, child) => SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(-1.0, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+      child: child,
+    ),
+    transitionDuration: const Duration(milliseconds: 280),
+  );
 
   /// Tutorial slides in from the right (swipe-left gesture revealed it).
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 280),
-      );
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, anim, __, child) => SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1.0, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+      child: child,
+    ),
+    transitionDuration: const Duration(milliseconds: 280),
+  );
 }
