@@ -7,4 +7,5 @@ enum TutorialRoute {
   denominationVibration,
   shakeToGoBack,
   gesturalNavigation,
+  inertialNavigation,
 }

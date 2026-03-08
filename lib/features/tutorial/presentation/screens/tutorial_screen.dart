@@ -101,6 +101,15 @@ class TutorialScreen extends ConsumerWidget {
               accentColor: AppColors.accentYellow,
               isDark: isDark,
             ),
+            const SizedBox(height: AppSpacing.md),
+            _TutorialCard(
+              route: TutorialRoute.inertialNavigation,
+              icon: Icons.screen_rotation_alt_rounded,
+              title: l10n.tutorialCardInertialTitle,
+              description: l10n.tutorialCardInertialDesc,
+              accentColor: AppColors.accentBlue,
+              isDark: isDark,
+            ),
 
             const SizedBox(height: AppSpacing.xxxl),
           ],

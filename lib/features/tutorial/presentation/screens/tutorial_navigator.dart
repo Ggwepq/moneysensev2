@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/tutorial_route.dart';
 import 'denomination_vibration_tutorial.dart';
 import 'gestural_navigation_tutorial.dart';
+import 'inertial_navigation_tutorial.dart';
 import 'shake_tutorial.dart';
 
 /// Single entry point for pushing any feature tutorial onto the navigator.
@@ -30,6 +31,8 @@ abstract final class TutorialNavigator {
         const ShakeTutorial(),
       TutorialRoute.gesturalNavigation =>
         const GesturalNavigationTutorial(),
+      TutorialRoute.inertialNavigation =>
+        const InertialNavigationTutorial(),
     };
   }
 

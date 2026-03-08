@@ -83,11 +83,46 @@ abstract final class TlStrings {
   static const String leaveAFeedback = 'Mag-iwan ng Feedback';
   static const String termsOfServices = 'Mga Tuntunin ng Serbisyo';
 
-  // Inertial navigation dialog
+  // Inertial navigation dialog — now points to the real tutorial
   static const String inertialDialogBody =
-      'Ikiling ang telepono pakaliwa para buksan ang Settings o pakanan para buksan ang Tutorial — '
-      'hindi na kailangang mag-tap.\n\nIsang interactive na tutorial para sa feature na ito ay malapit nang dumating.';
+      'Ikiling ang telepono pakaliwa para buksan ang Tutorial o pakanan para buksan ang Settings — '
+      'hindi na kailangang mag-tap.\n\nI-tap ang help button para buksan ang interactive na tutorial.';
   static const String gotIt = 'Naintindihan';
+
+  // ── Tutorial card — Inertial Navigation ───────────────────────────────────
+  static const String tutorialCardInertialTitle = 'Inertial na Nabigasyon';
+  static const String tutorialCardInertialDesc =
+      'Ikiling ang telepono pakaliwa o pakanan para mag-navigate sa pagitan ng mga screen — '
+      'hindi na kailangan ng mga pindutan o tap.';
+
+  // ── Tutorial: Inertial Navigation ─────────────────────────────────────────
+  static const String inertialTutorialBadge = 'Nabigasyon';
+  static const String inertialTutorialDescription =
+      'Hawakan ang telepono nang patayo at ikiling ito pakaliwa para buksan ang Tutorial o '
+      'pakanan para buksan ang Settings. Sa anumang sub-screen, ikiling pabalik para bumalik sa home. '
+      'Ang telepono ay dapat hawaking patayo — hindi ito mag-a-activate habang nakahiga.';
+  static const String inertialTutorialStep1 =
+      'I-enable ang "Inertial na Nabigasyon" sa Settings → Nabigasyon.';
+  static const String inertialTutorialStep2 =
+      'Hawakan ang telepono nang patayo sa portrait orientation.';
+  static const String inertialTutorialStep3 =
+      'Ikiling PAKANAN para buksan ang Settings, ikiling PAKALIWA para buksan ang Tutorial.';
+  static const String inertialTutorialStep4 =
+      'Sa Settings o Tutorial, ikiling sa anumang direksyon para bumalik sa home.';
+  static const String inertialTutorialStep5 =
+      'Ang telepono ay dapat ikiling nang tuluy-tuloy — ang mabilis na pagkilos ay hindi mag-a-activate.';
+  static const String inertialTiltRight = 'Ikiling pakanan → Settings';
+  static const String inertialTiltLeft  = 'Ikiling pakaliwa → Tutorial';
+  static const String inertialTiltBack  = 'Ikiling kahit saan → Bumalik';
+  static const String inertialTryItHint = 'Ikiling ang telepono pakaliwa o pakanan para subukan';
+  static const String inertialTiltDetected = '✓ Natukoy ang pag-ikiling!';
+  static const String inertialFlatWarning =
+      'Nakahiga ang telepono — hawakan ito nang patayo para i-activate';
+  static const String inertialLegendRight = 'Ikiling pakanan';
+  static const String inertialLegendLeft  = 'Ikiling pakaliwa';
+  static const String inertialLegendOpensSettings  = 'Nagbubukas ng Settings';
+  static const String inertialLegendOpensTutorial  = 'Nagbubukas ng Tutorial';
+  static const String inertialLegendGoBack         = 'Bumalik (mula sa mga sub-screen)';
 
   // ── Scanner screen ────────────────────────────────────────────────────────
   static const String scanning = 'Nag-scan...';

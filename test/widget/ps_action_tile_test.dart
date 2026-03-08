@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:moneysensev2/shared/widgets/ps_action_tile.dart';
+import 'package:moneysensev2/shared/widgets/ms_action_tile.dart';
 
 void main() {
-  testWidgets('PsActionTile displays title and icon', (WidgetTester tester) async {
+  testWidgets('PsActionTile displays title and icon', (
+    WidgetTester tester,
+  ) async {
     const title = 'Test Title';
     const icon = Icons.settings;
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: PsActionTile(
-            title: title,
-            icon: icon,
-            onTap: () {},
-          ),
+          body: MsActionTile(title: title, icon: icon, onTap: () {}),
         ),
       ),
     );
@@ -23,7 +21,9 @@ void main() {
     expect(find.byIcon(icon), findsOneWidget);
   });
 
-  testWidgets('PsActionTile displays subtitle when provided', (WidgetTester tester) async {
+  testWidgets('PsActionTile displays subtitle when provided', (
+    WidgetTester tester,
+  ) async {
     const title = 'Test Title';
     const subtitle = 'Test Subtitle';
     const icon = Icons.info;
@@ -31,7 +31,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: PsActionTile(
+          body: MsActionTile(
             title: title,
             subtitle: subtitle,
             icon: icon,
@@ -45,13 +45,15 @@ void main() {
     expect(find.text(subtitle), findsOneWidget);
   });
 
-  testWidgets('PsActionTile calls onTap when tapped', (WidgetTester tester) async {
+  testWidgets('PsActionTile calls onTap when tapped', (
+    WidgetTester tester,
+  ) async {
     bool tapped = false;
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: PsActionTile(
+          body: MsActionTile(
             title: 'Tap Me',
             icon: Icons.touch_app,
             onTap: () {
@@ -62,20 +64,22 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byType(PsActionTile));
+    await tester.tap(find.byType(MsActionTile));
     await tester.pump();
 
     expect(tapped, true);
   });
 
-  testWidgets('PsActionTile uses correct semantic label', (WidgetTester tester) async {
+  testWidgets('PsActionTile uses correct semantic label', (
+    WidgetTester tester,
+  ) async {
     const title = 'Test Title';
     const semanticLabel = 'Custom Label';
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: PsActionTile(
+          body: MsActionTile(
             title: title,
             icon: Icons.settings,
             semanticLabel: semanticLabel,
@@ -87,7 +91,8 @@ void main() {
 
     expect(
       find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.label == semanticLabel,
+        (widget) =>
+            widget is Semantics && widget.properties.label == semanticLabel,
       ),
       findsOneWidget,
     );

@@ -140,19 +140,8 @@ class SettingsScreen extends ConsumerWidget {
               value: settings.inertialNavigation,
               onChanged: notifier.toggleInertialNavigation,
               showHelpButton: true,
-              onHelpTap: () => showDialog<void>(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: Text(l10n.inertialNavigation),
-                  content: Text(l10n.inertialDialogBody),
-                  actions: [
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(l10n.gotIt),
-                    ),
-                  ],
-                ),
-              ),
+              onHelpTap: () => TutorialNavigator.push(
+                  context, TutorialRoute.inertialNavigation),
             ),
           ]),
 

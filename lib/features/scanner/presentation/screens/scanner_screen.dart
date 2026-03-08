@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moneysensev2/features/scanner/data/datasources/camera_service.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
@@ -107,7 +108,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     ref
         .read(cameraControllerProvider.notifier)
         .resumeCamera(
-            useFrontCamera: s.useFrontCamera, useFlash: s.useFlashlight)
+          useFrontCamera: s.useFrontCamera,
+          useFlash: s.useFlashlight,
+        )
         .then((_) => ref.read(scannerStateProvider.notifier).openCamera());
   }
 
@@ -263,30 +266,38 @@ class _IdlePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.currency_exchange_rounded, size: 56,
-                color: isDark ? const Color(0xFF4A5568) : const Color(0xFFB0B8C4)),
-            const SizedBox(height: 16),
-            Text(l10n.tapToScan,
-                style: TextStyle(
-                  // Lightened: was 0xFF555555 / 0xFFAAAAAA — now clearly visible
-                  color: isDark ? const Color(0xFF8A9BB0) : const Color(0xFF7A8899),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                )),
-          ],
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.currency_exchange_rounded,
+          size: 56,
+          color: isDark ? const Color(0xFF4A5568) : const Color(0xFFB0B8C4),
         ),
-      );
+        const SizedBox(height: 16),
+        Text(
+          l10n.tapToScan,
+          style: TextStyle(
+            // Lightened: was 0xFF555555 / 0xFFAAAAAA — now clearly visible
+            color: isDark ? const Color(0xFF8A9BB0) : const Color(0xFF7A8899),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _LoadingView extends StatelessWidget {
   const _LoadingView();
   @override
   Widget build(BuildContext context) => const Center(
-        child: CircularProgressIndicator(color: AppColors.accentBlue, strokeWidth: 3),
-      );
+    child: CircularProgressIndicator(
+      color: AppColors.accentBlue,
+      strokeWidth: 3,
+    ),
+  );
 }
 
 class _ErrorView extends StatelessWidget {
@@ -296,30 +307,42 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.no_photography_outlined,
-                  size: 48, color: AppColors.error),
-              const SizedBox(height: 12),
-              Text('Camera unavailable',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 16,
-                    color: isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface,
-                  )),
-              const SizedBox(height: 6),
-              Text(error,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant,
-                  )),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.no_photography_outlined,
+            size: 48,
+            color: AppColors.error,
           ),
-        ),
-      );
+          const SizedBox(height: 12),
+          Text(
+            'Camera unavailable',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: isDark
+                  ? AppColors.darkOnSurface
+                  : AppColors.lightOnSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppColors.darkOnSurfaceVariant
+                  : AppColors.lightOnSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _PausedOverlay extends StatelessWidget {
@@ -328,22 +351,36 @@ class _PausedOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: Colors.black.withOpacity(0.45),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.pause_circle_outline_rounded, size: 72,
-                  color: Colors.white.withOpacity(0.85)),
-              const SizedBox(height: 12),
-              Text(l10n.paused,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9),
-                      fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-              const SizedBox(height: 6),
-              Text(l10n.doubleTapToResume,
-                  style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 13)),
-            ],
+    color: Colors.black.withOpacity(0.45),
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.pause_circle_outline_rounded,
+            size: 72,
+            color: Colors.white.withOpacity(0.85),
           ),
-        ),
-      );
+          const SizedBox(height: 12),
+          Text(
+            l10n.paused,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.doubleTapToResume,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.55),
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

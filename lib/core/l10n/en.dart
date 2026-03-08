@@ -83,11 +83,46 @@ abstract final class EnStrings {
   static const String leaveAFeedback = 'Leave a Feedback';
   static const String termsOfServices = 'Terms of Services';
 
-  // Inertial navigation dialog
+  // Inertial navigation dialog — now points to the real tutorial
   static const String inertialDialogBody =
-      'Tilt your phone left to open Settings or right to open Tutorial — '
-      'no tapping required.\n\nAn interactive tutorial for this feature is coming soon.';
+      'Tilt your phone left to open Tutorial or right to open Settings — '
+      'no tapping required.\n\nTap the help button to open the interactive tutorial.';
   static const String gotIt = 'Got it';
+
+  // ── Tutorial card — Inertial Navigation ───────────────────────────────────
+  static const String tutorialCardInertialTitle = 'Inertial Navigation';
+  static const String tutorialCardInertialDesc =
+      'Tilt your phone left or right to navigate between screens — '
+      'no buttons or taps required.';
+
+  // ── Tutorial: Inertial Navigation ─────────────────────────────────────────
+  static const String inertialTutorialBadge = 'Navigation';
+  static const String inertialTutorialDescription =
+      'Hold your phone upright and tilt it left to open Tutorial or right '
+      'to open Settings. On any sub-screen, tilt back to return home. '
+      'The phone must be held upright — it will not trigger while lying flat.';
+  static const String inertialTutorialStep1 =
+      'Enable "Inertial Navigation" in Settings → Navigation.';
+  static const String inertialTutorialStep2 =
+      'Hold your phone upright in portrait orientation.';
+  static const String inertialTutorialStep3 =
+      'Tilt RIGHT to open Settings, tilt LEFT to open Tutorial.';
+  static const String inertialTutorialStep4 =
+      'On Settings or Tutorial, tilt either direction to return home.';
+  static const String inertialTutorialStep5 =
+      'The phone must be tilted steadily — a quick flick will not trigger it.';
+  static const String inertialTiltRight = 'Tilt right → Settings';
+  static const String inertialTiltLeft  = 'Tilt left → Tutorial';
+  static const String inertialTiltBack  = 'Tilt either → Go back';
+  static const String inertialTryItHint = 'Tilt your phone left or right to try';
+  static const String inertialTiltDetected = '✓ Tilt detected!';
+  static const String inertialFlatWarning =
+      'Phone is flat — hold it upright to activate';
+  static const String inertialLegendRight = 'Tilt right';
+  static const String inertialLegendLeft  = 'Tilt left';
+  static const String inertialLegendOpensSettings  = 'Opens Settings';
+  static const String inertialLegendOpensTutorial  = 'Opens Tutorial';
+  static const String inertialLegendGoBack         = 'Go back (from sub-screens)';
 
   // ── Scanner screen ────────────────────────────────────────────────────────
   static const String scanning = 'Scanning...';

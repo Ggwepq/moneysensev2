@@ -131,6 +131,50 @@ class AppLocalizations {
   String get gotIt =>
       isTagalog ? TlStrings.gotIt : EnStrings.gotIt;
 
+  // Tutorial card — Inertial Navigation
+  String get tutorialCardInertialTitle =>
+      isTagalog ? TlStrings.tutorialCardInertialTitle : EnStrings.tutorialCardInertialTitle;
+  String get tutorialCardInertialDesc =>
+      isTagalog ? TlStrings.tutorialCardInertialDesc : EnStrings.tutorialCardInertialDesc;
+
+  // ── Tutorial: Inertial Navigation ─────────────────────────────────────────
+  String get inertialTutorialBadge =>
+      isTagalog ? TlStrings.inertialTutorialBadge : EnStrings.inertialTutorialBadge;
+  String get inertialTutorialDescription =>
+      isTagalog ? TlStrings.inertialTutorialDescription : EnStrings.inertialTutorialDescription;
+  String get inertialTutorialStep1 =>
+      isTagalog ? TlStrings.inertialTutorialStep1 : EnStrings.inertialTutorialStep1;
+  String get inertialTutorialStep2 =>
+      isTagalog ? TlStrings.inertialTutorialStep2 : EnStrings.inertialTutorialStep2;
+  String get inertialTutorialStep3 =>
+      isTagalog ? TlStrings.inertialTutorialStep3 : EnStrings.inertialTutorialStep3;
+  String get inertialTutorialStep4 =>
+      isTagalog ? TlStrings.inertialTutorialStep4 : EnStrings.inertialTutorialStep4;
+  String get inertialTutorialStep5 =>
+      isTagalog ? TlStrings.inertialTutorialStep5 : EnStrings.inertialTutorialStep5;
+  String get inertialTiltRight =>
+      isTagalog ? TlStrings.inertialTiltRight : EnStrings.inertialTiltRight;
+  String get inertialTiltLeft =>
+      isTagalog ? TlStrings.inertialTiltLeft : EnStrings.inertialTiltLeft;
+  String get inertialTiltBack =>
+      isTagalog ? TlStrings.inertialTiltBack : EnStrings.inertialTiltBack;
+  String get inertialTryItHint =>
+      isTagalog ? TlStrings.inertialTryItHint : EnStrings.inertialTryItHint;
+  String get inertialTiltDetected =>
+      isTagalog ? TlStrings.inertialTiltDetected : EnStrings.inertialTiltDetected;
+  String get inertialFlatWarning =>
+      isTagalog ? TlStrings.inertialFlatWarning : EnStrings.inertialFlatWarning;
+  String get inertialLegendRight =>
+      isTagalog ? TlStrings.inertialLegendRight : EnStrings.inertialLegendRight;
+  String get inertialLegendLeft =>
+      isTagalog ? TlStrings.inertialLegendLeft : EnStrings.inertialLegendLeft;
+  String get inertialLegendOpensSettings =>
+      isTagalog ? TlStrings.inertialLegendOpensSettings : EnStrings.inertialLegendOpensSettings;
+  String get inertialLegendOpensTutorial =>
+      isTagalog ? TlStrings.inertialLegendOpensTutorial : EnStrings.inertialLegendOpensTutorial;
+  String get inertialLegendGoBack =>
+      isTagalog ? TlStrings.inertialLegendGoBack : EnStrings.inertialLegendGoBack;
+
   // ── Scanner ───────────────────────────────────────────────────────────────
   String get scanning =>
       isTagalog ? TlStrings.scanning : EnStrings.scanning;

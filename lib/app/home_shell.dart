@@ -80,27 +80,27 @@ class HomeShell extends ConsumerWidget {
 
   /// Settings slides in from the left (swipe-right gesture revealed it).
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(-1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 
   /// Tutorial slides in from the right (swipe-left gesture revealed it).
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 }
