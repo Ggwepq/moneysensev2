@@ -37,6 +37,8 @@ class AppLocalizations {
       isTagalog ? TlStrings.sectionScanning : EnStrings.sectionScanning;
   String get sectionNavigation =>
       isTagalog ? TlStrings.sectionNavigation : EnStrings.sectionNavigation;
+  String get sectionAccessibility =>
+      isTagalog ? TlStrings.sectionAccessibility : EnStrings.sectionAccessibility;
   String get sectionHelpSupport =>
       isTagalog ? TlStrings.sectionHelpSupport : EnStrings.sectionHelpSupport;
 
@@ -60,10 +62,16 @@ class AppLocalizations {
   // General — subtitles
   String get themeSubtitle =>
       isTagalog ? TlStrings.themeSubtitle : EnStrings.themeSubtitle;
+  String get themeSubtitleFull =>
+      isTagalog ? TlStrings.themeSubtitleFull : EnStrings.themeSubtitleFull;
   String get languageSubtitle =>
       isTagalog ? TlStrings.languageSubtitle : EnStrings.languageSubtitle;
+  String get languageSubtitleFull =>
+      isTagalog ? TlStrings.languageSubtitleFull : EnStrings.languageSubtitleFull;
   String get fontSizeSubtitle =>
       isTagalog ? TlStrings.fontSizeSubtitle : EnStrings.fontSizeSubtitle;
+  String get fontSizeSubtitleFull =>
+      isTagalog ? TlStrings.fontSizeSubtitleFull : EnStrings.fontSizeSubtitleFull;
 
   // Scanning — titles
   String get useFrontCamera =>
@@ -76,10 +84,16 @@ class AppLocalizations {
   // Scanning — subtitles
   String get useFrontCameraSubtitle =>
       isTagalog ? TlStrings.useFrontCameraSubtitle : EnStrings.useFrontCameraSubtitle;
+  String get useFrontCameraSubtitleFull =>
+      isTagalog ? TlStrings.useFrontCameraSubtitleFull : EnStrings.useFrontCameraSubtitleFull;
   String get useFlashlightSubtitle =>
       isTagalog ? TlStrings.useFlashlightSubtitle : EnStrings.useFlashlightSubtitle;
+  String get useFlashlightSubtitleFull =>
+      isTagalog ? TlStrings.useFlashlightSubtitleFull : EnStrings.useFlashlightSubtitleFull;
   String get denominationVibrationSubtitle =>
       isTagalog ? TlStrings.denominationVibrationSubtitle : EnStrings.denominationVibrationSubtitle;
+  String get denominationVibrationSubtitleFull =>
+      isTagalog ? TlStrings.denominationVibrationSubtitleFull : EnStrings.denominationVibrationSubtitleFull;
 
   // Navigation — titles
   String get shakeToGoBack =>
@@ -94,12 +108,20 @@ class AppLocalizations {
   // Navigation — subtitles
   String get shakeToGoBackSubtitle =>
       isTagalog ? TlStrings.shakeToGoBackSubtitle : EnStrings.shakeToGoBackSubtitle;
+  String get shakeToGoBackSubtitleFull =>
+      isTagalog ? TlStrings.shakeToGoBackSubtitleFull : EnStrings.shakeToGoBackSubtitleFull;
   String get goBackTimerSubtitle =>
       isTagalog ? TlStrings.goBackTimerSubtitle : EnStrings.goBackTimerSubtitle;
+  String get goBackTimerSubtitleFull =>
+      isTagalog ? TlStrings.goBackTimerSubtitleFull : EnStrings.goBackTimerSubtitleFull;
   String get gesturalNavigationSubtitle =>
       isTagalog ? TlStrings.gesturalNavigationSubtitle : EnStrings.gesturalNavigationSubtitle;
+  String get gesturalNavigationSubtitleFull =>
+      isTagalog ? TlStrings.gesturalNavigationSubtitleFull : EnStrings.gesturalNavigationSubtitleFull;
   String get inertialNavigationSubtitle =>
       isTagalog ? TlStrings.inertialNavigationSubtitle : EnStrings.inertialNavigationSubtitle;
+  String get inertialNavigationSubtitleFull =>
+      isTagalog ? TlStrings.inertialNavigationSubtitleFull : EnStrings.inertialNavigationSubtitleFull;
 
   // Help & Support — titles
   String get checkForUpdates =>
@@ -311,6 +333,58 @@ class AppLocalizations {
       isTagalog ? TlStrings.visionPartiallyBlind : EnStrings.visionPartiallyBlind;
   String get visionFullyBlind =>
       isTagalog ? TlStrings.visionFullyBlind : EnStrings.visionFullyBlind;
+
+  // ── Accessibility settings ────────────────────────────────────────────────
+  String get visionProfileTitle =>
+      isTagalog ? TlStrings.visionProfileTitle : EnStrings.visionProfileTitle;
+  String get visionProfileSubtitle =>
+      isTagalog ? TlStrings.visionProfileSubtitle : EnStrings.visionProfileSubtitle;
+  String get visionProfileSubtitleFull =>
+      isTagalog ? TlStrings.visionProfileSubtitleFull : EnStrings.visionProfileSubtitleFull;
+  String get visionLowVisionDesc =>
+      isTagalog ? TlStrings.visionLowVisionDesc : EnStrings.visionLowVisionDesc;
+  String get visionPartiallyBlindDesc =>
+      isTagalog ? TlStrings.visionPartiallyBlindDesc : EnStrings.visionPartiallyBlindDesc;
+  String get visionFullyBlindDesc =>
+      isTagalog ? TlStrings.visionFullyBlindDesc : EnStrings.visionFullyBlindDesc;
+
+  String get ttsTitle =>
+      isTagalog ? TlStrings.ttsTitle : EnStrings.ttsTitle;
+  String get ttsSubtitle =>
+      isTagalog ? TlStrings.ttsSubtitle : EnStrings.ttsSubtitle;
+  String get ttsSubtitleFull =>
+      isTagalog ? TlStrings.ttsSubtitleFull : EnStrings.ttsSubtitleFull;
+  String get ttsVerbosityTitle =>
+      isTagalog ? TlStrings.ttsVerbosityTitle : EnStrings.ttsVerbosityTitle;
+  String get ttsVerbositySubtitle =>
+      isTagalog ? TlStrings.ttsVerbositySubtitle : EnStrings.ttsVerbositySubtitle;
+  String get ttsVerbositySubtitleFull =>
+      isTagalog ? TlStrings.ttsVerbositySubtitleFull : EnStrings.ttsVerbositySubtitleFull;
+  String get ttsVerbosityMinimal =>
+      isTagalog ? TlStrings.ttsVerbosityMinimal : EnStrings.ttsVerbosityMinimal;
+  String get ttsVerbosityStandard =>
+      isTagalog ? TlStrings.ttsVerbosityStandard : EnStrings.ttsVerbosityStandard;
+  String get ttsVerbosityFull =>
+      isTagalog ? TlStrings.ttsVerbosityFull : EnStrings.ttsVerbosityFull;
+
+  String get hapticTitle =>
+      isTagalog ? TlStrings.hapticTitle : EnStrings.hapticTitle;
+  String get hapticSubtitle =>
+      isTagalog ? TlStrings.hapticSubtitle : EnStrings.hapticSubtitle;
+  String get hapticSubtitleFull =>
+      isTagalog ? TlStrings.hapticSubtitleFull : EnStrings.hapticSubtitleFull;
+  String get hapticIntensityTitle =>
+      isTagalog ? TlStrings.hapticIntensityTitle : EnStrings.hapticIntensityTitle;
+  String get hapticIntensitySubtitle =>
+      isTagalog ? TlStrings.hapticIntensitySubtitle : EnStrings.hapticIntensitySubtitle;
+  String get hapticIntensitySubtitleFull =>
+      isTagalog ? TlStrings.hapticIntensitySubtitleFull : EnStrings.hapticIntensitySubtitleFull;
+  String get hapticIntensitySubtle =>
+      isTagalog ? TlStrings.hapticIntensitySubtle : EnStrings.hapticIntensitySubtle;
+  String get hapticIntensityMedium =>
+      isTagalog ? TlStrings.hapticIntensityMedium : EnStrings.hapticIntensityMedium;
+  String get hapticIntensityStrong =>
+      isTagalog ? TlStrings.hapticIntensityStrong : EnStrings.hapticIntensityStrong;
   String get next =>
       isTagalog ? TlStrings.next : EnStrings.next;
   String get getStarted =>

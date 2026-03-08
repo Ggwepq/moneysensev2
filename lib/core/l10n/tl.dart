@@ -14,8 +14,9 @@ abstract final class TlStrings {
   // Section headers
   static const String sectionGeneral = 'Pangkalahatan';
   static const String sectionScanning = 'Pag-scan';
-  static const String sectionNavigation = 'Nabigasyon';
-  static const String sectionHelpSupport = 'Tulong at Suporta';
+  static const String sectionNavigation    = 'Nabigasyon';
+  static const String sectionAccessibility = 'Aksesibilidad';
+  static const String sectionHelpSupport   = 'Tulong at Suporta';
 
   // General — titles
   static const String theme = 'Tema';
@@ -30,10 +31,16 @@ abstract final class TlStrings {
   // General — subtitles
   static const String themeSubtitle =
       'Pumili ng maliwanag, madilim, o sundan ang setting ng iyong device.';
+  static const String themeSubtitleFull =
+      'Piliin kung paano magmumukhang ang app. Ang light mode ay gumagamit ng puting background; ang dark mode ay gumagamit ng madilim na background; ang system mode ay awtomatikong sinusundan ang kasalukuyang setting ng display ng iyong telepono.';
   static const String languageSubtitle =
       'Piliin ang wika na gagamitin sa buong app.';
+  static const String languageSubtitleFull =
+      'Pumili sa pagitan ng Ingles at Filipino (Tagalog). Binabago nito ang lahat ng teksto sa screen at mga binibigkas na anunsyo sa buong app.';
   static const String fontSizeSubtitle =
       'Ayusin ang laki ng teksto ayon sa iyong kaginhawahan.';
+  static const String fontSizeSubtitleFull =
+      'I-drag ang slider para palakihin o paliitin ang teksto. Ang iyong vision profile ay nagtatakda ng minimum na laki — maaari kang pumunta ng mas mataas, ngunit hindi mas mababa sa floor ng iyong profile.';
 
   // Scanning — titles
   static const String useFrontCamera = 'Gamitin ang Front Camera';
@@ -43,10 +50,16 @@ abstract final class TlStrings {
   // Scanning — subtitles
   static const String useFrontCameraSubtitle =
       'Lumipat sa kamera sa harap para sa pag-scan.';
+  static const String useFrontCameraSubtitleFull =
+      'Kapag naka-enable, ginagamit ng MoneySense ang front (selfie) camera sa halip ng rear camera. Kapaki-pakinabang kung mas gusto mong hawakan ang telepono nang nakaharap sa iyo habang nagsa-scan.';
   static const String useFlashlightSubtitle =
       'Panatilihing bukas ang flashlight habang aktibo ang kamera.';
+  static const String useFlashlightSubtitleFull =
+      'Binubuksan ang rear flashlight tuwing bukas ang scanner, tinutulungan na mailaw ang bill sa madilim na kondisyon. Gumagana lamang sa rear camera.';
   static const String denominationVibrationSubtitle =
       'Maramdaman ang natatanging pattern ng vibrasyon para sa bawat denominasyon.';
+  static const String denominationVibrationSubtitleFull =
+      'Kapag natukoy ang isang bill, ang iyong telepono ay nagvi-vibrate sa isang pattern na natatangi sa denominasyong iyon — para maramdaman mo ang resulta nang hindi nakikinig. Bawat halaga ng bill ay may natatanging pattern.';
 
   // Navigation — titles
   static const String shakeToGoBack = 'Iling para Bumalik';
@@ -57,12 +70,20 @@ abstract final class TlStrings {
   // Navigation — subtitles
   static const String shakeToGoBackSubtitle =
       'Iiling ang telepono para bumalik sa nakaraang screen.';
+  static const String shakeToGoBackSubtitleFull =
+      'Mag-bigay ng mabilis na iling sa iyong telepono para bumalik sa nakaraang screen mula kahit saan sa app. Ang threshold ng pag-iling ay nakatakda upang maiwasan ang mga aksidenteng trigger sa panahon ng normal na paggalaw.';
   static const String goBackTimerSubtitle =
       'Awtomatikong bumalik sa scanner pagkatapos ipakita ang resulta.';
+  static const String goBackTimerSubtitleFull =
+      'Pagkatapos matukoy ang isang denominasyon, awtomatikong babalik ang MoneySense sa scanner pagkatapos ng bilang ng segundo na itinakda mo dito. Itakda sa 0 para i-disable ang timer at manatili sa result screen.';
   static const String gesturalNavigationSubtitle =
       'Mag-swipe sa scanner para buksan ang Settings, Tutorial, o i-toggle ang flash.';
+  static const String gesturalNavigationSubtitleFull =
+      'Sa scanner screen: mag-swipe pakanan para buksan ang Settings, mag-swipe pakaliwa para buksan ang Tutorial, mag-swipe pataas para i-toggle ang flashlight, at i-double-tap para i-freeze o i-unfreeze ang live camera preview.';
   static const String inertialNavigationSubtitle =
       'Ikiling ang telepono pakaliwa o pakanan para mag-navigate sa pagitan ng mga screen.';
+  static const String inertialNavigationSubtitleFull =
+      'Hawakan ang iyong telepono nang tuwid at ikiling ito pakaliwa para buksan ang Tutorial, o pakanan para sa Settings. Sa anumang sub-screen, ikiling sa alinmang direksyon para bumalik. Kailangan mong hawakan ang tilt ng isang segundo bago ito ma-trigger.';
 
   // Help & Support — subtitles
   static const String checkForUpdatesSubtitle =
@@ -218,6 +239,53 @@ abstract final class TlStrings {
   static const String gestureLabelLeft = '← Nagbubukas ng Tutorial';
   static const String gestureLabelUp = '↑ Nag-toggle ng Flashlight';
   static const String gestureLabelTap = '⊙ Preview Frozen / Ipinagpatuloy';
+
+  // ── Accessibility settings ────────────────────────────────────────────────
+
+  // Vision profile
+  static const String visionProfileTitle    = 'Uri ng Paningin';
+  static const String visionProfileSubtitle =
+      'Inaangkop ang TTS verbosity, lakas ng haptic, at laki ng font sa iyong pangangailangan.';
+  static const String visionProfileSubtitleFull =
+      'Ang iyong vision profile ang pundasyon ng accessibility system ng MoneySense. Ang pagpili ng profile ay awtomatikong nagtatakda ng speech verbosity, lakas ng haptic, minimum na laki ng font, at kung ang audio ay itinuturing na pangunahin. Maaari mo pa ring i-fine-tune ang bawat setting nang paisa-isa pagkatapos pumili.';
+
+  // TTS
+  static const String ttsTitle    = 'Text-to-Speech';
+  static const String ttsSubtitle =
+      'Binibigkas ang mga resulta ng scan at mga kaganapan sa app.';
+  static const String ttsSubtitleFull =
+      'Kapag naka-enable, binabasa ng MoneySense nang malakas ang denominasyon ng bawat bill na na-scan. Sa mas mataas na antas ng verbosity, inuanunsyo rin nito ang mga navigation event, pangalan ng screen, at estado ng system. Gumagamit ng built-in na speech engine ng iyong device.';
+  static const String ttsVerbosityTitle    = 'Antas ng Pagsasalita';
+  static const String ttsVerbositySubtitle =
+      'Gaano karami ang sinasalita ng app — resulta lamang, o buong narrasyon.';
+  static const String ttsVerbositySubtitleFull =
+      'Resulta: ang na-scan na denominasyon lamang ang binibigkas. Karaniwan: mga resulta kasama ang mga navigation event at mga kumpirmasyon ng setting. Buo: lahat ay binabalita — mga paglipat ng screen, estado ng scanner, idle na mga prompt, at lahat ng interaksyon.';
+  static const String ttsVerbosityMinimal  = 'Resulta';
+  static const String ttsVerbosityStandard = 'Karaniwan';
+  static const String ttsVerbosityFull     = 'Buo';
+
+  // Haptics
+  static const String hapticTitle    = 'Haptic Feedback';
+  static const String hapticSubtitle =
+      'Vibrasyon na feedback para sa mga resulta ng scan at nabigasyon.';
+  static const String hapticSubtitleFull =
+      'Kapag naka-enable, nagvi-vibrate ang iyong telepono bilang tugon sa mga resulta ng scan, nabigasyon, at iba pang mga kaganapan. Ang mga pattern ng vibrasyon ay natatangi sa bawat uri ng kaganapan upang maaari itong makilala sa pamamagitan ng pakiramdam — lalo na mahalaga kapag hindi available ang audio.';
+  static const String hapticIntensityTitle    = 'Lakas ng Haptic';
+  static const String hapticIntensitySubtitle =
+      'Gaano kalakas ang pag-vibrate ng telepono para sa bawat kaganapan.';
+  static const String hapticIntensitySubtitleFull =
+      'Banayad: magaang na haptic click lamang, walang motor vibration. Katamtaman: haptic click kasama ang maikling motor pulse. Malakas: haptic click kasama ang mayamang multi-pulse na mga pattern — bawat uri ng kaganapan (resulta ng scan, error, nabigasyon) ay may natatanging pattern na maaari mong matutunan.';
+  static const String hapticIntensitySubtle  = 'Banayad';
+  static const String hapticIntensityMedium  = 'Katamtaman';
+  static const String hapticIntensityStrong  = 'Malakas';
+
+  // Vision profile descriptions
+  static const String visionLowVisionDesc =
+      'Visual na UI na may pinapalaking teksto at contrast. Opsyonal ang TTS at haptics.';
+  static const String visionPartiallyBlindDesc =
+      'May tulong na audio. Awtomatikong binabalita ng TTS ang mga resulta at nabigasyon.';
+  static const String visionFullyBlindDesc =
+      'Audio ang pangunahin. Lahat ay binabalita ng TTS. Mga mayamang haptic pattern ang nagdadala ng kahulugan.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
   static const String onboardingWelcomeTitle = 'Maligayang Pagdating sa MoneySense';

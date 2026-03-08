@@ -15,6 +15,7 @@ abstract final class EnStrings {
   static const String sectionGeneral = 'General';
   static const String sectionScanning = 'Scanning';
   static const String sectionNavigation = 'Navigation';
+  static const String sectionAccessibility = 'Accessibility';
   static const String sectionHelpSupport = 'Help & Support';
 
   // General — titles
@@ -30,10 +31,16 @@ abstract final class EnStrings {
   // General — subtitles
   static const String themeSubtitle =
       'Choose between light, dark, or follow your system setting.';
+  static const String themeSubtitleFull =
+      'Choose how the app looks. Light mode uses a white background; dark mode uses a dark navy background; system mode automatically matches your phone\'s current display setting.';
   static const String languageSubtitle =
       'Select the language used throughout the app.';
+  static const String languageSubtitleFull =
+      'Choose between English and Filipino (Tagalog). This changes all on-screen text and spoken announcements throughout the app.';
   static const String fontSizeSubtitle =
       'Adjust the text size to what is most comfortable for you.';
+  static const String fontSizeSubtitleFull =
+      'Drag the slider to make text larger or smaller. Your vision profile sets a minimum size floor — you can always go larger, but not below the floor for your profile.';
 
   // Scanning — titles
   static const String useFrontCamera = 'Use Front Camera';
@@ -43,10 +50,16 @@ abstract final class EnStrings {
   // Scanning — subtitles
   static const String useFrontCameraSubtitle =
       'Flip to the front-facing camera for scanning.';
+  static const String useFrontCameraSubtitleFull =
+      'When enabled, MoneySense uses the front (selfie) camera instead of the rear camera. Useful if you prefer to hold the phone facing toward you while scanning.';
   static const String useFlashlightSubtitle =
       'Keep the flashlight on while the camera is active.';
+  static const String useFlashlightSubtitleFull =
+      'Turns on the rear flashlight whenever the scanner is open, helping illuminate the bill in low-light conditions. Only works with the rear camera.';
   static const String denominationVibrationSubtitle =
       'Feel a unique vibration pattern for each denomination scanned.';
+  static const String denominationVibrationSubtitleFull =
+      'When a bill is identified, your phone vibrates in a pattern unique to that denomination — so you can feel the result without listening. Each bill value has a distinct pattern.';
 
   // Navigation — titles
   static const String shakeToGoBack = 'Shake to Go Back';
@@ -57,12 +70,20 @@ abstract final class EnStrings {
   // Navigation — subtitles
   static const String shakeToGoBackSubtitle =
       'Shake your phone to navigate back from any screen.';
+  static const String shakeToGoBackSubtitleFull =
+      'Give your phone a quick shake to return to the previous screen from anywhere in the app. The shake threshold is calibrated to avoid accidental triggers during normal movement.';
   static const String goBackTimerSubtitle =
       'Automatically return to the scanner after showing a result.';
+  static const String goBackTimerSubtitleFull =
+      'After a denomination is identified, MoneySense will automatically return to the scanner after the number of seconds you set here. Set it to 0 to disable the timer and stay on the result screen.';
   static const String gesturalNavigationSubtitle =
       'Swipe on the scanner to open Settings, Tutorial, or toggle flash.';
+  static const String gesturalNavigationSubtitleFull =
+      'On the scanner screen: swipe right to open Settings, swipe left to open Tutorial, swipe up to toggle the flashlight, and double-tap to freeze or unfreeze the live camera preview.';
   static const String inertialNavigationSubtitle =
       'Tilt your phone left or right to navigate between screens.';
+  static const String inertialNavigationSubtitleFull =
+      'Hold your phone upright and tilt it left to open the Tutorial, or right to open Settings. On any sub-screen, tilt either direction to go back. You must hold the tilt for one second before it triggers.';
 
   // Help & Support — subtitles
   static const String checkForUpdatesSubtitle =
@@ -219,7 +240,54 @@ abstract final class EnStrings {
   static const String gestureLabelUp = '↑ Toggles Flashlight';
   static const String gestureLabelTap = '⊙ Preview Frozen / Resumed';
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
+  // ── Accessibility settings ────────────────────────────────────────────────
+
+  // Vision profile
+  static const String visionProfileTitle    = 'Vision Profile';
+  static const String visionProfileSubtitle =
+      'Adjusts TTS verbosity, haptic strength, and font floor to your needs.';
+  static const String visionProfileSubtitleFull =
+      'Your vision profile is the foundation of MoneySense\'s accessibility system. Choosing a profile automatically sets the speech verbosity, haptic strength, minimum font size, and whether audio is treated as primary. You can still fine-tune each setting individually after choosing.';
+
+  // TTS
+  static const String ttsTitle    = 'Text-to-Speech';
+  static const String ttsSubtitle =
+      'Speaks scan results and app events aloud.';
+  static const String ttsSubtitleFull =
+      'When enabled, MoneySense reads aloud the denomination of each bill scanned. At higher verbosity levels, it also announces navigation events, screen names, and system state. Uses your device\'s built-in speech engine.';
+  static const String ttsVerbosityTitle    = 'Speech Verbosity';
+  static const String ttsVerbositySubtitle =
+      'How much the app speaks — results only, or full narration.';
+  static const String ttsVerbositySubtitleFull =
+      'Results: only the scanned denomination is spoken. Standard: results plus navigation events and setting confirmations. Full: everything is narrated — screen transitions, scanner state, idle prompts, and all interactions.';
+  static const String ttsVerbosityMinimal  = 'Results';
+  static const String ttsVerbosityStandard = 'Standard';
+  static const String ttsVerbosityFull     = 'Full';
+
+  // Haptics
+  static const String hapticTitle    = 'Haptic Feedback';
+  static const String hapticSubtitle =
+      'Vibration feedback for scan results and navigation.';
+  static const String hapticSubtitleFull =
+      'When enabled, your phone vibrates in response to scan results, navigation, and other events. The vibration patterns are distinct per event type so they can be told apart by feel alone — especially important when audio is not available.';
+  static const String hapticIntensityTitle    = 'Haptic Intensity';
+  static const String hapticIntensitySubtitle =
+      'How strongly the phone vibrates for each event.';
+  static const String hapticIntensitySubtitleFull =
+      'Subtle: light haptic click only, no motor vibration. Medium: haptic click plus a short motor pulse. Strong: haptic click plus rich multi-pulse patterns — each event type (scan result, error, navigation) has a distinct pattern you can learn to recognise.';
+  static const String hapticIntensitySubtle  = 'Subtle';
+  static const String hapticIntensityMedium  = 'Medium';
+  static const String hapticIntensityStrong  = 'Strong';
+
+  // Vision profile descriptions (shown in the tile below the pills)
+  static const String visionLowVisionDesc =
+      'Visual UI with amplified text and contrast. TTS and haptics are optional.';
+  static const String visionPartiallyBlindDesc =
+      'Audio-assisted. TTS announces results and navigation automatically.';
+  static const String visionFullyBlindDesc =
+      'Audio-primary. TTS narrates everything. Rich haptic patterns carry meaning.';
+
+  // ── Onboarding
   static const String onboardingWelcomeTitle = 'Welcome to MoneySense';
   static const String onboardingWelcomeSubtitle =
       'Your accessible Philippine currency identifier.';
