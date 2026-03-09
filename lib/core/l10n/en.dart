@@ -40,7 +40,7 @@ abstract final class EnStrings {
   static const String fontSizeSubtitle =
       'Adjust the text size to what is most comfortable for you.';
   static const String fontSizeSubtitleFull =
-      'Drag the slider to make text larger or smaller. Your vision profile sets a minimum size floor — you can always go larger, but not below the floor for your profile.';
+      "Drag the slider to make text larger or smaller. Your vision profile sets a minimum size floor. You can go larger, but not below your profile's floor.";
 
   // Scanning — titles
   static const String useFrontCamera = 'Use Front Camera';
@@ -59,7 +59,7 @@ abstract final class EnStrings {
   static const String denominationVibrationSubtitle =
       'Feel a unique vibration pattern for each denomination scanned.';
   static const String denominationVibrationSubtitleFull =
-      'When a bill is identified, your phone vibrates in a pattern unique to that denomination — so you can feel the result without listening. Each bill value has a distinct pattern.';
+      'When a bill is identified, your phone vibrates in a pattern unique to that denomination, so you can feel the result without listening. Each bill value has a distinct pattern.';
 
   // Navigation — titles
   static const String shakeToGoBack = 'Shake to Go Back';
@@ -106,14 +106,14 @@ abstract final class EnStrings {
 
   // Inertial navigation dialog — now points to the real tutorial
   static const String inertialDialogBody =
-      'Tilt your phone left to open Tutorial or right to open Settings — '
+      'Tilt your phone left to open Tutorial or right to open Settings. '
       'no tapping required.\n\nTap the help button to open the interactive tutorial.';
   static const String gotIt = 'Got it';
 
   // ── Tutorial card — Inertial Navigation ───────────────────────────────────
   static const String tutorialCardInertialTitle = 'Inertial Navigation';
   static const String tutorialCardInertialDesc =
-      'Tilt your phone left or right to navigate between screens — '
+      'Tilt your phone left or right to navigate between screens. '
       'no buttons or taps required.';
 
   // ── Tutorial: Inertial Navigation ─────────────────────────────────────────
@@ -121,7 +121,7 @@ abstract final class EnStrings {
   static const String inertialTutorialDescription =
       'Hold your phone upright and tilt it left to open Tutorial or right '
       'to open Settings. On any sub-screen, tilt back to return home. '
-      'The phone must be held upright — it will not trigger while lying flat.';
+      'The phone must be held upright. It will not trigger while lying flat.';
   static const String inertialTutorialStep1 =
       'Enable "Inertial Navigation" in Settings → Navigation.';
   static const String inertialTutorialStep2 =
@@ -131,19 +131,20 @@ abstract final class EnStrings {
   static const String inertialTutorialStep4 =
       'On Settings or Tutorial, tilt either direction to return home.';
   static const String inertialTutorialStep5 =
-      'The phone must be tilted steadily — a quick flick will not trigger it.';
+      'The phone must be tilted steadily. A quick flick will not trigger it.';
   static const String inertialTiltRight = 'Tilt right → Settings';
-  static const String inertialTiltLeft  = 'Tilt left → Tutorial';
-  static const String inertialTiltBack  = 'Tilt either → Go back';
-  static const String inertialTryItHint = 'Tilt your phone left or right to try';
+  static const String inertialTiltLeft = 'Tilt left → Tutorial';
+  static const String inertialTiltBack = 'Tilt either → Go back';
+  static const String inertialTryItHint =
+      'Tilt your phone left or right to try';
   static const String inertialTiltDetected = '✓ Tilt detected!';
   static const String inertialFlatWarning =
-      'Phone is flat — hold it upright to activate';
+      'Phone is flat. Hold it upright to activate';
   static const String inertialLegendRight = 'Tilt right';
-  static const String inertialLegendLeft  = 'Tilt left';
-  static const String inertialLegendOpensSettings  = 'Opens Settings';
-  static const String inertialLegendOpensTutorial  = 'Opens Tutorial';
-  static const String inertialLegendGoBack         = 'Go back (from sub-screens)';
+  static const String inertialLegendLeft = 'Tilt left';
+  static const String inertialLegendOpensSettings = 'Opens Settings';
+  static const String inertialLegendOpensTutorial = 'Opens Tutorial';
+  static const String inertialLegendGoBack = 'Go back (from sub-screens)';
 
   // ── Scanner screen ────────────────────────────────────────────────────────
   static const String scanning = 'Scanning...';
@@ -168,7 +169,7 @@ abstract final class EnStrings {
   // Tutorial card — Shake to Go Back
   static const String tutorialCardShakeTitle = 'Shake to Go Back';
   static const String tutorialCardShakeDesc =
-      'Shake your phone to navigate back from any screen — no buttons required.';
+      'Shake your phone to navigate back from any screen, no buttons required.';
 
   // Tutorial card — Gestural Navigation
   static const String tutorialCardGestureTitle = 'Gestural Navigation';
@@ -179,7 +180,7 @@ abstract final class EnStrings {
   static const String denomTutorialBadge = 'Scanning';
   static const String denomTutorialDescription =
       'Each Philippine denomination produces a unique vibration pattern '
-      'so you can identify your currency by touch alone — no screen needed.';
+      'so you can identify your currency by touch alone, no screen needed.';
   static const String denomTutorialStep1 =
       'Enable Denomination Vibration in Settings → Scanning.';
   static const String denomTutorialStep2 =
@@ -196,17 +197,18 @@ abstract final class EnStrings {
   static const String shakeTutorialBadge = 'Navigation';
   static const String shakeTutorialDescription =
       'Give your phone a quick, intentional shake and MoneySense will '
-      'navigate back to the previous screen — no button press needed.';
+      'navigate back to the previous screen, no button press needed.';
   static const String shakeTutorialStep1 =
       'Enable "Shake to Go Back" in Settings → Navigation.';
   static const String shakeTutorialStep2 =
-      'Open any screen — Settings, Tutorial, or a scan result.';
+      'Open any screen: Settings, Tutorial, or a scan result.';
   static const String shakeTutorialStep3 =
       'Shake your phone once with a confident wrist flick.';
   static const String shakeTutorialStep4 =
       'Feel the vibration confirmation as the screen goes back.';
   static const String shakeTryItTitle = 'Try it now';
-  static const String shakeTryItHint = 'Shake your phone with a quick wrist flick';
+  static const String shakeTryItHint =
+      'Shake your phone with a quick wrist flick';
   static const String shakeDetected = '✓ Shake detected!';
   static const String shakeCountSingle = '1 shake detected';
   static String shakeCountMultiple(int n) => '$n shakes detected';
@@ -215,7 +217,7 @@ abstract final class EnStrings {
   static const String gestureTutorialBadge = 'Navigation';
   static const String gestureTutorialDescription =
       'Navigate MoneySense hands-free using swipes and taps on the '
-      'scanner screen — perfect when your other hand is holding currency.';
+      'scanner screen, perfect when your other hand is holding currency.';
   static const String gestureTutorialStep1 =
       'Enable "Gestural Navigation" in Settings → Navigation.';
   static const String gestureTutorialStep2 =
@@ -243,41 +245,40 @@ abstract final class EnStrings {
   // ── Accessibility settings ────────────────────────────────────────────────
 
   // Vision profile
-  static const String visionProfileTitle    = 'Vision Profile';
+  static const String visionProfileTitle = 'Vision Profile';
   static const String visionProfileSubtitle =
       'Adjusts TTS verbosity, haptic strength, and font floor to your needs.';
   static const String visionProfileSubtitleFull =
       'Your vision profile is the foundation of MoneySense\'s accessibility system. Choosing a profile automatically sets the speech verbosity, haptic strength, minimum font size, and whether audio is treated as primary. You can still fine-tune each setting individually after choosing.';
 
   // TTS
-  static const String ttsTitle    = 'Text-to-Speech';
-  static const String ttsSubtitle =
-      'Speaks scan results and app events aloud.';
+  static const String ttsTitle = 'Text-to-Speech';
+  static const String ttsSubtitle = 'Speaks scan results and app events aloud.';
   static const String ttsSubtitleFull =
       'When enabled, MoneySense reads aloud the denomination of each bill scanned. At higher verbosity levels, it also announces navigation events, screen names, and system state. Uses your device\'s built-in speech engine.';
-  static const String ttsVerbosityTitle    = 'Speech Verbosity';
+  static const String ttsVerbosityTitle = 'Speech Verbosity';
   static const String ttsVerbositySubtitle =
-      'How much the app speaks — results only, or full narration.';
+      'How much the app speaks: results only, or full narration.';
   static const String ttsVerbositySubtitleFull =
-      'Results: only the scanned denomination is spoken. Standard: results plus navigation events and setting confirmations. Full: everything is narrated — screen transitions, scanner state, idle prompts, and all interactions.';
-  static const String ttsVerbosityMinimal  = 'Results';
+      'Results: only the scanned denomination is spoken. Standard: results plus navigation events and setting confirmations. Full: everything is narrated: screen transitions, scanner state, idle prompts, and all interactions.';
+  static const String ttsVerbosityMinimal = 'Minimal';
   static const String ttsVerbosityStandard = 'Standard';
-  static const String ttsVerbosityFull     = 'Full';
+  static const String ttsVerbosityFull = 'Full';
 
   // Haptics
-  static const String hapticTitle    = 'Haptic Feedback';
+  static const String hapticTitle = 'Haptic Feedback';
   static const String hapticSubtitle =
       'Vibration feedback for scan results and navigation.';
   static const String hapticSubtitleFull =
-      'When enabled, your phone vibrates in response to scan results, navigation, and other events. The vibration patterns are distinct per event type so they can be told apart by feel alone — especially important when audio is not available.';
-  static const String hapticIntensityTitle    = 'Haptic Intensity';
+      'When enabled, your phone vibrates in response to scan results, navigation, and other events. The vibration patterns are distinct per event type so they can be told apart by feel alone, especially important when audio is not available.';
+  static const String hapticIntensityTitle = 'Haptic Intensity';
   static const String hapticIntensitySubtitle =
       'How strongly the phone vibrates for each event.';
   static const String hapticIntensitySubtitleFull =
-      'Subtle: light haptic click only, no motor vibration. Medium: haptic click plus a short motor pulse. Strong: haptic click plus rich multi-pulse patterns — each event type (scan result, error, navigation) has a distinct pattern you can learn to recognise.';
-  static const String hapticIntensitySubtle  = 'Subtle';
-  static const String hapticIntensityMedium  = 'Medium';
-  static const String hapticIntensityStrong  = 'Strong';
+      'Subtle: light haptic click only, no motor vibration. Medium: haptic click plus a short motor pulse. Strong: haptic click plus rich multi-pulse patterns, each event type (scan result, error, navigation) has a distinct pattern you can learn to recognise.';
+  static const String hapticIntensitySubtle = 'Subtle';
+  static const String hapticIntensityMedium = 'Medium';
+  static const String hapticIntensityStrong = 'Strong';
 
   // Vision profile descriptions (shown in the tile below the pills)
   static const String visionLowVisionDesc =
@@ -305,13 +306,22 @@ abstract final class EnStrings {
   // Written for natural speech — concise, unambiguous, no symbols.
 
   // App-level
-  static const String ttsSpeechEnabled  = 'Text to speech enabled.';
+  static const String ttsSpeechEnabled = 'Text to speech enabled.';
   static const String ttsSpeechDisabling = 'Text to speech turning off.';
 
   // Navigation
   static const String ttsNavSettings = 'Settings.';
   static const String ttsNavTutorial = 'Tutorial.';
-  static const String ttsNavHome     = 'Scanner.';
+  static const String ttsNavHome = 'Scanner.';
+
+  // Language change — spoken before and after the engine switches
+  static String ttsLangChanging(String langName) =>
+      'Changing audio to $langName.';
+  static String ttsLangChanged(String langName) =>
+      'Done. Now speaking $langName.';
+
+  // Short visible label shown next to the spinner during language change
+  static const String ttsLangChangingLabel = 'Changing language…';
 
   // Settings confirmations — use parametric helpers (see AppLocalizations)
   // ttsSettingEnabled / ttsSettingDisabled / ttsSettingChanged
@@ -319,47 +329,46 @@ abstract final class EnStrings {
 
   // Scanner — results
   // ttsScanResult(denomination) — minimal: just the amount
-  static String ttsScanResult(String denomination) =>
-      denomination;
+  static String ttsScanResult(String denomination) => denomination;
   // ttsScanResultWithType(denomination, type) — standard: amount + type
   static String ttsScanResultWithType(String denomination, String type) =>
       '$denomination $type.';
   // ttsScanResultLowConfidence(denomination, type) — full: low confidence
   static String ttsScanResultLowConfidence(String denomination, String type) =>
-      '$denomination $type. Not fully certain — please verify.';
+      '$denomination $type. Not fully certain, please verify.';
 
   // Scanner — camera state
-  static const String ttsCameraOpened   = 'Camera ready.';
-  static const String ttsCameraClosed   = 'Camera closed.';
-  static const String ttsPreviewFrozen  = 'Preview frozen.';
+  static const String ttsCameraOpened = 'Camera ready.';
+  static const String ttsCameraClosed = 'Camera closed.';
+  static const String ttsPreviewFrozen = 'Preview frozen.';
   static const String ttsPreviewResumed = 'Preview resumed.';
-  static const String ttsFlashOn        = 'Flashlight on.';
-  static const String ttsFlashOff       = 'Flashlight off.';
+  static const String ttsFlashOn = 'Flashlight on.';
+  static const String ttsFlashOff = 'Flashlight off.';
 
   // Scanner — ambient hints (full verbosity only)
-  static const String ttsScannerIdle  =
+  static const String ttsScannerIdle =
       'Hold a bill or coin flat in front of the camera to scan.';
-  static const String ttsScanStarted  = 'Scanning.';
-  static const String ttsProcessing   = 'Processing.';
+  static const String ttsScanStarted = 'Scanning.';
+  static const String ttsProcessing = 'Processing.';
 
   // Scanner — errors
   static const String ttsCameraPermissionDenied =
       'Camera access denied. Please allow camera permission in Settings.';
-  static const String ttsScanFailed   =
+  static const String ttsScanFailed =
       'Could not identify the currency. Please try again with better lighting.';
-  static const String ttsCameraError  =
+  static const String ttsCameraError =
       'Camera error. Please close and reopen the scanner.';
 
   // ── Scanner Semantics labels (read by TalkBack, not spoken by TTS) ────────
-  static const String scannerSemanticIdle       =
+  static const String scannerSemanticIdle =
       'Scanner. Camera is off. Tap the camera button to start.';
-  static const String scannerSemanticReady      =
+  static const String scannerSemanticReady =
       'Scanner ready. Double-tap to scan a bill or coin.';
-  static const String scannerSemanticScanning   = 'Scanning. Hold still.';
+  static const String scannerSemanticScanning = 'Scanning. Hold still.';
   static const String scannerSemanticProcessing = 'Processing. Almost done.';
-  static const String scannerSemanticPaused     =
+  static const String scannerSemanticPaused =
       'Preview paused. Double-tap to resume.';
-  static const String scannerSemanticResult     = 'Result ready.';
+  static const String scannerSemanticResult = 'Result ready.';
 
   // ── Onboarding TTS — spoken aloud during setup ────────────────────────────
   static const String ttsOnboardingWelcome =
@@ -372,8 +381,7 @@ abstract final class EnStrings {
   static const String ttsOnboardingLanguage =
       'Choose your language. English or Tagalog. '
       'Tap an option, then tap Get Started.';
-  static const String ttsOnboardingProfileSelected =
-      'Vision profile set.';
+  static const String ttsOnboardingProfileSelected = 'Vision profile set.';
 
   // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.
 }

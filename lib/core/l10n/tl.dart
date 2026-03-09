@@ -40,7 +40,7 @@ abstract final class TlStrings {
   static const String fontSizeSubtitle =
       'Ayusin ang laki ng teksto ayon sa iyong kaginhawahan.';
   static const String fontSizeSubtitleFull =
-      'I-drag ang slider para palakihin o paliitin ang teksto. Ang iyong vision profile ay nagtatakda ng minimum na laki — maaari kang pumunta ng mas mataas, ngunit hindi mas mababa sa floor ng iyong profile.';
+      'I-drag ang slider para palakihin o paliitin ang teksto. Ang iyong vision profile ay nagtatakda ng minimum na laki. Maaari kang pumunta ng mas mataas, ngunit hindi mas mababa sa floor ng iyong profile.';
 
   // Scanning — titles
   static const String useFrontCamera = 'Gamitin ang Front Camera';
@@ -59,7 +59,7 @@ abstract final class TlStrings {
   static const String denominationVibrationSubtitle =
       'Maramdaman ang natatanging pattern ng vibrasyon para sa bawat denominasyon.';
   static const String denominationVibrationSubtitleFull =
-      'Kapag natukoy ang isang bill, ang iyong telepono ay nagvi-vibrate sa isang pattern na natatangi sa denominasyong iyon — para maramdaman mo ang resulta nang hindi nakikinig. Bawat halaga ng bill ay may natatanging pattern.';
+      'Kapag natukoy ang isang bill, ang iyong telepono ay nagvi-vibrate sa isang pattern na natatangi sa denominasyong iyon, para maramdaman mo ang resulta nang hindi nakikinig. Bawat halaga ng bill ay may natatanging pattern.';
 
   // Navigation — titles
   static const String shakeToGoBack = 'Iling para Bumalik';
@@ -106,14 +106,14 @@ abstract final class TlStrings {
 
   // Inertial navigation dialog — now points to the real tutorial
   static const String inertialDialogBody =
-      'Ikiling ang telepono pakaliwa para buksan ang Tutorial o pakanan para buksan ang Settings — '
+      'Ikiling ang telepono pakaliwa para buksan ang Tutorial o pakanan para buksan ang Settings. '
       'hindi na kailangang mag-tap.\n\nI-tap ang help button para buksan ang interactive na tutorial.';
   static const String gotIt = 'Naintindihan';
 
   // ── Tutorial card — Inertial Navigation ───────────────────────────────────
   static const String tutorialCardInertialTitle = 'Inertial na Nabigasyon';
   static const String tutorialCardInertialDesc =
-      'Ikiling ang telepono pakaliwa o pakanan para mag-navigate sa pagitan ng mga screen — '
+      'Ikiling ang telepono pakaliwa o pakanan para mag-navigate sa pagitan ng mga screen. '
       'hindi na kailangan ng mga pindutan o tap.';
 
   // ── Tutorial: Inertial Navigation ─────────────────────────────────────────
@@ -121,7 +121,7 @@ abstract final class TlStrings {
   static const String inertialTutorialDescription =
       'Hawakan ang telepono nang patayo at ikiling ito pakaliwa para buksan ang Tutorial o '
       'pakanan para buksan ang Settings. Sa anumang sub-screen, ikiling pabalik para bumalik sa home. '
-      'Ang telepono ay dapat hawaking patayo — hindi ito mag-a-activate habang nakahiga.';
+      'Ang telepono ay dapat hawaking patayo, hindi ito mag-a-activate habang nakahiga.';
   static const String inertialTutorialStep1 =
       'I-enable ang "Inertial na Nabigasyon" sa Settings → Nabigasyon.';
   static const String inertialTutorialStep2 =
@@ -131,14 +131,14 @@ abstract final class TlStrings {
   static const String inertialTutorialStep4 =
       'Sa Settings o Tutorial, ikiling sa anumang direksyon para bumalik sa home.';
   static const String inertialTutorialStep5 =
-      'Ang telepono ay dapat ikiling nang tuluy-tuloy — ang mabilis na pagkilos ay hindi mag-a-activate.';
+      'Ang telepono ay dapat ikiling nang tuluy-tuloy. Ang mabilis na pagkilos ay hindi mag-a-activate.';
   static const String inertialTiltRight = 'Ikiling pakanan → Settings';
   static const String inertialTiltLeft  = 'Ikiling pakaliwa → Tutorial';
   static const String inertialTiltBack  = 'Ikiling kahit saan → Bumalik';
   static const String inertialTryItHint = 'Ikiling ang telepono pakaliwa o pakanan para subukan';
   static const String inertialTiltDetected = '✓ Natukoy ang pag-ikiling!';
   static const String inertialFlatWarning =
-      'Nakahiga ang telepono — hawakan ito nang patayo para i-activate';
+      'Nakahiga ang telepono. Hawakan ito nang patayo para i-activate';
   static const String inertialLegendRight = 'Ikiling pakanan';
   static const String inertialLegendLeft  = 'Ikiling pakaliwa';
   static const String inertialLegendOpensSettings  = 'Nagbubukas ng Settings';
@@ -168,7 +168,7 @@ abstract final class TlStrings {
   // Tutorial card — Shake to Go Back
   static const String tutorialCardShakeTitle = 'Iling para Bumalik';
   static const String tutorialCardShakeDesc =
-      'Iiling ang telepono para bumalik sa nakaraang screen — hindi na kailangan ang mga pindutan.';
+      'Iiling ang telepono para bumalik sa nakaraang screen, hindi na kailangan ang mga pindutan.';
 
   // Tutorial card — Gestural Navigation
   static const String tutorialCardGestureTitle = 'Gestural na Nabigasyon';
@@ -196,11 +196,11 @@ abstract final class TlStrings {
   static const String shakeTutorialBadge = 'Nabigasyon';
   static const String shakeTutorialDescription =
       'Iiling ang telepono nang may layunin at ang MoneySense ay '
-      'babalik sa nakaraang screen — hindi na kailangan pang pindutin ang anumang pindutan.';
+      'babalik sa nakaraang screen, hindi na kailangan pang pindutin ang anumang pindutan.';
   static const String shakeTutorialStep1 =
       'I-enable ang "Iling para Bumalik" sa Settings → Nabigasyon.';
   static const String shakeTutorialStep2 =
-      'Buksan ang anumang screen — Settings, Tutorial, o resulta ng scan.';
+      'Buksan ang anumang screen: Settings, Tutorial, o resulta ng scan.';
   static const String shakeTutorialStep3 =
       'Iiling ang telepono nang isang beses nang may tiwala.';
   static const String shakeTutorialStep4 =
@@ -215,7 +215,7 @@ abstract final class TlStrings {
   static const String gestureTutorialBadge = 'Nabigasyon';
   static const String gestureTutorialDescription =
       'Mag-navigate sa MoneySense nang walang kamay gamit ang mga swipe at tap '
-      'sa scanner screen — perpekto kapag hawak mo ang pera sa iyong kabilang kamay.';
+      'sa scanner screen, perpekto kapag hawak mo ang pera sa iyong kabilang kamay.';
   static const String gestureTutorialStep1 =
       'I-enable ang "Gestural na Nabigasyon" sa Settings → Nabigasyon.';
   static const String gestureTutorialStep2 =
@@ -257,10 +257,10 @@ abstract final class TlStrings {
       'Kapag naka-enable, binabasa ng MoneySense nang malakas ang denominasyon ng bawat bill na na-scan. Sa mas mataas na antas ng verbosity, inuanunsyo rin nito ang mga navigation event, pangalan ng screen, at estado ng system. Gumagamit ng built-in na speech engine ng iyong device.';
   static const String ttsVerbosityTitle    = 'Antas ng Pagsasalita';
   static const String ttsVerbositySubtitle =
-      'Gaano karami ang sinasalita ng app — resulta lamang, o buong narrasyon.';
+      'Gaano karami ang sinasalita ng app: resulta lamang, o buong narrasyon.';
   static const String ttsVerbositySubtitleFull =
-      'Resulta: ang na-scan na denominasyon lamang ang binibigkas. Karaniwan: mga resulta kasama ang mga navigation event at mga kumpirmasyon ng setting. Buo: lahat ay binabalita — mga paglipat ng screen, estado ng scanner, idle na mga prompt, at lahat ng interaksyon.';
-  static const String ttsVerbosityMinimal  = 'Resulta';
+      'Resulta: ang na-scan na denominasyon lamang ang binibigkas. Karaniwan: mga resulta kasama ang mga navigation event at mga kumpirmasyon ng setting. Buo: lahat ay binabalita: mga paglipat ng screen, estado ng scanner, idle na mga prompt, at lahat ng interaksyon.';
+  static const String ttsVerbosityMinimal  = 'Minimal';
   static const String ttsVerbosityStandard = 'Karaniwan';
   static const String ttsVerbosityFull     = 'Buo';
 
@@ -269,12 +269,12 @@ abstract final class TlStrings {
   static const String hapticSubtitle =
       'Vibrasyon na feedback para sa mga resulta ng scan at nabigasyon.';
   static const String hapticSubtitleFull =
-      'Kapag naka-enable, nagvi-vibrate ang iyong telepono bilang tugon sa mga resulta ng scan, nabigasyon, at iba pang mga kaganapan. Ang mga pattern ng vibrasyon ay natatangi sa bawat uri ng kaganapan upang maaari itong makilala sa pamamagitan ng pakiramdam — lalo na mahalaga kapag hindi available ang audio.';
+      'Kapag naka-enable, nagvi-vibrate ang iyong telepono bilang tugon sa mga resulta ng scan, nabigasyon, at iba pang mga kaganapan. Ang mga pattern ng vibrasyon ay natatangi sa bawat uri ng kaganapan upang maaari itong makilala sa pamamagitan ng pakiramdam, lalo na mahalaga kapag hindi available ang audio.';
   static const String hapticIntensityTitle    = 'Lakas ng Haptic';
   static const String hapticIntensitySubtitle =
       'Gaano kalakas ang pag-vibrate ng telepono para sa bawat kaganapan.';
   static const String hapticIntensitySubtitleFull =
-      'Banayad: magaang na haptic click lamang, walang motor vibration. Katamtaman: haptic click kasama ang maikling motor pulse. Malakas: haptic click kasama ang mayamang multi-pulse na mga pattern — bawat uri ng kaganapan (resulta ng scan, error, nabigasyon) ay may natatanging pattern na maaari mong matutunan.';
+      'Banayad: magaang na haptic click lamang, walang motor vibration. Katamtaman: haptic click kasama ang maikling motor pulse. Malakas: haptic click kasama ang mayamang multi-pulse na mga pattern. Bawat uri ng kaganapan (resulta ng scan, error, nabigasyon) ay may natatanging pattern na maaari mong matutunan.';
   static const String hapticIntensitySubtle  = 'Banayad';
   static const String hapticIntensityMedium  = 'Katamtaman';
   static const String hapticIntensityStrong  = 'Malakas';
@@ -311,13 +311,22 @@ abstract final class TlStrings {
   static const String ttsNavTutorial = 'Tutorial.';
   static const String ttsNavHome     = 'Scanner.';
 
+  // Language change
+  static String ttsLangChanging(String langName) =>
+      'Binabago ang audio sa $langName.';
+  static String ttsLangChanged(String langName) =>
+      'Tapos na. Nagsasalita na ngayon sa $langName.';
+
+  // Short visible label shown next to the spinner during language change
+  static const String ttsLangChangingLabel = 'Binabago ang wika…';
+
   // Scanner — results
   static String ttsScanResult(String denomination) =>
       denomination;
   static String ttsScanResultWithType(String denomination, String type) =>
       '$denomination na $type.';
   static String ttsScanResultLowConfidence(String denomination, String type) =>
-      '$denomination na $type. Hindi ganap na sigurado — pakiverify.';
+      '$denomination na $type. Hindi ganap na sigurado. Pakiverify.';
 
   // Scanner — camera state
   static const String ttsCameraOpened   = 'Handa na ang kamera.';

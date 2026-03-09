@@ -406,6 +406,22 @@ class AppLocalizations {
   String get ttsNavHome =>
       isTagalog ? TlStrings.ttsNavHome : EnStrings.ttsNavHome;
 
+  // Language-change loading messages
+  String ttsLangChanging(String langName) =>
+      isTagalog
+          ? TlStrings.ttsLangChanging(langName)
+          : EnStrings.ttsLangChanging(langName);
+  String ttsLangChanged(String langName) =>
+      isTagalog
+          ? TlStrings.ttsLangChanged(langName)
+          : EnStrings.ttsLangChanged(langName);
+
+  // Short visible label beside the spinner
+  String get ttsLangChangingLabel =>
+      isTagalog
+          ? TlStrings.ttsLangChangingLabel
+          : EnStrings.ttsLangChangingLabel;
+
   // Settings confirmations — parametric (not stored as const strings)
   String ttsSettingEnabled(String settingName) =>
       isTagalog ? '$settingName naka-on.' : '$settingName enabled.';

@@ -17,6 +17,7 @@ import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
+import '../../../../core/services/haptic_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -85,19 +86,7 @@ class SettingsScreen extends ConsumerWidget {
                 language: settings.language,
                 l10n: l10n,
                 visionConfig: visionConfig,
-                onChanged: (v) {
-                  notifier.setLanguage(v);
-                  // Re-init TTS language immediately so the confirmation
-                  // is spoken in the newly selected language.
-                  final newL10n = AppLocalizations.of(
-                      v == AppLanguage.tagalog);
-                  say(SettingsSpeech.changed(
-                      newL10n,
-                      newL10n.language,
-                      v == AppLanguage.tagalog
-                          ? newL10n.languageTagalog
-                          : newL10n.languageEnglish));
-                },
+                onChanged: notifier.setLanguage,
               ),
               MsSliderTile(
                 title: l10n.fontSize,
@@ -107,7 +96,11 @@ class SettingsScreen extends ConsumerWidget {
                 value: settings.fontScale,
                 min: 0.8,
                 max: 2.0,
-                onChanged: notifier.setFontScale,
+                onChanged: (v) {
+                  notifier.setFontScale(v);
+                  final pct = ((v - 0.8) / (2.0 - 0.8) * 100).round();
+                  say(SettingsSpeech.changed(l10n, l10n.fontSize, '$pct%'));
+                },
                 displayLabel:
                     '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
               ),
@@ -409,11 +402,9 @@ class _ThemeTile extends StatelessWidget {
                 Text(label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: visionConfig.textPrimary(isDark),
                     )),
                 Text(subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: visionConfig.textSecondary(isDark))),
+                    style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -428,6 +419,7 @@ class _ThemeTile extends StatelessWidget {
             ],
             selected: themeMode,
             onSelected: onChanged,
+            accentColor: visionConfig.accentYellow,
           ),
         ],
       ),
@@ -436,8 +428,14 @@ class _ThemeTile extends StatelessWidget {
 }
 
 // ── Language Tile ─────────────────────────────────────────────────────────────
+// Stateful because it owns the `_isChanging` loading flag.
+// The language-change flow:
+//   1. User taps a language pill
+//   2. Spinner appears; "Changing audio to X" spoken in old language
+//   3. TTS engine switches language (awaited)
+//   4. Spinner disappears; "Done. Now speaking X" spoken in new language
 
-class _LanguageTile extends StatelessWidget {
+class _LanguageTile extends ConsumerStatefulWidget {
   const _LanguageTile({
     required this.label,
     required this.subtitle,
@@ -455,13 +453,58 @@ class _LanguageTile extends StatelessWidget {
   final ValueChanged<AppLanguage> onChanged;
 
   @override
+  ConsumerState<_LanguageTile> createState() => _LanguageTileState();
+}
+
+class _LanguageTileState extends ConsumerState<_LanguageTile> {
+  bool _isChanging = false;
+
+  Future<void> _handleChange(AppLanguage newLang) async {
+    if (_isChanging || newLang == widget.language) return;
+
+    final tts      = ref.read(ttsServiceProvider);
+    final settings = ref.read(appSettingsProvider);
+    final oldL10n  = widget.l10n;
+    final newL10n  = AppLocalizations.of(newLang == AppLanguage.tagalog);
+    final newLangName = newLang == AppLanguage.tagalog
+        ? newL10n.languageTagalog
+        : newL10n.languageEnglish;
+
+    // 1. Show spinner
+    setState(() => _isChanging = true);
+
+    // 2. Speak "Changing audio to X" in the OLD language (before engine switch)
+    tts.enqueue(
+      LanguageSpeech.changing(oldL10n, newLangName),
+      enabled: settings.ttsEnabled,
+      currentVerbosity: settings.ttsVerbosity,
+    );
+
+    // 3. Persist the setting
+    widget.onChanged(newLang);
+
+    // 4. Switch the TTS engine — await so we know when it's ready
+    await tts.changeLanguage(newLang);
+
+    // 5. Speak "Done. Now speaking X" in the NEW language
+    tts.enqueue(
+      LanguageSpeech.done(newL10n, newLangName),
+      enabled: settings.ttsEnabled,
+      currentVerbosity: settings.ttsVerbosity,
+    );
+
+    // 6. Hide spinner
+    if (mounted) setState(() => _isChanging = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final selectedLabel = language == AppLanguage.english
-        ? l10n.languageEnglish
-        : l10n.languageTagalog;
+    final selectedLabel = widget.language == AppLanguage.english
+        ? widget.l10n.languageEnglish
+        : widget.l10n.languageTagalog;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -471,28 +514,78 @@ class _LanguageTile extends StatelessWidget {
         children: [
           Semantics(
             header: true,
-            label: '$label. $subtitle. Currently: $selectedLabel',
+            label: '${widget.label}. ${widget.subtitle}. Currently: $selectedLabel',
             excludeSemantics: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
+                Text(widget.label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: visionConfig.textPrimary(isDark),
                     )),
-                Text(subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: visionConfig.textSecondary(isDark))),
+                Text(widget.subtitle,
+                    style: theme.textTheme.bodySmall),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          MsSegmentedSelector<AppLanguage>(
-            options: AppLanguage.values,
-            labels: [l10n.languageEnglish, l10n.languageTagalog],
-            selected: language,
-            onSelected: onChanged,
+          // Selector or loading indicator
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _isChanging
+                ? _LanguageLoadingBadge(
+                    key: const ValueKey('loading'),
+                    l10n: widget.l10n,
+                    isDark: isDark,
+                  )
+                : MsSegmentedSelector<AppLanguage>(
+                    key: const ValueKey('selector'),
+                    options: AppLanguage.values,
+                    labels: [
+                      widget.l10n.languageEnglish,
+                      widget.l10n.languageTagalog,
+                    ],
+                    selected: widget.language,
+                    onSelected: _handleChange,
+                    accentColor: widget.visionConfig.accentYellow,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Small inline loading badge shown while the TTS engine is switching language.
+class _LanguageLoadingBadge extends StatelessWidget {
+  const _LanguageLoadingBadge({super.key, required this.l10n, required this.isDark});
+  final AppLocalizations l10n;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDark ? const Color(0xFF8A9BB0) : const Color(0xFF777777);
+    return SizedBox(
+      height: 40, // same height as the pill selector
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            l10n.ttsLangChangingLabel,
+            style: TextStyle(
+              fontSize: 13,
+              color: color,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ),
@@ -519,16 +612,13 @@ class _VisionProfileTile extends StatelessWidget {
   final VisionConfig visionConfig;
   final ValueChanged<VisionProfile> onChanged;
 
-  String _desc(AppLocalizations l10n) => switch (profile) {
-        VisionProfile.lowVision      => l10n.visionLowVisionDesc,
-        VisionProfile.partiallyBlind => l10n.visionPartiallyBlindDesc,
-        VisionProfile.fullyBlind     => l10n.visionFullyBlindDesc,
-      };
-
   @override
   Widget build(BuildContext context) {
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    // Use theme-aware color so text is always legible regardless of contrast level
+    final titleColor = theme.textTheme.bodyLarge?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -546,11 +636,11 @@ class _VisionProfileTile extends StatelessWidget {
                 Text(label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: visionConfig.textPrimary(isDark),
+                      color: titleColor,
                     )),
                 Text(subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                        color: visionConfig.textSecondary(isDark))),
+                        color: subtitleColor)),
               ],
             ),
           ),
@@ -569,21 +659,7 @@ class _VisionProfileTile extends StatelessWidget {
             ],
             selected: profile,
             onSelected: onChanged,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Text(
-              _desc(l10n),
-              key: ValueKey(profile),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark
-                    ? const Color(0xFF8A9BB0)
-                    : const Color(0xFF777777),
-                fontStyle: FontStyle.italic,
-                height: 1.5,
-              ),
-            ),
+            accentColor: visionConfig.accentYellow,
           ),
         ],
       ),
@@ -612,8 +688,7 @@ class _VerbosityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -631,11 +706,8 @@ class _VerbosityTile extends StatelessWidget {
                 Text(label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: visionConfig.textPrimary(isDark),
                     )),
-                Text(subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: visionConfig.textSecondary(isDark))),
+                Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -654,6 +726,7 @@ class _VerbosityTile extends StatelessWidget {
             ],
             selected: verbosity,
             onSelected: onChanged,
+            accentColor: visionConfig.accentYellow,
           ),
         ],
       ),
@@ -661,7 +734,7 @@ class _VerbosityTile extends StatelessWidget {
   }
 }
 
-// ── Haptic Intensity Tile ─────────────────────────────────────────────────────
+// Haptic Intensity Tile
 
 class _HapticIntensityTile extends StatelessWidget {
   const _HapticIntensityTile({
@@ -682,8 +755,7 @@ class _HapticIntensityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -701,11 +773,8 @@ class _HapticIntensityTile extends StatelessWidget {
                 Text(label,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: visionConfig.textPrimary(isDark),
                     )),
-                Text(subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: visionConfig.textSecondary(isDark))),
+                Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -723,7 +792,11 @@ class _HapticIntensityTile extends StatelessWidget {
               Icons.waves_rounded,
             ],
             selected: intensity,
-            onSelected: onChanged,
+            onSelected: (v) {
+              onChanged(v);
+              HapticService.toggle(enabled: true, intensity: v);
+            },
+            accentColor: visionConfig.accentYellow,
           ),
         ],
       ),

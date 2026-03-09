@@ -104,6 +104,16 @@ class TtsService {
     await _detectTalkBack();
   }
 
+  /// Switch TTS language and await completion.
+  ///
+  /// Unlike [init], this is a targeted call for the language-change flow —
+  /// callers can await it to know exactly when the engine is ready, then
+  /// speak a confirmation in the new language.
+  Future<void> changeLanguage(AppLanguage language) async {
+    await stop(); // silence any in-progress speech before re-init
+    await _applyLanguage(language);
+  }
+
   Future<void> _applyLanguage(AppLanguage language) async {
     if (language == AppLanguage.tagalog) {
       try {

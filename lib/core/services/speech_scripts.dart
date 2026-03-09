@@ -26,9 +26,9 @@
 //   natural when heard vs read).
 
 import '../../core/l10n/app_localizations.dart';
-import '../../features/settings/domain/entities/app_settings.dart';
 import 'tts_message.dart';
 
+// Re-exported here so callers only need one import.
 export 'scanner_speech_scripts.dart';
 
 // ── App-level ────────────────────────────────────────────────────────────────
@@ -63,7 +63,6 @@ abstract final class NavSpeech {
 
 abstract final class SettingsSpeech {
   /// A boolean setting was toggled.
-  /// [settingName] is the UI label; [isOn] is the new state.
   static TtsMessage toggled(
     AppLocalizations l10n,
     String settingName,
@@ -75,7 +74,7 @@ abstract final class SettingsSpeech {
     id: 'settings.toggle.$settingName',
   );
 
-  /// A selector setting changed (theme, language, verbosity, etc.).
+  /// A selector setting changed (theme, verbosity, etc.).
   static TtsMessage changed(
     AppLocalizations l10n,
     String settingName,
@@ -86,9 +85,27 @@ abstract final class SettingsSpeech {
   );
 }
 
+// ── Language change ───────────────────────────────────────────────────────────
+
+abstract final class LanguageSpeech {
+  /// Spoken in the OLD language, before the engine switches.
+  /// Tells the user what's happening so the silence isn't confusing.
+  static TtsMessage changing(AppLocalizations oldL10n, String newLangName) =>
+      TtsMessage.navigation(
+        oldL10n.ttsLangChanging(newLangName),
+        id: 'lang.changing',
+      );
+
+  /// Spoken in the NEW language, after the engine has switched.
+  /// First thing the user hears in the new voice — confirms it worked.
+  static TtsMessage done(AppLocalizations newL10n, String newLangName) =>
+      TtsMessage.navigation(
+        newL10n.ttsLangChanged(newLangName),
+        id: 'lang.done',
+      );
+}
+
 // ── Scanner ──────────────────────────────────────────────────────────────────
-// Dedicated file — see scanner_speech_scripts.dart.
-// Re-exported here so callers only need one import.
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
 
