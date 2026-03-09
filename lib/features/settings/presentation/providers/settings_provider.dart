@@ -137,3 +137,21 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setHapticIntensity(HapticIntensity intensity) =>
       _update(state.copyWith(hapticIntensity: intensity));
 }
+
+// ---------------------------------------------------------------------------
+// Onboarding gate provider
+// ---------------------------------------------------------------------------
+
+/// True once the user has completed the onboarding flow.
+/// Reads directly from SharedPreferences — synchronous after startup.
+final onboardingCompleteProvider = StateProvider<bool>((ref) {
+  final prefs = ref.read(sharedPreferencesProvider);
+  return SettingsStorage(prefs).loadOnboardingComplete();
+});
+
+/// Call this from OnboardingScreen.onComplete to persist + update the gate.
+void markOnboardingComplete(WidgetRef ref) {
+  final prefs = ref.read(sharedPreferencesProvider);
+  SettingsStorage(prefs).markOnboardingComplete();
+  ref.read(onboardingCompleteProvider.notifier).state = true;
+}

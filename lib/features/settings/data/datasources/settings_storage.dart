@@ -25,6 +25,10 @@ abstract final class SettingsKeys {
   static const ttsVerbosity        = 'settings.ttsVerbosity';
   static const hapticFeedback      = 'settings.hapticFeedback';
   static const hapticIntensity     = 'settings.hapticIntensity';
+
+  /// Set to true once the user completes onboarding.
+  /// Absent or false = first run → show onboarding.
+  static const onboardingComplete  = 'app.onboardingComplete';
 }
 
 // ---------------------------------------------------------------------------
@@ -133,6 +137,16 @@ class SettingsStorage {
   /// Persist just [_lastTimerSeconds] separately.
   void saveLastTimerSeconds(int seconds) =>
       _prefs.setInt(SettingsKeys.lastTimerSeconds, seconds);
+
+  // ── Onboarding gate ───────────────────────────────────────────────────────
+
+  /// Returns true if the user has previously completed onboarding.
+  bool loadOnboardingComplete() =>
+      _prefs.getBool(SettingsKeys.onboardingComplete) ?? false;
+
+  /// Mark onboarding as complete — persisted immediately.
+  Future<void> markOnboardingComplete() =>
+      _prefs.setBool(SettingsKeys.onboardingComplete, true);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 

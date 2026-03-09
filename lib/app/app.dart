@@ -5,6 +5,7 @@ import '../core/services/inertial_detector_widget.dart';
 import '../core/services/shake_detector_widget.dart';
 import '../core/services/tts_service.dart';
 import '../core/theme/app_theme.dart';
+import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
 import '../features/settings/domain/entities/vision_config.dart';
@@ -23,7 +24,6 @@ class MoneySenseApp extends ConsumerWidget {
     final routeObserver = ref.read(routeObserverProvider);
     ref.watch(ttsInitProvider); // keeps TTS in sync with language + verbosity
 
-    // Clamp the user's font scale so a profile's floor is always respected.
     final effectiveScale = visionConfig.effectiveFontScale(settings.fontScale);
 
     return Builder(
@@ -48,7 +48,7 @@ class MoneySenseApp extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// _AppRoot — owns both sensor wrappers so they share the Navigator context
+// _AppRoot — routes to onboarding on first run, home shell on subsequent runs
 // ---------------------------------------------------------------------------
 
 class _AppRoot extends ConsumerStatefulWidget {
@@ -57,17 +57,16 @@ class _AppRoot extends ConsumerStatefulWidget {
 }
 
 class _AppRootState extends ConsumerState<_AppRoot> {
-  // ── Inertial navigation ───────────────────────────────────────────────────
 
-  /// Tilt LEFT → Tutorial (mirrored: tutorial is to the right of home in nav
-  /// order, but the physical gesture "pushes" to the right visually).
+  // ── Inertial navigation (active only when home shell is shown) ────────────
+
   void _onTiltLeft() {
     if (!mounted) return;
     final nav = Navigator.of(context, rootNavigator: false);
     if (nav.canPop()) {
       nav.maybePop();
     } else {
-      _pushTutorial(context);
+      Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
     }
   }
 
@@ -77,16 +76,8 @@ class _AppRootState extends ConsumerState<_AppRoot> {
     if (nav.canPop()) {
       nav.maybePop();
     } else {
-      _pushSettings(context);
+      Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
     }
-  }
-
-  void _pushSettings(BuildContext ctx) {
-    Navigator.of(ctx).push(_slideFromLeft(const SettingsScreen()));
-  }
-
-  void _pushTutorial(BuildContext ctx) {
-    Navigator.of(ctx).push(_slideFromRight(const TutorialScreen()));
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
@@ -117,6 +108,18 @@ class _AppRootState extends ConsumerState<_AppRoot> {
 
   @override
   Widget build(BuildContext context) {
+    final onboardingDone = ref.watch(onboardingCompleteProvider);
+
+    // First run: show onboarding.
+    // OnboardingScreen calls markOnboardingComplete(ref) on finish,
+    // which sets the provider true → this rebuilds → HomeShell is shown.
+    if (!onboardingDone) {
+      return OnboardingScreen(
+        onComplete: () => markOnboardingComplete(ref),
+      );
+    }
+
+    // Subsequent runs: full app with shake + inertial sensors.
     return ShakeDetectorWidget(
       child: InertialDetectorWidget(
         onTiltLeft:  _onTiltLeft,

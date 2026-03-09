@@ -328,7 +328,12 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.playOnboardingSetup,
                 subtitle: l10n.playOnboardingSubtitle,
                 icon: Icons.play_arrow_rounded,
-                onTap: () {/* TODO: navigate to onboarding */},
+                onTap: () {
+                  // Pop settings first so the slide transition is clean,
+                  // then reset the flag — _AppRoot rebuilds to onboarding.
+                  Navigator.of(context).pop();
+                  ref.read(onboardingCompleteProvider.notifier).state = false;
+                },
               ),
               MsActionTile(
                 title: l10n.appInformation,
