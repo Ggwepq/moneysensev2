@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/app_localizations.dart';
+import '../core/services/inertial_detector_widget.dart';
 import '../core/services/speech_scripts.dart';
 import '../core/services/tts_service.dart';
 import '../features/scanner/presentation/providers/scanner_provider.dart';
@@ -11,43 +12,32 @@ import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
 import '../shared/widgets/ms_bottom_nav.dart';
 
-/// Root shell — owns the single [Scaffold].
+/// Root shell. Owns the Scaffold, bottom nav, and inertial navigation sensor.
 ///
-/// Navigation TTS: each push/pop announces the destination so blind users
-/// always know where they are without needing TalkBack to read the AppBar.
-class HomeShell extends ConsumerWidget {
+/// InertialDetectorWidget lives HERE (not in _AppRoot) so its RouteAware
+/// subscription sees the same navigator stack as the Settings/Tutorial pushes.
+/// When Settings is pushed from this level, didPushNext fires correctly
+/// and the sensor pauses, preventing stray tilt callbacks while away.
+class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cameraOpen = ref.watch(cameraOpenProvider);
+  ConsumerState<HomeShell> createState() => _HomeShellState();
+}
 
-    return Scaffold(
-      body: ScannerScreen(
-        onNavigate: (index) {
-          if (index == 0) _pushSettings(context, ref);
-          if (index == 2) _pushTutorial(context, ref);
-        },
-      ),
-      bottomNavigationBar: MsBottomNav(
-        currentIndex: 1,
-        isCameraOpen: cameraOpen,
-        onTap: (index) {
-          if (index == 0) {
-            _pushSettings(context, ref);
-          } else if (index == 1) {
-            _toggleCamera(ref);
-          } else if (index == 2) {
-            _pushTutorial(context, ref);
-          }
-        },
-      ),
-    );
+class _HomeShellState extends ConsumerState<HomeShell> {
+
+  void _pushSettings() {
+    _enqueue(NavSpeech.openedSettings(_l10n));
+    Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
   }
 
-  // ── TTS helper ─────────────────────────────────────────────────────────────
+  void _pushTutorial() {
+    _enqueue(NavSpeech.openedTutorial(_l10n));
+    Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
+  }
 
-  void _enqueue(WidgetRef ref, TtsMessage msg) {
+  void _enqueue(TtsMessage msg) {
     final s = ref.read(appSettingsProvider);
     ref.read(ttsServiceProvider).enqueue(
           msg,
@@ -56,17 +46,15 @@ class HomeShell extends ConsumerWidget {
         );
   }
 
-  AppLocalizations _l10n(WidgetRef ref) =>
+  AppLocalizations get _l10n =>
       AppLocalizations.of(ref.read(appSettingsProvider).isTagalog);
 
-  // ── Camera toggle ──────────────────────────────────────────────────────────
-
-  void _toggleCamera(WidgetRef ref) {
-    final isOpen     = ref.read(cameraOpenProvider);
+  void _toggleCamera() {
+    final isOpen       = ref.read(cameraOpenProvider);
     final openNotifier = ref.read(cameraOpenProvider.notifier);
     final scanNotifier = ref.read(scannerStateProvider.notifier);
     final camNotifier  = ref.read(cameraControllerProvider.notifier);
-    final settings   = ref.read(appSettingsProvider);
+    final settings     = ref.read(appSettingsProvider);
 
     if (isOpen) {
       openNotifier.state = false;
@@ -80,20 +68,6 @@ class HomeShell extends ConsumerWidget {
         useFlash: settings.useFlashlight,
       );
     }
-    // Camera open/close TTS is handled by scanner_screen's ref.listen
-    // on cameraOpenProvider — no double-announce here.
-  }
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
-
-  void _pushSettings(BuildContext context, WidgetRef ref) {
-    _enqueue(ref, NavSpeech.openedSettings(_l10n(ref)));
-    Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
-  }
-
-  void _pushTutorial(BuildContext context, WidgetRef ref) {
-    _enqueue(ref, NavSpeech.openedTutorial(_l10n(ref)));
-    Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
@@ -119,4 +93,35 @@ class HomeShell extends ConsumerWidget {
         ),
         transitionDuration: const Duration(milliseconds: 280),
       );
+
+  @override
+  Widget build(BuildContext context) {
+    final cameraOpen = ref.watch(cameraOpenProvider);
+
+    return InertialDetectorWidget(
+      onTiltLeft:  _pushTutorial,
+      onTiltRight: _pushSettings,
+      child: Scaffold(
+        body: ScannerScreen(
+          onNavigate: (index) {
+            if (index == 0) _pushSettings();
+            if (index == 2) _pushTutorial();
+          },
+        ),
+        bottomNavigationBar: MsBottomNav(
+          currentIndex: 1,
+          isCameraOpen: cameraOpen,
+          onTap: (index) {
+            if (index == 0) {
+              _pushSettings();
+            } else if (index == 1) {
+              _toggleCamera();
+            } else if (index == 2) {
+              _pushTutorial();
+            }
+          },
+        ),
+      ),
+    );
+  }
 }

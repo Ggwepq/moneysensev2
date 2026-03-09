@@ -91,9 +91,6 @@ class MsToggleTile extends StatelessWidget {
                           Text(
                             title,
                             style: theme.textTheme.bodyLarge?.copyWith(
-                              color: isDark
-                                  ? AppColors.darkOnSurface
-                                  : AppColors.lightOnSurface,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -101,11 +98,7 @@ class MsToggleTile extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               subtitle!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: isDark
-                                    ? AppColors.darkOnSurfaceVariant
-                                    : AppColors.lightOnSurfaceVariant,
-                              ),
+                              style: theme.textTheme.bodySmall,
                             ),
                           ],
                         ],

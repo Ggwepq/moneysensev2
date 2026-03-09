@@ -5,21 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'core/services/haptic_service.dart';
 import 'features/scanner/data/datasources/camera_service.dart';
 import 'features/settings/presentation/providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load SharedPreferences and cameras in parallel — both are needed before
-  // the first frame, and running them concurrently shaves startup time.
+  // Load SharedPreferences, cameras, and haptic capabilities in parallel.
+  // All three are needed before the first frame; concurrent startup saves time.
   final results = await Future.wait([
     SharedPreferences.getInstance(),
     availableCameras().catchError((_) => <CameraDescription>[]),
+    HapticService.init(),
   ]);
 
   final prefs   = results[0] as SharedPreferences;
   final cameras = results[1] as List<CameraDescription>;
+  // results[2] is HapticService.init() — void, no cast needed.
 
   // Portrait-only — scanning works best in portrait.
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

@@ -19,6 +19,7 @@ class MsSegmentedSelector<T> extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     this.leadingIcons,
+    this.accentColor,
   })  : assert(options.length == labels.length),
         assert(leadingIcons == null || leadingIcons.length == options.length);
 
@@ -27,14 +28,17 @@ class MsSegmentedSelector<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onSelected;
   final List<IconData?>? leadingIcons;
+  /// Active pill color. Defaults to [AppColors.accentYellow].
+  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Yellow is the primary accent on both themes — active pill is always yellow.
-    const activeColor = AppColors.accentYellow;
-    // Yellow is dark enough to need a dark label in both themes.
-    final activeText  = isDark ? AppColors.darkBackground : AppColors.lightOnSurface;
+    final activeColor = accentColor ?? AppColors.accentYellow;
+    // Pick a readable label color based on luminance of the active color
+    final activeText = activeColor.computeLuminance() > 0.4
+        ? AppColors.darkBackground
+        : Colors.white;
     final inactiveColor =
         isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
     final inactiveText =
