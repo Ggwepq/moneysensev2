@@ -389,4 +389,100 @@ class AppLocalizations {
       isTagalog ? TlStrings.next : EnStrings.next;
   String get getStarted =>
       isTagalog ? TlStrings.getStarted : EnStrings.getStarted;
+
+  // ── TTS speech strings ──────────────────────────────────────────────────
+
+  // App-level
+  String get ttsSpeechEnabled =>
+      isTagalog ? TlStrings.ttsSpeechEnabled : EnStrings.ttsSpeechEnabled;
+  String get ttsSpeechDisabling =>
+      isTagalog ? TlStrings.ttsSpeechDisabling : EnStrings.ttsSpeechDisabling;
+
+  // Navigation
+  String get ttsNavSettings =>
+      isTagalog ? TlStrings.ttsNavSettings : EnStrings.ttsNavSettings;
+  String get ttsNavTutorial =>
+      isTagalog ? TlStrings.ttsNavTutorial : EnStrings.ttsNavTutorial;
+  String get ttsNavHome =>
+      isTagalog ? TlStrings.ttsNavHome : EnStrings.ttsNavHome;
+
+  // Settings confirmations — parametric (not stored as const strings)
+  String ttsSettingEnabled(String settingName) =>
+      isTagalog ? '$settingName naka-on.' : '$settingName enabled.';
+  String ttsSettingDisabled(String settingName) =>
+      isTagalog ? '$settingName naka-off.' : '$settingName disabled.';
+  String ttsSettingChanged(String settingName, String newValue) =>
+      isTagalog ? '$settingName: $newValue.' : '$settingName set to $newValue.';
+
+  // Scanner — results
+  String ttsScanResult(String denomination) =>
+      isTagalog
+          ? TlStrings.ttsScanResult(denomination)
+          : EnStrings.ttsScanResult(denomination);
+  String ttsScanResultWithType(String denomination, String type) =>
+      isTagalog
+          ? TlStrings.ttsScanResultWithType(denomination, type)
+          : EnStrings.ttsScanResultWithType(denomination, type);
+  String ttsScanResultLowConfidence(String denomination, String type) =>
+      isTagalog
+          ? TlStrings.ttsScanResultLowConfidence(denomination, type)
+          : EnStrings.ttsScanResultLowConfidence(denomination, type);
+
+  // Scanner — camera state
+  String get ttsCameraOpened =>
+      isTagalog ? TlStrings.ttsCameraOpened : EnStrings.ttsCameraOpened;
+  String get ttsCameraClosed =>
+      isTagalog ? TlStrings.ttsCameraClosed : EnStrings.ttsCameraClosed;
+  String get ttsPreviewFrozen =>
+      isTagalog ? TlStrings.ttsPreviewFrozen : EnStrings.ttsPreviewFrozen;
+  String get ttsPreviewResumed =>
+      isTagalog ? TlStrings.ttsPreviewResumed : EnStrings.ttsPreviewResumed;
+  String get ttsFlashOn =>
+      isTagalog ? TlStrings.ttsFlashOn : EnStrings.ttsFlashOn;
+  String get ttsFlashOff =>
+      isTagalog ? TlStrings.ttsFlashOff : EnStrings.ttsFlashOff;
+
+  // Scanner — ambient hints
+  String get ttsScannerIdle =>
+      isTagalog ? TlStrings.ttsScannerIdle : EnStrings.ttsScannerIdle;
+  String get ttsScanStarted =>
+      isTagalog ? TlStrings.ttsScanStarted : EnStrings.ttsScanStarted;
+  String get ttsProcessing =>
+      isTagalog ? TlStrings.ttsProcessing : EnStrings.ttsProcessing;
+
+  // Scanner — errors
+  String get ttsCameraPermissionDenied =>
+      isTagalog
+          ? TlStrings.ttsCameraPermissionDenied
+          : EnStrings.ttsCameraPermissionDenied;
+  String get ttsScanFailed =>
+      isTagalog ? TlStrings.ttsScanFailed : EnStrings.ttsScanFailed;
+  String get ttsCameraError =>
+      isTagalog ? TlStrings.ttsCameraError : EnStrings.ttsCameraError;
+
+  // ── Scanner Semantics labels ───────────────────────────────────────────────
+  String get scannerSemanticIdle =>
+      isTagalog ? TlStrings.scannerSemanticIdle : EnStrings.scannerSemanticIdle;
+  String get scannerSemanticReady =>
+      isTagalog ? TlStrings.scannerSemanticReady : EnStrings.scannerSemanticReady;
+  String get scannerSemanticScanning =>
+      isTagalog ? TlStrings.scannerSemanticScanning : EnStrings.scannerSemanticScanning;
+  String get scannerSemanticProcessing =>
+      isTagalog ? TlStrings.scannerSemanticProcessing : EnStrings.scannerSemanticProcessing;
+  String get scannerSemanticPaused =>
+      isTagalog ? TlStrings.scannerSemanticPaused : EnStrings.scannerSemanticPaused;
+  String get scannerSemanticResult =>
+      isTagalog ? TlStrings.scannerSemanticResult : EnStrings.scannerSemanticResult;
+
+  // ── Onboarding TTS ────────────────────────────────────────────────────────
+  String get ttsOnboardingWelcome =>
+      isTagalog ? TlStrings.ttsOnboardingWelcome : EnStrings.ttsOnboardingWelcome;
+  String get ttsOnboardingVision =>
+      isTagalog ? TlStrings.ttsOnboardingVision : EnStrings.ttsOnboardingVision;
+  String get ttsOnboardingLanguage =>
+      isTagalog ? TlStrings.ttsOnboardingLanguage : EnStrings.ttsOnboardingLanguage;
+  String get ttsOnboardingProfileSelected =>
+      isTagalog
+          ? TlStrings.ttsOnboardingProfileSelected
+          : EnStrings.ttsOnboardingProfileSelected;
 }

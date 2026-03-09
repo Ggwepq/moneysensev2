@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:moneysensev2/features/scanner/data/datasources/camera_service.dart';
 
-import '../../features/scanner/presentation/providers/scanner_provider.dart';
-import '../../features/scanner/presentation/screens/scanner_screen.dart';
-import '../../features/settings/presentation/providers/settings_provider.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../../features/tutorial/presentation/screens/tutorial_screen.dart';
-import '../../shared/widgets/ms_bottom_nav.dart';
+import '../core/l10n/app_localizations.dart';
+import '../core/services/speech_scripts.dart';
+import '../core/services/tts_service.dart';
+import '../features/scanner/presentation/providers/scanner_provider.dart';
+import '../features/scanner/presentation/screens/scanner_screen.dart';
+import '../features/settings/presentation/providers/settings_provider.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/tutorial/presentation/screens/tutorial_screen.dart';
+import '../shared/widgets/ms_bottom_nav.dart';
 
 /// Root shell — owns the single [Scaffold].
 ///
-/// The scanner body fills all space above [MsBottomNav].
-/// Settings and Tutorial are pushed as separate routes so:
-///   • Bottom nav absent on all non-home screens.
-///   • Back button and swipe-back work natively on those screens.
-///   • Camera intent is preserved during navigation.
+/// Navigation TTS: each push/pop announces the destination so blind users
+/// always know where they are without needing TalkBack to read the AppBar.
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key});
 
@@ -26,8 +25,8 @@ class HomeShell extends ConsumerWidget {
     return Scaffold(
       body: ScannerScreen(
         onNavigate: (index) {
-          if (index == 0) _pushSettings(context);
-          if (index == 2) _pushTutorial(context);
+          if (index == 0) _pushSettings(context, ref);
+          if (index == 2) _pushTutorial(context, ref);
         },
       ),
       bottomNavigationBar: MsBottomNav(
@@ -35,25 +34,39 @@ class HomeShell extends ConsumerWidget {
         isCameraOpen: cameraOpen,
         onTap: (index) {
           if (index == 0) {
-            _pushSettings(context);
+            _pushSettings(context, ref);
           } else if (index == 1) {
             _toggleCamera(ref);
           } else if (index == 2) {
-            _pushTutorial(context);
+            _pushTutorial(context, ref);
           }
         },
       ),
     );
   }
 
+  // ── TTS helper ─────────────────────────────────────────────────────────────
+
+  void _enqueue(WidgetRef ref, TtsMessage msg) {
+    final s = ref.read(appSettingsProvider);
+    ref.read(ttsServiceProvider).enqueue(
+          msg,
+          enabled: s.ttsEnabled,
+          currentVerbosity: s.ttsVerbosity,
+        );
+  }
+
+  AppLocalizations _l10n(WidgetRef ref) =>
+      AppLocalizations.of(ref.read(appSettingsProvider).isTagalog);
+
   // ── Camera toggle ──────────────────────────────────────────────────────────
 
   void _toggleCamera(WidgetRef ref) {
-    final isOpen = ref.read(cameraOpenProvider);
+    final isOpen     = ref.read(cameraOpenProvider);
     final openNotifier = ref.read(cameraOpenProvider.notifier);
     final scanNotifier = ref.read(scannerStateProvider.notifier);
-    final camNotifier = ref.read(cameraControllerProvider.notifier);
-    final settings = ref.read(appSettingsProvider);
+    final camNotifier  = ref.read(cameraControllerProvider.notifier);
+    final settings   = ref.read(appSettingsProvider);
 
     if (isOpen) {
       openNotifier.state = false;
@@ -67,41 +80,43 @@ class HomeShell extends ConsumerWidget {
         useFlash: settings.useFlashlight,
       );
     }
+    // Camera open/close TTS is handled by scanner_screen's ref.listen
+    // on cameraOpenProvider — no double-announce here.
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
-  void _pushSettings(BuildContext context) {
+  void _pushSettings(BuildContext context, WidgetRef ref) {
+    _enqueue(ref, NavSpeech.openedSettings(_l10n(ref)));
     Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
   }
 
-  void _pushTutorial(BuildContext context) {
+  void _pushTutorial(BuildContext context, WidgetRef ref) {
+    _enqueue(ref, NavSpeech.openedTutorial(_l10n(ref)));
     Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
   }
 
-  /// Settings slides in from the left (swipe-right gesture revealed it).
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(-1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 
-  /// Tutorial slides in from the right (swipe-left gesture revealed it).
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, anim, __, child) => SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(1.0, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-      child: child,
-    ),
-    transitionDuration: const Duration(milliseconds: 280),
-  );
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 280),
+      );
 }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/speech_scripts.dart';
+import '../../../../core/services/tts_service.dart';
 import '../../../../shared/widgets/ms_action_tile.dart';
 import '../../../../shared/widgets/ms_section_header.dart';
 import '../../../../shared/widgets/ms_segmented_selector.dart';
@@ -12,7 +14,6 @@ import '../../../../shared/widgets/ms_timer_tile.dart';
 import '../../../../shared/widgets/ms_toggle_tile.dart';
 import '../../../tutorial/domain/tutorial_route.dart';
 import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
-import '../../../../core/services/haptic_service.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
@@ -28,223 +29,336 @@ class SettingsScreen extends ConsumerWidget {
     final l10n         = AppLocalizations.of(settings.isTagalog);
     final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
 
+    // ── TTS helper — one line at every call site ──────────────────────────
+    void say(TtsMessage msg) {
+      ref.read(ttsServiceProvider).enqueue(
+            msg,
+            enabled: settings.ttsEnabled,
+            currentVerbosity: settings.ttsVerbosity,
+          );
+    }
+
     return _SwipeBackWrapper(
       child: Scaffold(
-      appBar: AppBar(
-        // Flutter automatically inserts a back button and wires it to
-        // Navigator.pop when this screen is pushed onto the stack.
-        // No manual leading / onPressed needed.
-        title: Text(l10n.settings),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
-            tooltip: 'Help',
-            onPressed: () {/* TODO: show global help */},
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.pagePadding,
-          vertical: AppSpacing.base,
+        appBar: AppBar(
+          title: Text(l10n.settings),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline_rounded),
+              tooltip: 'Help',
+              onPressed: () {/* TODO */},
+            ),
+          ],
         ),
-        children: [
-          // ── General ────────────────────────────────────────────────────
-          MsSectionHeader(title: l10n.sectionGeneral),
-          MsSettingsCard(children: [
-            // Theme selector
-            _ThemeTile(
-              label: l10n.theme,
-              subtitle: isFullVerbosity ? l10n.themeSubtitleFull : l10n.themeSubtitle,
-              themeMode: settings.themeMode,
-              l10n: l10n,
-              visionConfig: visionConfig,
-              onChanged: notifier.setThemeMode,
-            ),
-            // Language selector
-            _LanguageTile(
-              label: l10n.language,
-              subtitle: isFullVerbosity ? l10n.languageSubtitleFull : l10n.languageSubtitle,
-              language: settings.language,
-              l10n: l10n,
-              visionConfig: visionConfig,
-              onChanged: notifier.setLanguage,
-            ),
-            // Font Size slider
-            MsSliderTile(
-              title: l10n.fontSize,
-              subtitle: isFullVerbosity ? l10n.fontSizeSubtitleFull : l10n.fontSizeSubtitle,
-              value: settings.fontScale,
-              min: 0.8,
-              max: 2.0,
-              onChanged: notifier.setFontScale,
-              displayLabel:
-                  '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
-            ),
-          ]),
+        body: ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pagePadding,
+            vertical: AppSpacing.base,
+          ),
+          children: [
+            // ── General ────────────────────────────────────────────────
+            MsSectionHeader(title: l10n.sectionGeneral),
+            MsSettingsCard(children: [
+              _ThemeTile(
+                label: l10n.theme,
+                subtitle: isFullVerbosity
+                    ? l10n.themeSubtitleFull
+                    : l10n.themeSubtitle,
+                themeMode: settings.themeMode,
+                l10n: l10n,
+                visionConfig: visionConfig,
+                onChanged: (v) {
+                  notifier.setThemeMode(v);
+                  final label = v == AppThemeMode.system
+                      ? l10n.themeSystem
+                      : v == AppThemeMode.light
+                          ? l10n.themeLight
+                          : l10n.themeDark;
+                  say(SettingsSpeech.changed(l10n, l10n.theme, label));
+                },
+              ),
+              _LanguageTile(
+                label: l10n.language,
+                subtitle: isFullVerbosity
+                    ? l10n.languageSubtitleFull
+                    : l10n.languageSubtitle,
+                language: settings.language,
+                l10n: l10n,
+                visionConfig: visionConfig,
+                onChanged: (v) {
+                  notifier.setLanguage(v);
+                  // Re-init TTS language immediately so the confirmation
+                  // is spoken in the newly selected language.
+                  final newL10n = AppLocalizations.of(
+                      v == AppLanguage.tagalog);
+                  say(SettingsSpeech.changed(
+                      newL10n,
+                      newL10n.language,
+                      v == AppLanguage.tagalog
+                          ? newL10n.languageTagalog
+                          : newL10n.languageEnglish));
+                },
+              ),
+              MsSliderTile(
+                title: l10n.fontSize,
+                subtitle: isFullVerbosity
+                    ? l10n.fontSizeSubtitleFull
+                    : l10n.fontSizeSubtitle,
+                value: settings.fontScale,
+                min: 0.8,
+                max: 2.0,
+                onChanged: notifier.setFontScale,
+                displayLabel:
+                    '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
+              ),
+            ]),
 
-          // ── Scanning ───────────────────────────────────────────────────
-          MsSectionHeader(title: l10n.sectionScanning),
-          MsSettingsCard(children: [
-            MsToggleTile(
-              title: l10n.useFrontCamera,
-              subtitle: isFullVerbosity ? l10n.useFrontCameraSubtitleFull : l10n.useFrontCameraSubtitle,
-              value: settings.useFrontCamera,
-              onChanged: notifier.toggleFrontCamera,
-            ),
-            MsToggleTile(
-              title: l10n.useFlashlight,
-              subtitle: isFullVerbosity ? l10n.useFlashlightSubtitleFull : l10n.useFlashlightSubtitle,
-              value: settings.useFlashlight,
-              onChanged: notifier.toggleFlashlight,
-            ),
-            MsToggleTile(
-              title: l10n.denominationVibration,
-              subtitle: isFullVerbosity ? l10n.denominationVibrationSubtitleFull : l10n.denominationVibrationSubtitle,
-              value: settings.denominationVibration,
-              onChanged: notifier.toggleDenominationVibration,
-              showHelpButton: true,
-              onHelpTap: () => TutorialNavigator.push(
-                  context, TutorialRoute.denominationVibration),
-            ),
-          ]),
+            // ── Scanning ───────────────────────────────────────────────
+            MsSectionHeader(title: l10n.sectionScanning),
+            MsSettingsCard(children: [
+              MsToggleTile(
+                title: l10n.useFrontCamera,
+                subtitle: isFullVerbosity
+                    ? l10n.useFrontCameraSubtitleFull
+                    : l10n.useFrontCameraSubtitle,
+                value: settings.useFrontCamera,
+                onChanged: (v) {
+                  notifier.toggleFrontCamera(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
+                },
+              ),
+              MsToggleTile(
+                title: l10n.useFlashlight,
+                subtitle: isFullVerbosity
+                    ? l10n.useFlashlightSubtitleFull
+                    : l10n.useFlashlightSubtitle,
+                value: settings.useFlashlight,
+                onChanged: (v) {
+                  notifier.toggleFlashlight(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
+                },
+              ),
+              MsToggleTile(
+                title: l10n.denominationVibration,
+                subtitle: isFullVerbosity
+                    ? l10n.denominationVibrationSubtitleFull
+                    : l10n.denominationVibrationSubtitle,
+                value: settings.denominationVibration,
+                onChanged: (v) {
+                  notifier.toggleDenominationVibration(v);
+                  say(SettingsSpeech.toggled(
+                      l10n, l10n.denominationVibration, v));
+                },
+                showHelpButton: true,
+                onHelpTap: () => TutorialNavigator.push(
+                    context, TutorialRoute.denominationVibration),
+              ),
+            ]),
 
-          // ── Navigation ─────────────────────────────────────────────────
-          MsSectionHeader(title: l10n.sectionNavigation),
-          MsSettingsCard(children: [
-            MsToggleTile(
-              title: l10n.shakeToGoBack,
-              subtitle: isFullVerbosity ? l10n.shakeToGoBackSubtitleFull : l10n.shakeToGoBackSubtitle,
-              value: settings.shakeToGoBack,
-              onChanged: notifier.toggleShakeToGoBack,
-              showHelpButton: true,
-              onHelpTap: () => TutorialNavigator.push(
-                  context, TutorialRoute.shakeToGoBack),
-            ),
-            MsTimerTile(
-              title: l10n.goBackTimerOnResult,
-              subtitle: isFullVerbosity ? l10n.goBackTimerSubtitleFull : l10n.goBackTimerSubtitle,
-              enabled: settings.goBackTimerSeconds > 0,
-              value: settings.goBackTimerSeconds > 0
-                  ? settings.goBackTimerSeconds
-                  : 20,
-              onToggle: notifier.toggleGoBackTimer,
-              onValueChanged: notifier.setGoBackTimer,
-            ),
-            MsToggleTile(
-              title: l10n.gesturalNavigation,
-              subtitle: isFullVerbosity ? l10n.gesturalNavigationSubtitleFull : l10n.gesturalNavigationSubtitle,
-              value: settings.gesturalNavigation,
-              onChanged: notifier.toggleGesturalNavigation,
-              showHelpButton: true,
-              onHelpTap: () => TutorialNavigator.push(
-                  context, TutorialRoute.gesturalNavigation),
-            ),
-            MsToggleTile(
-              title: l10n.inertialNavigation,
-              subtitle: isFullVerbosity ? l10n.inertialNavigationSubtitleFull : l10n.inertialNavigationSubtitle,
-              value: settings.inertialNavigation,
-              onChanged: notifier.toggleInertialNavigation,
-              showHelpButton: true,
-              onHelpTap: () => TutorialNavigator.push(
-                  context, TutorialRoute.inertialNavigation),
-            ),
-          ]),
+            // ── Navigation ─────────────────────────────────────────────
+            MsSectionHeader(title: l10n.sectionNavigation),
+            MsSettingsCard(children: [
+              MsToggleTile(
+                title: l10n.shakeToGoBack,
+                subtitle: isFullVerbosity
+                    ? l10n.shakeToGoBackSubtitleFull
+                    : l10n.shakeToGoBackSubtitle,
+                value: settings.shakeToGoBack,
+                onChanged: (v) {
+                  notifier.toggleShakeToGoBack(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
+                },
+                showHelpButton: true,
+                onHelpTap: () => TutorialNavigator.push(
+                    context, TutorialRoute.shakeToGoBack),
+              ),
+              MsTimerTile(
+                title: l10n.goBackTimerOnResult,
+                subtitle: isFullVerbosity
+                    ? l10n.goBackTimerSubtitleFull
+                    : l10n.goBackTimerSubtitle,
+                enabled: settings.goBackTimerSeconds > 0,
+                value: settings.goBackTimerSeconds > 0
+                    ? settings.goBackTimerSeconds
+                    : 20,
+                onToggle: (v) {
+                  notifier.toggleGoBackTimer(v);
+                  say(SettingsSpeech.toggled(
+                      l10n, l10n.goBackTimerOnResult, v));
+                },
+                onValueChanged: notifier.setGoBackTimer,
+              ),
+              MsToggleTile(
+                title: l10n.gesturalNavigation,
+                subtitle: isFullVerbosity
+                    ? l10n.gesturalNavigationSubtitleFull
+                    : l10n.gesturalNavigationSubtitle,
+                value: settings.gesturalNavigation,
+                onChanged: (v) {
+                  notifier.toggleGesturalNavigation(v);
+                  say(SettingsSpeech.toggled(
+                      l10n, l10n.gesturalNavigation, v));
+                },
+                showHelpButton: true,
+                onHelpTap: () => TutorialNavigator.push(
+                    context, TutorialRoute.gesturalNavigation),
+              ),
+              MsToggleTile(
+                title: l10n.inertialNavigation,
+                subtitle: isFullVerbosity
+                    ? l10n.inertialNavigationSubtitleFull
+                    : l10n.inertialNavigationSubtitle,
+                value: settings.inertialNavigation,
+                onChanged: (v) {
+                  notifier.toggleInertialNavigation(v);
+                  say(SettingsSpeech.toggled(
+                      l10n, l10n.inertialNavigation, v));
+                },
+                showHelpButton: true,
+                onHelpTap: () => TutorialNavigator.push(
+                    context, TutorialRoute.inertialNavigation),
+              ),
+            ]),
 
-          // ── Accessibility ───────────────────────────────────────────────
-          MsSectionHeader(title: l10n.sectionAccessibility),
-          MsSettingsCard(children: [
-            // Vision Profile — pill selector, same pattern as Theme
-            _VisionProfileTile(
-              label:    l10n.visionProfileTitle,
-              subtitle: isFullVerbosity ? l10n.visionProfileSubtitleFull : l10n.visionProfileSubtitle,
-              profile:  settings.visionProfile,
-              l10n:     l10n,
-              visionConfig: visionConfig,
-              onChanged: notifier.setVisionProfile,
-            ),
-            // TTS toggle
-            MsToggleTile(
-              title:    l10n.ttsTitle,
-              subtitle: isFullVerbosity ? l10n.ttsSubtitleFull : l10n.ttsSubtitle,
-              value:    settings.ttsEnabled,
-              onChanged: notifier.toggleTts,
-            ),
-            // TTS verbosity — only shown when TTS is on
-            if (settings.ttsEnabled)
-              _VerbosityTile(
-                label:    l10n.ttsVerbosityTitle,
-                subtitle: isFullVerbosity ? l10n.ttsVerbositySubtitleFull : l10n.ttsVerbositySubtitle,
-                verbosity: settings.ttsVerbosity,
+            // ── Accessibility ───────────────────────────────────────────
+            MsSectionHeader(title: l10n.sectionAccessibility),
+            MsSettingsCard(children: [
+              _VisionProfileTile(
+                label:    l10n.visionProfileTitle,
+                subtitle: isFullVerbosity
+                    ? l10n.visionProfileSubtitleFull
+                    : l10n.visionProfileSubtitle,
+                profile:  settings.visionProfile,
                 l10n:     l10n,
                 visionConfig: visionConfig,
-                onChanged: notifier.setTtsVerbosity,
+                onChanged: (v) {
+                  notifier.setVisionProfile(v);
+                  final label = v == VisionProfile.lowVision
+                      ? l10n.visionLowVision
+                      : v == VisionProfile.partiallyBlind
+                          ? l10n.visionPartiallyBlind
+                          : l10n.visionFullyBlind;
+                  say(SettingsSpeech.changed(
+                      l10n, l10n.visionProfileTitle, label));
+                },
               ),
-            // Haptic feedback toggle
-            MsToggleTile(
-              title:    l10n.hapticTitle,
-              subtitle: isFullVerbosity ? l10n.hapticSubtitleFull : l10n.hapticSubtitle,
-              value:    settings.hapticFeedback,
-              onChanged: notifier.toggleHapticFeedback,
-            ),
-            // Haptic intensity — only shown when haptics are on
-            if (settings.hapticFeedback)
-              _HapticIntensityTile(
-                label:     l10n.hapticIntensityTitle,
-                subtitle:  isFullVerbosity ? l10n.hapticIntensitySubtitleFull : l10n.hapticIntensitySubtitle,
-                intensity: settings.hapticIntensity,
-                l10n:      l10n,
-                visionConfig: visionConfig,
-                onChanged: notifier.setHapticIntensity,
+              // TTS toggle — spoken BEFORE turning off so user hears it.
+              MsToggleTile(
+                title:    l10n.ttsTitle,
+                subtitle: isFullVerbosity
+                    ? l10n.ttsSubtitleFull
+                    : l10n.ttsSubtitle,
+                value: settings.ttsEnabled,
+                onChanged: (v) {
+                  if (!v) {
+                    // Announce disabling while TTS is still on, THEN turn off
+                    say(AppSpeech.ttsDisabling(l10n));
+                    Future.delayed(const Duration(milliseconds: 1200), () {
+                      notifier.toggleTts(false);
+                    });
+                  } else {
+                    notifier.toggleTts(true);
+                    say(AppSpeech.ttsEnabled(l10n));
+                  }
+                },
               ),
-          ]),
+              if (settings.ttsEnabled)
+                _VerbosityTile(
+                  label:    l10n.ttsVerbosityTitle,
+                  subtitle: isFullVerbosity
+                      ? l10n.ttsVerbositySubtitleFull
+                      : l10n.ttsVerbositySubtitle,
+                  verbosity: settings.ttsVerbosity,
+                  l10n:     l10n,
+                  visionConfig: visionConfig,
+                  onChanged: (v) {
+                    notifier.setTtsVerbosity(v);
+                    final label = v == TtsVerbosity.minimal
+                        ? l10n.ttsVerbosityMinimal
+                        : v == TtsVerbosity.standard
+                            ? l10n.ttsVerbosityStandard
+                            : l10n.ttsVerbosityFull;
+                    say(SettingsSpeech.changed(
+                        l10n, l10n.ttsVerbosityTitle, label));
+                  },
+                ),
+              MsToggleTile(
+                title:    l10n.hapticTitle,
+                subtitle: isFullVerbosity
+                    ? l10n.hapticSubtitleFull
+                    : l10n.hapticSubtitle,
+                value: settings.hapticFeedback,
+                onChanged: (v) {
+                  notifier.toggleHapticFeedback(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
+                },
+              ),
+              if (settings.hapticFeedback)
+                _HapticIntensityTile(
+                  label:     l10n.hapticIntensityTitle,
+                  subtitle:  isFullVerbosity
+                      ? l10n.hapticIntensitySubtitleFull
+                      : l10n.hapticIntensitySubtitle,
+                  intensity: settings.hapticIntensity,
+                  l10n:      l10n,
+                  visionConfig: visionConfig,
+                  onChanged: (v) {
+                    notifier.setHapticIntensity(v);
+                    final label = v == HapticIntensity.subtle
+                        ? l10n.hapticIntensitySubtle
+                        : v == HapticIntensity.medium
+                            ? l10n.hapticIntensityMedium
+                            : l10n.hapticIntensityStrong;
+                    say(SettingsSpeech.changed(
+                        l10n, l10n.hapticIntensityTitle, label));
+                  },
+                ),
+            ]),
 
-          // ── Help & Support ─────────────────────────────────────────────
-          MsSectionHeader(title: l10n.sectionHelpSupport),
-          MsSettingsCard(children: [
-            MsActionTile(
-              title: l10n.checkForUpdates,
-              subtitle: l10n.checkForUpdatesSubtitle,
-              icon: Icons.refresh_rounded,
-              onTap: () {/* TODO */},
-            ),
-            MsActionTile(
-              title: l10n.playOnboardingSetup,
-              subtitle: l10n.playOnboardingSubtitle,
-              icon: Icons.play_arrow_rounded,
-              onTap: () {/* TODO: navigate to onboarding */},
-            ),
-            MsActionTile(
-              title: l10n.appInformation,
-              subtitle: l10n.appInformationSubtitle,
-              icon: Icons.info_outline_rounded,
-              onTap: () {/* TODO */},
-            ),
-            MsActionTile(
-              title: l10n.leaveAFeedback,
-              subtitle: l10n.leaveAFeedbackSubtitle,
-              icon: Icons.campaign_outlined,
-              onTap: () {/* TODO */},
-            ),
-            MsActionTile(
-              title: l10n.termsOfServices,
-              subtitle: l10n.termsOfServicesSubtitle,
-              icon: Icons.description_outlined,
-              onTap: () {/* TODO */},
-            ),
-          ]),
+            // ── Help & Support ─────────────────────────────────────────
+            MsSectionHeader(title: l10n.sectionHelpSupport),
+            MsSettingsCard(children: [
+              MsActionTile(
+                title: l10n.checkForUpdates,
+                subtitle: l10n.checkForUpdatesSubtitle,
+                icon: Icons.refresh_rounded,
+                onTap: () {/* TODO */},
+              ),
+              MsActionTile(
+                title: l10n.playOnboardingSetup,
+                subtitle: l10n.playOnboardingSubtitle,
+                icon: Icons.play_arrow_rounded,
+                onTap: () {/* TODO: navigate to onboarding */},
+              ),
+              MsActionTile(
+                title: l10n.appInformation,
+                subtitle: l10n.appInformationSubtitle,
+                icon: Icons.info_outline_rounded,
+                onTap: () {/* TODO */},
+              ),
+              MsActionTile(
+                title: l10n.leaveAFeedback,
+                subtitle: l10n.leaveAFeedbackSubtitle,
+                icon: Icons.campaign_outlined,
+                onTap: () {/* TODO */},
+              ),
+              MsActionTile(
+                title: l10n.termsOfServices,
+                subtitle: l10n.termsOfServicesSubtitle,
+                icon: Icons.description_outlined,
+                onTap: () {/* TODO */},
+              ),
+            ]),
 
-          const SizedBox(height: AppSpacing.xxxl),
-        ],
+            const SizedBox(height: AppSpacing.xxxl),
+          ],
+        ),
       ),
-    ), // Scaffold
-    ); // _SwipeBackWrapper
+    );
   }
-
-  // Help buttons now open full feature tutorials via TutorialNavigator.push().
 }
 
-// ── Theme Tile ───────────────────────────────────────────────────────────────
+// ── Theme Tile ────────────────────────────────────────────────────────────────
 
 class _ThemeTile extends StatelessWidget {
   const _ThemeTile({
@@ -265,7 +379,7 @@ class _ThemeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final selectedLabel = themeMode == AppThemeMode.system
@@ -276,13 +390,10 @@ class _ThemeTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.base,
-        vertical: AppSpacing.md,
-      ),
+          horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title row — read as heading by TalkBack
           Semantics(
             header: true,
             label: '$label. $subtitle. Currently: $selectedLabel',
@@ -290,24 +401,18 @@ class _ThemeTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: visionConfig.textPrimary(isDark),
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: visionConfig.textSecondary(isDark),
-                  ),
-                ),
+                Text(label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: visionConfig.textPrimary(isDark),
+                    )),
+                Text(subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                        color: visionConfig.textSecondary(isDark))),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Each option is its own button node in the selector
           MsSegmentedSelector<AppThemeMode>(
             options: AppThemeMode.values,
             labels: [l10n.themeSystem, l10n.themeLight, l10n.themeDark],
@@ -325,7 +430,7 @@ class _ThemeTile extends StatelessWidget {
   }
 }
 
-// ── Language Tile ────────────────────────────────────────────────────────────
+// ── Language Tile ─────────────────────────────────────────────────────────────
 
 class _LanguageTile extends StatelessWidget {
   const _LanguageTile({
@@ -346,7 +451,7 @@ class _LanguageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final selectedLabel = language == AppLanguage.english
@@ -355,13 +460,10 @@ class _LanguageTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.base,
-        vertical: AppSpacing.md,
-      ),
+          horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title heading — one node: name + subtitle + current value
           Semantics(
             header: true,
             label: '$label. $subtitle. Currently: $selectedLabel',
@@ -369,24 +471,18 @@ class _LanguageTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: visionConfig.textPrimary(isDark),
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: visionConfig.textSecondary(isDark),
-                  ),
-                ),
+                Text(label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: visionConfig.textPrimary(isDark),
+                    )),
+                Text(subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                        color: visionConfig.textSecondary(isDark))),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Each option is its own button node
           MsSegmentedSelector<AppLanguage>(
             options: AppLanguage.values,
             labels: [l10n.languageEnglish, l10n.languageTagalog],
@@ -399,7 +495,7 @@ class _LanguageTile extends StatelessWidget {
   }
 }
 
-// ── Vision Profile Tile ──────────────────────────────────────────────────────
+// ── Vision Profile Tile ───────────────────────────────────────────────────────
 
 class _VisionProfileTile extends StatelessWidget {
   const _VisionProfileTile({
@@ -419,9 +515,9 @@ class _VisionProfileTile extends StatelessWidget {
   final ValueChanged<VisionProfile> onChanged;
 
   String _desc(AppLocalizations l10n) => switch (profile) {
-        VisionProfile.lowVision     => l10n.visionLowVisionDesc,
+        VisionProfile.lowVision      => l10n.visionLowVisionDesc,
         VisionProfile.partiallyBlind => l10n.visionPartiallyBlindDesc,
-        VisionProfile.fullyBlind    => l10n.visionFullyBlindDesc,
+        VisionProfile.fullyBlind     => l10n.visionFullyBlindDesc,
       };
 
   @override
@@ -431,9 +527,7 @@ class _VisionProfileTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.base,
-        vertical: AppSpacing.md,
-      ),
+          horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -451,8 +545,7 @@ class _VisionProfileTile extends StatelessWidget {
                     )),
                 Text(subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: visionConfig.textSecondary(isDark),
-                    )),
+                        color: visionConfig.textSecondary(isDark))),
               ],
             ),
           ),
@@ -473,7 +566,6 @@ class _VisionProfileTile extends StatelessWidget {
             onSelected: onChanged,
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Profile description — explains what changes
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: Text(
@@ -494,7 +586,7 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-// ── TTS Verbosity Tile ───────────────────────────────────────────────────────
+// ── TTS Verbosity Tile ────────────────────────────────────────────────────────
 
 class _VerbosityTile extends StatelessWidget {
   const _VerbosityTile({
@@ -520,9 +612,7 @@ class _VerbosityTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.base,
-        vertical: AppSpacing.md,
-      ),
+          horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -540,8 +630,7 @@ class _VerbosityTile extends StatelessWidget {
                     )),
                 Text(subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: visionConfig.textSecondary(isDark),
-                    )),
+                        color: visionConfig.textSecondary(isDark))),
               ],
             ),
           ),
@@ -567,7 +656,7 @@ class _VerbosityTile extends StatelessWidget {
   }
 }
 
-// ── Haptic Intensity Tile ────────────────────────────────────────────────────
+// ── Haptic Intensity Tile ─────────────────────────────────────────────────────
 
 class _HapticIntensityTile extends StatelessWidget {
   const _HapticIntensityTile({
@@ -593,9 +682,7 @@ class _HapticIntensityTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.base,
-        vertical: AppSpacing.md,
-      ),
+          horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -613,8 +700,7 @@ class _HapticIntensityTile extends StatelessWidget {
                     )),
                 Text(subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: visionConfig.textSecondary(isDark),
-                    )),
+                        color: visionConfig.textSecondary(isDark))),
               ],
             ),
           ),
@@ -642,26 +728,24 @@ class _HapticIntensityTile extends StatelessWidget {
 
 // ── Swipe-back wrapper ────────────────────────────────────────────────────────
 
-/// Wraps any pushed screen so a LEFT-swipe pops the route — Settings slides in
-/// from the left, so the natural reverse gesture is a left swipe to push it back.
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});
   final Widget child;
 
-  static const double _minVelocity = 300.0;
+  static const double _minVelocity   = 300.0;
   static const double _maxCrossRatio = 0.55;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanEnd: (details) {
-        final v = details.velocity.pixelsPerSecond;
+        final v  = details.velocity.pixelsPerSecond;
         final ax = v.dx.abs();
         final ay = v.dy.abs();
         if (ax < _minVelocity) return;
-        if (ax < ay) return; // more vertical than horizontal
-        if (ay / ax > _maxCrossRatio) return; // too diagonal
-        if (v.dx < 0) Navigator.of(context).maybePop(); // swipe LEFT = back
+        if (ax < ay) return;
+        if (ay / ax > _maxCrossRatio) return;
+        if (v.dx < 0) Navigator.of(context).maybePop();
       },
       child: child,
     );

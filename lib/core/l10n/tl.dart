@@ -299,4 +299,71 @@ abstract final class TlStrings {
   static const String visionFullyBlind = 'Ganap na Bulag';
   static const String next = 'Susunod';
   static const String getStarted = 'Magsimula';
+
+  // ── TTS speech strings ────────────────────────────────────────────────────
+
+  // App-level
+  static const String ttsSpeechEnabled   = 'Naka-on na ang text to speech.';
+  static const String ttsSpeechDisabling = 'Papatayin ang text to speech.';
+
+  // Navigation
+  static const String ttsNavSettings = 'Mga Setting.';
+  static const String ttsNavTutorial = 'Tutorial.';
+  static const String ttsNavHome     = 'Scanner.';
+
+  // Scanner — results
+  static String ttsScanResult(String denomination) =>
+      denomination;
+  static String ttsScanResultWithType(String denomination, String type) =>
+      '$denomination na $type.';
+  static String ttsScanResultLowConfidence(String denomination, String type) =>
+      '$denomination na $type. Hindi ganap na sigurado — pakiverify.';
+
+  // Scanner — camera state
+  static const String ttsCameraOpened   = 'Handa na ang kamera.';
+  static const String ttsCameraClosed   = 'Sarado ang kamera.';
+  static const String ttsPreviewFrozen  = 'Na-freeze ang preview.';
+  static const String ttsPreviewResumed = 'Na-resume ang preview.';
+  static const String ttsFlashOn        = 'Naka-on ang flashlight.';
+  static const String ttsFlashOff       = 'Naka-off ang flashlight.';
+
+  // Scanner — ambient hints
+  static const String ttsScannerIdle  =
+      'Ilagay ang isang bill o barya nang patag sa harap ng kamera para i-scan.';
+  static const String ttsScanStarted  = 'Nagsa-scan.';
+  static const String ttsProcessing   = 'Pinoproseso.';
+
+  // Scanner — errors
+  static const String ttsCameraPermissionDenied =
+      'Hindi pinahintulutan ang kamera. Mangyaring payagan ang camera permission sa Settings.';
+  static const String ttsScanFailed   =
+      'Hindi ma-identify ang pera. Subukan ulit sa mas maayos na ilaw.';
+  static const String ttsCameraError  =
+      'Error sa kamera. Pakisara at buksan ulit ang scanner.';
+
+  // ── Scanner Semantics labels ───────────────────────────────────────────────
+  static const String scannerSemanticIdle       =
+      'Scanner. Naka-off ang kamera. I-tap ang camera button para magsimula.';
+  static const String scannerSemanticReady      =
+      'Handa na ang scanner. I-double tap para i-scan ang bill o barya.';
+  static const String scannerSemanticScanning   = 'Nagsa-scan. Huwag gumalaw.';
+  static const String scannerSemanticProcessing = 'Pinoproseso. Sandali na.';
+  static const String scannerSemanticPaused     =
+      'Na-pause ang preview. I-double tap para i-resume.';
+  static const String scannerSemanticResult     = 'Handa na ang resulta.';
+
+  // ── Onboarding TTS ────────────────────────────────────────────────────────
+  static const String ttsOnboardingWelcome =
+      'Maligayang pagdating sa MoneySense. '
+      'Ang iyong accessible na identifier ng piso. '
+      'I-tap ang Susunod para magpatuloy.';
+  static const String ttsOnboardingVision =
+      'Paano ka nakakita? Pumili ng vision profile. '
+      'Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag. '
+      'I-tap ang isang opsyon, tapos i-tap ang Susunod.';
+  static const String ttsOnboardingLanguage =
+      'Piliin ang iyong wika. Ingles o Tagalog. '
+      'I-tap ang isang opsyon, tapos i-tap ang Magsimula.';
+  static const String ttsOnboardingProfileSelected =
+      'Na-set na ang vision profile.';
 }

@@ -299,4 +299,81 @@ abstract final class EnStrings {
   static const String visionFullyBlind = 'Fully Blind';
   static const String next = 'Next';
   static const String getStarted = 'Get Started';
+
+  // ── TTS speech strings ────────────────────────────────────────────────────
+  // These are spoken aloud, not shown on screen.
+  // Written for natural speech — concise, unambiguous, no symbols.
+
+  // App-level
+  static const String ttsSpeechEnabled  = 'Text to speech enabled.';
+  static const String ttsSpeechDisabling = 'Text to speech turning off.';
+
+  // Navigation
+  static const String ttsNavSettings = 'Settings.';
+  static const String ttsNavTutorial = 'Tutorial.';
+  static const String ttsNavHome     = 'Scanner.';
+
+  // Settings confirmations — use parametric helpers (see AppLocalizations)
+  // ttsSettingEnabled / ttsSettingDisabled / ttsSettingChanged
+  // are generated via methods in AppLocalizations, not const strings.
+
+  // Scanner — results
+  // ttsScanResult(denomination) — minimal: just the amount
+  static String ttsScanResult(String denomination) =>
+      denomination;
+  // ttsScanResultWithType(denomination, type) — standard: amount + type
+  static String ttsScanResultWithType(String denomination, String type) =>
+      '$denomination $type.';
+  // ttsScanResultLowConfidence(denomination, type) — full: low confidence
+  static String ttsScanResultLowConfidence(String denomination, String type) =>
+      '$denomination $type. Not fully certain — please verify.';
+
+  // Scanner — camera state
+  static const String ttsCameraOpened   = 'Camera ready.';
+  static const String ttsCameraClosed   = 'Camera closed.';
+  static const String ttsPreviewFrozen  = 'Preview frozen.';
+  static const String ttsPreviewResumed = 'Preview resumed.';
+  static const String ttsFlashOn        = 'Flashlight on.';
+  static const String ttsFlashOff       = 'Flashlight off.';
+
+  // Scanner — ambient hints (full verbosity only)
+  static const String ttsScannerIdle  =
+      'Hold a bill or coin flat in front of the camera to scan.';
+  static const String ttsScanStarted  = 'Scanning.';
+  static const String ttsProcessing   = 'Processing.';
+
+  // Scanner — errors
+  static const String ttsCameraPermissionDenied =
+      'Camera access denied. Please allow camera permission in Settings.';
+  static const String ttsScanFailed   =
+      'Could not identify the currency. Please try again with better lighting.';
+  static const String ttsCameraError  =
+      'Camera error. Please close and reopen the scanner.';
+
+  // ── Scanner Semantics labels (read by TalkBack, not spoken by TTS) ────────
+  static const String scannerSemanticIdle       =
+      'Scanner. Camera is off. Tap the camera button to start.';
+  static const String scannerSemanticReady      =
+      'Scanner ready. Double-tap to scan a bill or coin.';
+  static const String scannerSemanticScanning   = 'Scanning. Hold still.';
+  static const String scannerSemanticProcessing = 'Processing. Almost done.';
+  static const String scannerSemanticPaused     =
+      'Preview paused. Double-tap to resume.';
+  static const String scannerSemanticResult     = 'Result ready.';
+
+  // ── Onboarding TTS — spoken aloud during setup ────────────────────────────
+  static const String ttsOnboardingWelcome =
+      'Welcome to MoneySense. Your accessible Philippine currency identifier. '
+      'Tap Next to continue.';
+  static const String ttsOnboardingVision =
+      'How do you see? Choose a vision profile. '
+      'Low Vision, Partially Blind, or Fully Blind. '
+      'Tap an option, then tap Next.';
+  static const String ttsOnboardingLanguage =
+      'Choose your language. English or Tagalog. '
+      'Tap an option, then tap Get Started.';
+  static const String ttsOnboardingProfileSelected =
+      'Vision profile set.';
+
+  // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.
 }
