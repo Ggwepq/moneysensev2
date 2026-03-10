@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/constants/app_spacing.dart';
+import '../../features/settings/domain/entities/vision_config.dart';
 
 /// Settings tile: [Icon?]  [Title / Subtitle]  [Switch]  [? Help]
 ///
@@ -42,7 +44,6 @@ class MsToggleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     final base = semanticLabel ?? title;
     final sub = subtitle != null ? '. $subtitle' : '';
@@ -131,27 +132,32 @@ class _HelpButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cfg     = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final accent  = cfg.accentBlue; // help button always uses blue
+
     return Semantics(
       label: 'Help for $settingName',
       button: true,
-      container: true,       // own boundary — not merged with sibling tile
-      excludeSemantics: true, // hide the inner '?' Text
+      container: true,
+      excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.accentBlue,
+            color: accent,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
               '?',
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700),
+                color: accent.computeLuminance() > 0.4 ? Colors.black : Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),

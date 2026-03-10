@@ -9,6 +9,8 @@ import '../features/scanner/presentation/providers/scanner_provider.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/tutorial/domain/tutorial_route.dart';
+import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
 import '../shared/widgets/ms_bottom_nav.dart';
 
@@ -19,13 +21,28 @@ import '../shared/widgets/ms_bottom_nav.dart';
 /// When Settings is pushed from this level, didPushNext fires correctly
 /// and the sensor pauses, preventing stray tilt callbacks while away.
 class HomeShell extends ConsumerStatefulWidget {
-  const HomeShell({super.key});
+  const HomeShell({super.key, this.launchTutorialOnLoad = false});
+
+  /// When true, the app-navigation tutorial is pushed immediately after
+  /// the first frame (set by onboarding when user chooses "Show me around").
+  final bool launchTutorialOnLoad;
 
   @override
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.launchTutorialOnLoad) {
+      // Push the app-navigation tutorial directly — not the tutorial list.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) TutorialNavigator.push(context, TutorialRoute.appNavigation);
+      });
+    }
+  }
 
   void _pushSettings() {
     _enqueue(NavSpeech.openedSettings(_l10n));
@@ -71,7 +88,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
+        pageBuilder: (_, __, _) => page,
         transitionsBuilder: (_, anim, __, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(-1.0, 0),
@@ -83,7 +100,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       );
 
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
+        pageBuilder: (_, __, _) => page,
         transitionsBuilder: (_, anim, __, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0),

@@ -57,7 +57,7 @@ abstract final class AppTheme {
         activeTrackColor:  AppColors.accentYellow,
         inactiveTrackColor: inactive,
         thumbColor:  AppColors.accentYellow,
-        overlayColor: AppColors.accentYellow.withOpacity(0.20),
+        overlayColor: AppColors.accentYellow.withValues(alpha: 0.20),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
         trackHeight: 4,
       );

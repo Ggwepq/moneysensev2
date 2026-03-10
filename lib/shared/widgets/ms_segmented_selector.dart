@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
+import '../../features/settings/domain/entities/vision_config.dart';
 
 /// A pill-style segmented selector matching the MoneySense design.
 ///
@@ -28,13 +31,15 @@ class MsSegmentedSelector<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onSelected;
   final List<IconData?>? leadingIcons;
-  /// Active pill color. Defaults to [AppColors.accentYellow].
+  /// Active pill color. When null, reads from [visionConfigProvider] automatically.
   final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = accentColor ?? AppColors.accentYellow;
+    final cfg    = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final activeColor = accentColor ?? cfg.accent(isDark);
     // Pick a readable label color based on luminance of the active color
     final activeText = activeColor.computeLuminance() > 0.4
         ? AppColors.darkBackground

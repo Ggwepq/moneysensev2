@@ -35,8 +35,8 @@ abstract final class HapticService {
   /// Call once at app startup (e.g. in main.dart or ttsInitProvider).
   /// Safe to call multiple times — subsequent calls are instant no-ops.
   static Future<void> init() async {
-    _hasVibrator  ??= await Vibration.hasVibrator() ?? false;
-    _hasAmplitude ??= await Vibration.hasAmplitudeControl() ?? false;
+    _hasVibrator  ??= (await Vibration.hasVibrator()) == true;
+    _hasAmplitude ??= (await Vibration.hasAmplitudeControl()) == true;
   }
 
   // ── Named semantic events ──────────────────────────────────────────────────

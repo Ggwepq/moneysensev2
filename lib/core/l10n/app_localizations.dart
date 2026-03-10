@@ -390,6 +390,54 @@ class AppLocalizations {
   String get getStarted =>
       isTagalog ? TlStrings.getStarted : EnStrings.getStarted;
 
+  // Onboarding: navigation style
+  String get onboardingNavTitle =>
+      isTagalog ? TlStrings.onboardingNavTitle : EnStrings.onboardingNavTitle;
+  String get onboardingNavSubtitle =>
+      isTagalog ? TlStrings.onboardingNavSubtitle : EnStrings.onboardingNavSubtitle;
+  String get onboardingNavNormal =>
+      isTagalog ? TlStrings.onboardingNavNormal : EnStrings.onboardingNavNormal;
+  String get onboardingNavNormalDesc =>
+      isTagalog ? TlStrings.onboardingNavNormalDesc : EnStrings.onboardingNavNormalDesc;
+  String get onboardingNavGestural =>
+      isTagalog ? TlStrings.onboardingNavGestural : EnStrings.onboardingNavGestural;
+  String get onboardingNavGesturalDesc =>
+      isTagalog ? TlStrings.onboardingNavGesturalDesc : EnStrings.onboardingNavGesturalDesc;
+  String get onboardingNavInertial =>
+      isTagalog ? TlStrings.onboardingNavInertial : EnStrings.onboardingNavInertial;
+  String get onboardingNavInertialDesc =>
+      isTagalog ? TlStrings.onboardingNavInertialDesc : EnStrings.onboardingNavInertialDesc;
+
+  // Onboarding: permissions
+  String get onboardingPermissionTitle =>
+      isTagalog ? TlStrings.onboardingPermissionTitle : EnStrings.onboardingPermissionTitle;
+  String get onboardingPermissionSubtitle =>
+      isTagalog ? TlStrings.onboardingPermissionSubtitle : EnStrings.onboardingPermissionSubtitle;
+  String get onboardingPermissionGrant =>
+      isTagalog ? TlStrings.onboardingPermissionGrant : EnStrings.onboardingPermissionGrant;
+  String get onboardingPermissionGranted =>
+      isTagalog ? TlStrings.onboardingPermissionGranted : EnStrings.onboardingPermissionGranted;
+  String get onboardingPermissionDenied =>
+      isTagalog ? TlStrings.onboardingPermissionDenied : EnStrings.onboardingPermissionDenied;
+  String get onboardingPermissionSkip =>
+      isTagalog ? TlStrings.onboardingPermissionSkip : EnStrings.onboardingPermissionSkip;
+
+  // Onboarding: finish
+  String get onboardingFinishTitle =>
+      isTagalog ? TlStrings.onboardingFinishTitle : EnStrings.onboardingFinishTitle;
+  String get onboardingFinishSubtitle =>
+      isTagalog ? TlStrings.onboardingFinishSubtitle : EnStrings.onboardingFinishSubtitle;
+  String get onboardingFinishTour =>
+      isTagalog ? TlStrings.onboardingFinishTour : EnStrings.onboardingFinishTour;
+  String get onboardingFinishSkip =>
+      isTagalog ? TlStrings.onboardingFinishSkip : EnStrings.onboardingFinishSkip;
+
+  // Tutorial: App Navigation
+  String get tutorialCardAppNavTitle =>
+      isTagalog ? TlStrings.tutorialCardAppNavTitle : EnStrings.tutorialCardAppNavTitle;
+  String get tutorialCardAppNavDesc =>
+      isTagalog ? TlStrings.tutorialCardAppNavDesc : EnStrings.tutorialCardAppNavDesc;
+
   // ── TTS speech strings ──────────────────────────────────────────────────
 
   // App-level

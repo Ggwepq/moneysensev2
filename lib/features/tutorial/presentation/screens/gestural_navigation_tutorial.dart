@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../settings/domain/entities/vision_config.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
 
 class GesturalNavigationTutorial extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _GesturalNavigationTutorialState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cfg    = ref.watch(visionConfigProvider);
     final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
     return MsTutorialScaffold(
@@ -288,9 +290,9 @@ class _GestureArrow extends StatelessWidget {
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: result.color.withOpacity(0.15),
+        color: result.color.withValues(alpha: 0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: result.color.withOpacity(0.6)),
+        border: Border.all(color: result.color.withValues(alpha: 0.6)),
       ),
       child: Icon(iconData, color: result.color, size: 20),
     );
@@ -318,6 +320,10 @@ class _GesturePlayground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final yellow  = _cfg.accentYellow;
+    final blue    = _cfg.accentBlue;
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;
@@ -325,7 +331,7 @@ class _GesturePlayground extends StatelessWidget {
     final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
     final active = lastResult != null;
-    final accent = lastResult?.color ?? AppColors.accentYellow;
+    final accent = lastResult?.color ?? yellow;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -351,7 +357,7 @@ class _GesturePlayground extends StatelessWidget {
             height: 140,
             decoration: BoxDecoration(
               color: active
-                  ? accent.withOpacity(isDark ? 0.12 : 0.07)
+                  ? accent.withValues(alpha: isDark ? 0.12 : 0.07)
                   : surface,
               borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
               border: Border.all(
@@ -403,7 +409,7 @@ class _GesturePlayground extends StatelessWidget {
             children: [
               _LegendRow(
                 icon: Icons.arrow_forward_rounded,
-                color: AppColors.accentYellow,
+                color: yellow,
                 label: l10n.gestureSwipeRight,
                 action: l10n.gestureOpensSettings,
                 theme: theme,
@@ -413,7 +419,7 @@ class _GesturePlayground extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               _LegendRow(
                 icon: Icons.arrow_back_rounded,
-                color: AppColors.accentBlue,
+                color: blue,
                 label: l10n.gestureSwipeLeft,
                 action: l10n.gestureOpensTutorial,
                 theme: theme,
@@ -479,7 +485,7 @@ class _LegendRow extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),

@@ -5,6 +5,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
+import '../../../../shared/widgets/full_screen_loader.dart';
 import '../../../../shared/widgets/ms_action_tile.dart';
 import '../../../../shared/widgets/ms_section_header.dart';
 import '../../../../shared/widgets/ms_segmented_selector.dart';
@@ -378,7 +379,6 @@ class _ThemeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     final selectedLabel = themeMode == AppThemeMode.system
         ? l10n.themeSystem
@@ -427,13 +427,16 @@ class _ThemeTile extends StatelessWidget {
   }
 }
 
-// ── Language Tile ─────────────────────────────────────────────────────────────
-// Stateful because it owns the `_isChanging` loading flag.
-// The language-change flow:
-//   1. User taps a language pill
-//   2. Spinner appears; "Changing audio to X" spoken in old language
-//   3. TTS engine switches language (awaited)
-//   4. Spinner disappears; "Done. Now speaking X" spoken in new language
+// Language Tile
+// Stateful so it can show a full-screen blocking loader during engine switch.
+//
+// Flow:
+//   1. User taps a pill.
+//   2. Full-screen loader appears (blocks all input).
+//   3. "Changing audio to X" spoken in old language.
+//   4. TTS engine switches language (awaited).
+//   5. "Done. Now speaking X" spoken in new language.
+//   6. Loader dismissed after the "done" audio has time to start playing.
 
 class _LanguageTile extends ConsumerStatefulWidget {
   const _LanguageTile({
@@ -470,37 +473,48 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
         ? newL10n.languageTagalog
         : newL10n.languageEnglish;
 
-    // 1. Show spinner
-    setState(() => _isChanging = true);
+    if (!mounted) return;
+    _isChanging = true;
 
-    // 2. Speak "Changing audio to X" in the OLD language (before engine switch)
+    // Show full-screen blocking loader with the "changing" message
+    FullScreenLoader.show(
+      context,
+      message: oldL10n.ttsLangChanging(newLangName),
+    );
+
+    // Speak "Changing audio to X" in the OLD language
     tts.enqueue(
       LanguageSpeech.changing(oldL10n, newLangName),
       enabled: settings.ttsEnabled,
       currentVerbosity: settings.ttsVerbosity,
     );
 
-    // 3. Persist the setting
+    // Persist setting
     widget.onChanged(newLang);
 
-    // 4. Switch the TTS engine — await so we know when it's ready
+    // Switch the engine — this is the async work being blocked for
     await tts.changeLanguage(newLang);
 
-    // 5. Speak "Done. Now speaking X" in the NEW language
+    // Speak "Done. Now speaking X" in the NEW language
     tts.enqueue(
       LanguageSpeech.done(newL10n, newLangName),
       enabled: settings.ttsEnabled,
       currentVerbosity: settings.ttsVerbosity,
     );
 
-    // 6. Hide spinner
-    if (mounted) setState(() => _isChanging = false);
+    // Short delay so TTS "done" announcement starts before overlay disappears.
+    // The user hears the confirmation, THEN the screen unlocks.
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+
+    if (mounted) {
+      FullScreenLoader.hide(context);
+      _isChanging = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     final selectedLabel = widget.language == AppLanguage.english
         ? widget.l10n.languageEnglish
@@ -523,69 +537,20 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
                     )),
-                Text(widget.subtitle,
-                    style: theme.textTheme.bodySmall),
+                Text(widget.subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Selector or loading indicator
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: _isChanging
-                ? _LanguageLoadingBadge(
-                    key: const ValueKey('loading'),
-                    l10n: widget.l10n,
-                    isDark: isDark,
-                  )
-                : MsSegmentedSelector<AppLanguage>(
-                    key: const ValueKey('selector'),
-                    options: AppLanguage.values,
-                    labels: [
-                      widget.l10n.languageEnglish,
-                      widget.l10n.languageTagalog,
-                    ],
-                    selected: widget.language,
-                    onSelected: _handleChange,
-                    accentColor: widget.visionConfig.accentYellow,
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Small inline loading badge shown while the TTS engine is switching language.
-class _LanguageLoadingBadge extends StatelessWidget {
-  const _LanguageLoadingBadge({super.key, required this.l10n, required this.isDark});
-  final AppLocalizations l10n;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDark ? const Color(0xFF8A9BB0) : const Color(0xFF777777);
-    return SizedBox(
-      height: 40, // same height as the pill selector
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            l10n.ttsLangChangingLabel,
-            style: TextStyle(
-              fontSize: 13,
-              color: color,
-              fontStyle: FontStyle.italic,
-            ),
+          MsSegmentedSelector<AppLanguage>(
+            options: AppLanguage.values,
+            labels: [
+              widget.l10n.languageEnglish,
+              widget.l10n.languageTagalog,
+            ],
+            selected: widget.language,
+            onSelected: _handleChange,
+            accentColor: widget.visionConfig.accentYellow,
           ),
         ],
       ),
@@ -615,7 +580,6 @@ class _VisionProfileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     // Use theme-aware color so text is always legible regardless of contrast level
     final titleColor = theme.textTheme.bodyLarge?.color;
     final subtitleColor = theme.textTheme.bodySmall?.color;

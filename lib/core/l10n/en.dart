@@ -298,6 +298,43 @@ abstract final class EnStrings {
   static const String visionLowVision = 'Low Vision';
   static const String visionPartiallyBlind = 'Partially Blind';
   static const String visionFullyBlind = 'Fully Blind';
+
+  // Onboarding: Navigation style
+  static const String onboardingNavTitle = 'How do you navigate?';
+  static const String onboardingNavSubtitle =
+      'Choose how you want to move between screens. You can change this later in Settings.';
+  static const String onboardingNavNormal = 'Standard';
+  static const String onboardingNavNormalDesc =
+      'Use the buttons and bottom navigation bar.';
+  static const String onboardingNavGestural = 'Gestural';
+  static const String onboardingNavGesturalDesc =
+      'Swipe left or right to open Settings and Tutorial.';
+  static const String onboardingNavInertial = 'Inertial';
+  static const String onboardingNavInertialDesc =
+      'Tilt your phone left or right to navigate.';
+
+  // Onboarding: Permissions
+  static const String onboardingPermissionTitle = 'Camera access';
+  static const String onboardingPermissionSubtitle =
+      'MoneySense needs the camera to identify Philippine currency. Tap the button below to grant access.';
+  static const String onboardingPermissionGrant = 'Grant camera access';
+  static const String onboardingPermissionGranted = 'Camera access granted';
+  static const String onboardingPermissionDenied =
+      'Camera access was denied. You can allow it later in your device Settings.';
+  static const String onboardingPermissionSkip = 'Skip for now';
+
+  // Onboarding: Finish
+  static const String onboardingFinishTitle = "You're all set!";
+  static const String onboardingFinishSubtitle =
+      'MoneySense is ready to use. Would you like a quick tour of the app first?';
+  static const String onboardingFinishTour = 'Show me around';
+  static const String onboardingFinishSkip = 'Start scanning';
+
+  // Tutorial: App Navigation overview card
+  static const String tutorialCardAppNavTitle = 'App Navigation';
+  static const String tutorialCardAppNavDesc =
+      'A guided walkthrough of the three screens and how to reach them.';
+
   static const String next = 'Next';
   static const String getStarted = 'Get Started';
 

@@ -107,12 +107,31 @@ class VisionConfig {
     };
   }
 
-  /// Accent yellow — boosted brightness at higher contrast.
+  /// Accent yellow — boosted brightness at higher contrast levels.
   Color get accentYellow => switch (contrastLevel) {
         ContrastLevel.normal   => const Color(0xFFE2DA00),
         ContrastLevel.elevated => const Color(0xFFFFEE00),
         ContrastLevel.maximum  => const Color(0xFFFFFF33),
       };
+
+  /// Accent blue — boosted saturation at higher contrast levels.
+  Color get accentBlue => switch (contrastLevel) {
+        ContrastLevel.normal   => const Color(0xFF1E30F0),
+        ContrastLevel.elevated => const Color(0xFF2540FF),
+        ContrastLevel.maximum  => const Color(0xFF4D6AFF),
+      };
+
+  /// The single accent colour to use for a given brightness context.
+  ///
+  /// Design rule: yellow on dark surfaces, blue on light surfaces.
+  /// Every widget across the whole app should call THIS instead of reading
+  /// [AppColors.accentYellow] / [AppColors.accentBlue] directly, so
+  /// contrast-level boosts propagate everywhere automatically.
+  Color accent(bool isDark) => isDark ? accentYellow : accentBlue;
+
+  /// Foreground colour that is guaranteed legible on top of [accent].
+  Color accentForeground(bool isDark) =>
+      accent(isDark).computeLuminance() > 0.4 ? Colors.black : Colors.white;
 
   // ── Factory ────────────────────────────────────────────────────────────────
 

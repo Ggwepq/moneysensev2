@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/tutorial_route.dart';
 import 'tutorial_navigator.dart';
@@ -21,12 +22,15 @@ class TutorialScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
-    final l10n = AppLocalizations.of(settings.isTagalog);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final theme = Theme.of(context);
-    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
-    final onVariant = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
+    final cfg      = ref.watch(visionConfigProvider);
+    final l10n     = AppLocalizations.of(settings.isTagalog);
+    final isDark   = Theme.of(context).brightness == Brightness.dark;
+    final theme    = Theme.of(context);
+    final bg       = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final onSurface  = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final onVariant  = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
+    final yellow     = cfg.accentYellow;
+    final blue       = cfg.accentBlue;
 
     return _SwipeBackWrapper(
       child: Scaffold(
@@ -67,6 +71,20 @@ class TutorialScreen extends ConsumerWidget {
               ),
             ),
 
+            // ── Getting started ──────────────────────────────────────────
+            _SectionLabel(label: 'Getting Started', isDark: isDark),
+            const SizedBox(height: AppSpacing.sm),
+            _TutorialCard(
+              route: TutorialRoute.appNavigation,
+              icon: Icons.widgets_rounded,
+              title: l10n.tutorialCardAppNavTitle,
+              description: l10n.tutorialCardAppNavDesc,
+              accentColor: cfg.accent(isDark),
+              isDark: isDark,
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
             // ── Scanning section ─────────────────────────────────────────
             _SectionLabel(label: l10n.tutorialSectionScanning, isDark: isDark),
             const SizedBox(height: AppSpacing.sm),
@@ -75,7 +93,7 @@ class TutorialScreen extends ConsumerWidget {
               icon: Icons.vibration_rounded,
               title: l10n.tutorialCardDenomTitle,
               description: l10n.tutorialCardDenomDesc,
-              accentColor: AppColors.accentYellow,
+              accentColor: yellow,
               isDark: isDark,
             ),
 
@@ -89,7 +107,7 @@ class TutorialScreen extends ConsumerWidget {
               icon: Icons.screen_rotation_rounded,
               title: l10n.tutorialCardShakeTitle,
               description: l10n.tutorialCardShakeDesc,
-              accentColor: AppColors.accentBlue,
+              accentColor: blue,
               isDark: isDark,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -98,7 +116,7 @@ class TutorialScreen extends ConsumerWidget {
               icon: Icons.swipe_rounded,
               title: l10n.tutorialCardGestureTitle,
               description: l10n.tutorialCardGestureDesc,
-              accentColor: AppColors.accentYellow,
+              accentColor: yellow,
               isDark: isDark,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -107,7 +125,7 @@ class TutorialScreen extends ConsumerWidget {
               icon: Icons.screen_rotation_alt_rounded,
               title: l10n.tutorialCardInertialTitle,
               description: l10n.tutorialCardInertialDesc,
-              accentColor: AppColors.accentBlue,
+              accentColor: blue,
               isDark: isDark,
             ),
 

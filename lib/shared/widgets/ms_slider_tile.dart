@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
+import '../../features/settings/domain/entities/vision_config.dart';
 
 /// Settings tile with a [Slider] flanked by ± step buttons.
 ///
@@ -35,7 +38,6 @@ class MsSliderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final pct = ((value - min) / (max - min) * 100).round();
     final label = displayLabel ?? '$pct%';
 
@@ -143,15 +145,19 @@ class _StepButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Yellow is the primary accent on both themes.
-    // #E2DA00 is dark enough that the near-black darkBackground icon reads well.
+    // Read accent from the nearest ProviderScope so contrast boosts propagate.
+    // _StepButton is inside a StatelessWidget tree; use ProviderScope.containerOf
+    // to read without converting to ConsumerWidget — avoids refactoring the whole tree.
+    final container = ProviderScope.containerOf(context, listen: false);
+    final cfg   = container.read(visionConfigProvider);
+    final accent = cfg.accentYellow; // step buttons always use yellow (same on both themes)
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
-        decoration: const BoxDecoration(
-          color: AppColors.accentYellow,
+        decoration: BoxDecoration(
+          color: accent,
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: AppColors.darkBackground),

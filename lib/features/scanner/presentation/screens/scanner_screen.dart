@@ -10,9 +10,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
-import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import '../../data/datasources/camera_service.dart';
 import '../../domain/entities/scanner_state.dart';
 import '../providers/scanner_provider.dart';
 import '../widgets/camera_viewfinder.dart';
@@ -51,7 +49,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
   // ── State tracking ─────────────────────────────────────────────────────────
   bool _routeObscured   = false;
-  ScannerState _prevState = ScannerState.idle;
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -328,7 +325,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         _cancelIdleTimer();
     }
 
-    _prevState = next;
   }
 
   // ── Gesture handlers ───────────────────────────────────────────────────────
@@ -453,24 +449,24 @@ class _PausedOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: Colors.black.withOpacity(0.45),
+        color: Colors.black.withValues(alpha: 0.45),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.pause_circle_outline_rounded,
-                  size: 72, color: Colors.white.withOpacity(0.85)),
+                  size: 72, color: Colors.white.withValues(alpha: 0.85)),
               const SizedBox(height: 12),
               Text(l10n.paused,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5)),
               const SizedBox(height: 6),
               Text(l10n.doubleTapToResume,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.55), fontSize: 13)),
+                      color: Colors.white.withValues(alpha: 0.55), fontSize: 13)),
             ],
           ),
         ),

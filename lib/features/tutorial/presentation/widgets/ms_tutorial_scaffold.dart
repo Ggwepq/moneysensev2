@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../settings/domain/entities/vision_config.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 /// Shared scaffold for all feature tutorials.
 ///
@@ -30,7 +34,7 @@ class MsTutorialScaffold extends StatelessWidget {
     required this.steps,
     required this.hero,
     this.interactive,
-    this.accentColor = AppColors.accentYellow,
+    this.accentColor, // null = resolved from visionConfigProvider at build time
   });
 
   /// AppBar title AND content heading.
@@ -52,12 +56,16 @@ class MsTutorialScaffold extends StatelessWidget {
   final Widget? interactive;
 
   /// Colour used for the badge chip, step numbers, and interactive accents.
-  final Color accentColor;
+  /// When null, resolved from [visionConfigProvider] at build time.
+  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final cfg    = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final accent = accentColor ?? cfg.accent(isDark);
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
@@ -106,10 +114,10 @@ class MsTutorialScaffold extends StatelessWidget {
                       vertical: AppSpacing.xs + 2,
                     ),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(isDark ? 0.18 : 0.12),
+                      color: accent.withValues(alpha: isDark ? 0.18 : 0.12),
                       borderRadius: BorderRadius.circular(100),
                       border: Border.all(
-                        color: accentColor.withOpacity(0.4),
+                        color: accent.withValues(alpha: 0.4),
                         width: 1,
                       ),
                     ),
@@ -119,7 +127,7 @@ class MsTutorialScaffold extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
-                        color: accentColor,
+                        color: accent,
                       ),
                     ),
                   ),
@@ -150,7 +158,7 @@ class MsTutorialScaffold extends StatelessWidget {
                   ...List.generate(steps.length, (i) => _StepRow(
                     number: i + 1,
                     text: steps[i],
-                    accentColor: accentColor,
+                    accentColor: accent,
                     surface: surface,
                     onSurface: onSurface,
                     theme: theme,

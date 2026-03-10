@@ -50,21 +50,27 @@ class _AppRoot extends ConsumerStatefulWidget {
 }
 
 class _AppRootState extends ConsumerState<_AppRoot> {
+  /// Set to true by onboarding when the user chooses "Show me around".
+  bool _launchTutorial = false;
+
+  void _onOnboardingComplete({bool launchTutorial = false}) {
+    _launchTutorial = launchTutorial;
+    markOnboardingComplete(ref);
+  }
+
   @override
   Widget build(BuildContext context) {
     final onboardingDone = ref.watch(onboardingCompleteProvider);
 
     if (!onboardingDone) {
-      return OnboardingScreen(
-        onComplete: () => markOnboardingComplete(ref),
-      );
+      return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
     // ShakeDetectorWidget is app-level (shake to go back works from anywhere).
     // InertialDetectorWidget is inside HomeShell so its RouteAware subscription
     // correctly sees Settings/Tutorial pushes.
-    return const ShakeDetectorWidget(
-      child: HomeShell(),
+    return ShakeDetectorWidget(
+      child: HomeShell(launchTutorialOnLoad: _launchTutorial),
     );
   }
 }

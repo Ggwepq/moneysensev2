@@ -10,6 +10,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/inertial_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../settings/domain/entities/vision_config.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
 
 // ---------------------------------------------------------------------------
@@ -86,13 +87,15 @@ class _InertialNavigationTutorialState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cfg    = ref.watch(visionConfigProvider);
+    final blue    = cfg.accentBlue;
     final l10n   = AppLocalizations.of(
         ref.watch(appSettingsProvider).isTagalog);
 
     return MsTutorialScaffold(
       title: l10n.tutorialCardInertialTitle,
       badge: l10n.inertialTutorialBadge,
-      accentColor: AppColors.accentBlue,
+      accentColor: blue,
       description: l10n.inertialTutorialDescription,
       steps: [
         l10n.inertialTutorialStep1,
@@ -140,6 +143,10 @@ class _TiltHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final yellow  = _cfg.accentYellow;
+    final blue    = _cfg.accentBlue;
     final bg    = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final phone = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
 
@@ -148,7 +155,7 @@ class _TiltHero extends StatelessWidget {
     final tiltDeg      = tiltFraction * 40.0; // max ±40° visual
     final tiltRad      = tiltDeg * math.pi / 180.0;
 
-    final accent     = justDetected ? AppColors.accentYellow : AppColors.accentBlue;
+    final accent     = justDetected ? yellow : blue;
     final glowOpacity = justDetected ? 0.40 : 0.20;
 
     return Container(
@@ -162,7 +169,7 @@ class _TiltHero extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.arrow_back_rounded,
-                    color: AppColors.accentBlue.withOpacity(
+                    color: blue.withValues(alpha: 
                         rawX > 0 ? 0.9 : 0.25),
                     size: 20),
                 const SizedBox(width: 6),
@@ -175,7 +182,7 @@ class _TiltHero extends StatelessWidget {
                     )),
                 const SizedBox(width: 6),
                 Icon(Icons.arrow_forward_rounded,
-                    color: AppColors.accentYellow.withOpacity(
+                    color: yellow.withValues(alpha: 
                         rawX < 0 ? 0.9 : 0.25),
                     size: 20),
               ],
@@ -202,7 +209,7 @@ class _TiltHero extends StatelessWidget {
                       BoxShadow(
                         color: isFlat
                             ? Colors.transparent
-                            : accent.withOpacity(glowOpacity),
+                            : accent.withValues(alpha: glowOpacity),
                         blurRadius: 18,
                         spreadRadius: 3,
                       ),
@@ -274,6 +281,10 @@ class _TiltPlayground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final yellow  = _cfg.accentYellow;
+    final blue    = _cfg.accentBlue;
     final theme      = Theme.of(context);
     final surface    = isDark ? AppColors.darkSurface    : AppColors.lightSurface;
     final border     = isDark ? AppColors.darkBorder     : AppColors.lightBorder;
@@ -289,16 +300,16 @@ class _TiltPlayground extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.base),
           decoration: BoxDecoration(
             color: isFlat
-                ? AppColors.error.withOpacity(isDark ? 0.12 : 0.07)
+                ? AppColors.error.withValues(alpha: isDark ? 0.12 : 0.07)
                 : justDetected
-                    ? AppColors.accentYellow.withOpacity(isDark ? 0.13 : 0.07)
+                    ? yellow.withValues(alpha: isDark ? 0.13 : 0.07)
                     : surface,
             borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
             border: Border.all(
               color: isFlat
                   ? AppColors.error
                   : justDetected
-                      ? AppColors.accentYellow
+                      ? yellow
                       : border,
               width: (isFlat || justDetected) ? 1.5 : 1.0,
             ),
@@ -320,7 +331,7 @@ class _TiltPlayground extends StatelessWidget {
                     color: isFlat
                         ? AppColors.error
                         : justDetected
-                            ? AppColors.accentYellow
+                            ? yellow
                             : onVariant,
                     fontWeight: (isFlat || justDetected)
                         ? FontWeight.w600
@@ -343,7 +354,7 @@ class _TiltPlayground extends StatelessWidget {
                     child: Text('← Tutorial',
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelSmall?.copyWith(
-                            color: AppColors.accentBlue,
+                            color: blue,
                             fontWeight: FontWeight.w600)),
                   ),
                   Padding(
@@ -357,7 +368,7 @@ class _TiltPlayground extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.end,
                         style: theme.textTheme.labelSmall?.copyWith(
-                            color: AppColors.accentYellow,
+                            color: yellow,
                             fontWeight: FontWeight.w600)),
                   ),
                 ],
@@ -380,7 +391,7 @@ class _TiltPlayground extends StatelessWidget {
             children: [
               _LegendRow(
                 icon: Icons.screen_rotation_alt_rounded,
-                color: AppColors.accentYellow,
+                color: yellow,
                 label: l10n.inertialLegendRight,
                 action: l10n.inertialLegendOpensSettings,
                 theme: theme, onSurface: onSurface, onVariant: onVariant,
@@ -388,7 +399,7 @@ class _TiltPlayground extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               _LegendRow(
                 icon: Icons.screen_rotation_rounded,
-                color: AppColors.accentBlue,
+                color: blue,
                 label: l10n.inertialLegendLeft,
                 action: l10n.inertialLegendOpensTutorial,
                 theme: theme, onSurface: onSurface, onVariant: onVariant,
@@ -426,6 +437,10 @@ class _TiltBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final yellow  = _cfg.accentYellow;
+    final blue    = _cfg.accentBlue;
     final norm       = (rawX / _maxRaw).clamp(-1.0, 1.0); // +1 = left, -1 = right
     final trackColor = isDark
         ? AppColors.darkSurfaceVariant
@@ -435,9 +450,9 @@ class _TiltBar extends StatelessWidget {
     if (isFlat) {
       dotColor = AppColors.error;
     } else if (norm > _triggerFraction) {
-      dotColor = AppColors.accentBlue;   // tilt left zone
+      dotColor = blue;   // tilt left zone
     } else if (norm < -_triggerFraction) {
-      dotColor = AppColors.accentYellow; // tilt right zone
+      dotColor = yellow; // tilt right zone
     } else {
       dotColor = isDark
           ? AppColors.darkOnSurfaceVariant
@@ -470,7 +485,7 @@ class _TiltBar extends StatelessWidget {
               child: Container(
                 width: 2, height: 14,
                 decoration: BoxDecoration(
-                  color: AppColors.accentBlue.withOpacity(0.5),
+                  color: blue.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(1),
                 ),
               ),
@@ -481,7 +496,7 @@ class _TiltBar extends StatelessWidget {
               child: Container(
                 width: 2, height: 14,
                 decoration: BoxDecoration(
-                  color: AppColors.accentYellow.withOpacity(0.5),
+                  color: yellow.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(1),
                 ),
               ),
@@ -508,7 +523,7 @@ class _TiltBar extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: dotColor.withOpacity(0.4),
+                      color: dotColor.withValues(alpha: 0.4),
                       blurRadius: 8, spreadRadius: 1,
                     ),
                   ],
@@ -556,7 +571,7 @@ class _LegendRow extends StatelessWidget {
           Container(
             width: 32, height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),

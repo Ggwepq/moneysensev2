@@ -9,6 +9,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/shake_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../settings/domain/entities/vision_config.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
 
 class ShakeTutorial extends ConsumerStatefulWidget {
@@ -58,6 +59,8 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cfg    = ref.watch(visionConfigProvider);
+    final blue    = cfg.accentBlue;
     final l10n = AppLocalizations.of(ref.watch(appSettingsProvider).isTagalog);
 
     return MsTutorialScaffold(
@@ -71,7 +74,7 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
         l10n.shakeTutorialStep4,
       ],
       hero: _ShakeHero(isDark: isDark, justShook: _justShook),
-      accentColor: AppColors.accentBlue,
+      accentColor: blue,
       interactive: _ShakeDemo(
         shakeCount: _shakeCount,
         justShook: _justShook,
@@ -150,9 +153,12 @@ class _PhoneGraphic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final blue    = _cfg.accentBlue;
     final phoneColor = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
     final border     = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final accent     = glowing ? AppColors.accentBlue : (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant);
+    final accent     = glowing ? blue : (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant);
 
     return Stack(
       alignment: Alignment.center,
@@ -166,7 +172,7 @@ class _PhoneGraphic extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentBlue.withOpacity(0.45),
+                  color: blue.withValues(alpha: 0.45),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),
@@ -181,7 +187,7 @@ class _PhoneGraphic extends StatelessWidget {
             color: phoneColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: glowing ? AppColors.accentBlue : border,
+              color: glowing ? blue : border,
               width: glowing ? 2 : 1.5,
             ),
           ),
@@ -242,7 +248,7 @@ class _MotionLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant)
-        .withOpacity(0.35);
+        .withValues(alpha: 0.35);
     return Transform.scale(
       scaleX: flip ? -1 : 1,
       child: Container(
@@ -276,6 +282,9 @@ class _ShakeDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _cfg   = ProviderScope.containerOf(context, listen: false)
+        .read(visionConfigProvider);
+    final blue    = _cfg.accentBlue;
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;
@@ -287,11 +296,11 @@ class _ShakeDemo extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         color: justShook
-            ? AppColors.accentBlue.withOpacity(isDark ? 0.15 : 0.08)
+            ? blue.withValues(alpha: isDark ? 0.15 : 0.08)
             : surface,
         borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
         border: Border.all(
-          color: justShook ? AppColors.accentBlue : border,
+          color: justShook ? blue : border,
           width: justShook ? 1.5 : 1,
         ),
       ),
@@ -303,7 +312,7 @@ class _ShakeDemo extends StatelessWidget {
             justShook ? l10n.shakeDetected : l10n.shakeTryItTitle,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleSmall?.copyWith(
-              color: justShook ? AppColors.accentBlue : onSurface,
+              color: justShook ? blue : onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -319,7 +328,7 @@ class _ShakeDemo extends StatelessWidget {
               l10n.shakeCount(shakeCount),
               textAlign: TextAlign.center,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: AppColors.accentBlue,
+                color: blue,
                 fontWeight: FontWeight.w600,
               ),
             ),

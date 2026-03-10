@@ -190,6 +190,7 @@ class InertialService {
   bool get isFlat => _rawZ.abs() > _flatThreshold;
 
   /// Current detected orientation.
+  // ignore: library_private_types_in_public_api
   _TiltOrientation get orientation => _currentOrientation;
 }
 

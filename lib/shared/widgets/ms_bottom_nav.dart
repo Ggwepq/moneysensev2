@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
+import '../../features/settings/domain/entities/vision_config.dart';
 
 /// Bottom navigation bar for MoneySense.
 ///
-/// Three equal-width buttons that together span the full screen width
-/// (minus horizontal page padding). The layout matches the design:
-///
-///   |← pagePadding →|  [⚙]  gap  [▶]  gap  [?]  |← pagePadding →|
-///
-/// All three buttons are the same size — driven by [Expanded] so they
-/// automatically divide the available width equally on every device.
-///
-/// Colors (both light & dark, matching design):
-///   [⚙] and [?] → yellow background, dark icon
-///   [▶]         → blue background,  white icon
-class MsBottomNav extends StatelessWidget {
+/// Colors adapt to the active VisionProfile through [visionConfigProvider].
+/// All accent colours come from [VisionConfig.accent] / [VisionConfig.accentYellow]
+/// so contrast boosts applied in Settings propagate here automatically.
+class MsBottomNav extends ConsumerWidget {
   const MsBottomNav({
     super.key,
     required this.currentIndex,
@@ -28,17 +23,17 @@ class MsBottomNav extends StatelessWidget {
   final ValueChanged<int> onTap;
   final bool isCameraOpen;
 
-  // Gap between the three buttons
-  static const double _gap = 12.0;
-
-  // Height of each button. Width is driven by Expanded so on most phones
-  // each button ends up close to square (screen_width - 2*padding - 2*gaps) / 3.
+  static const double _gap          = 12.0;
   static const double _buttonHeight = 70.0;
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
+    final cfg     = ref.watch(visionConfigProvider);
+    final bg      = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+
+    final yellow  = cfg.accentYellow;
+    final blue    = cfg.accentBlue;
 
     return SafeArea(
       top: false,
@@ -46,65 +41,54 @@ class MsBottomNav extends StatelessWidget {
         color: bg,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.pagePadding,
-            AppSpacing.sm,
-            AppSpacing.pagePadding,
-            AppSpacing.base,
+            AppSpacing.pagePadding, AppSpacing.sm,
+            AppSpacing.pagePadding, AppSpacing.base,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ── Settings ────────────────────────────────────────────────
+              // Settings
               Expanded(
-                child: _EqualButton(
+                child: _NavButton(
                   icon: Icons.settings_rounded,
                   semanticLabel: 'Settings',
                   height: _buttonHeight,
-                  bgColor: AppColors.accentYellow,
+                  bgColor: yellow,
                   iconColor: AppColors.darkBackground,
+                  glowColor: yellow,
                   isSelected: currentIndex == 0,
-                  glowColor: AppColors.accentYellow,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onTap(0);
-                  },
+                  onTap: () { HapticFeedback.lightImpact(); onTap(0); },
                 ),
               ),
               const SizedBox(width: _gap),
-              // ── Scan / Stop ─────────────────────────────────────────────
+              // Scan / Stop
               Expanded(
-                child: _EqualButton(
+                child: _NavButton(
                   icon: isCameraOpen
                       ? Icons.stop_rounded
                       : Icons.play_arrow_rounded,
                   semanticLabel: isCameraOpen ? 'Stop Camera' : 'Open Camera',
                   height: _buttonHeight,
-                  bgColor: AppColors.accentBlue,
+                  bgColor: blue,
                   iconColor: Colors.white,
+                  glowColor: blue,
                   isSelected: currentIndex == 1,
                   isRound: true,
-                  glowColor: AppColors.accentBlue,
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    onTap(1);
-                  },
+                  onTap: () { HapticFeedback.mediumImpact(); onTap(1); },
                 ),
               ),
               const SizedBox(width: _gap),
-              // ── Tutorial / Help ─────────────────────────────────────────
+              // Tutorial
               Expanded(
-                child: _EqualButton(
+                child: _NavButton(
                   icon: Icons.help_outline_rounded,
                   semanticLabel: 'Tutorial',
                   height: _buttonHeight,
-                  bgColor: AppColors.accentYellow,
+                  bgColor: yellow,
                   iconColor: AppColors.darkBackground,
+                  glowColor: yellow,
                   isSelected: currentIndex == 2,
-                  glowColor: AppColors.accentYellow,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onTap(2);
-                  },
+                  onTap: () { HapticFeedback.lightImpact(); onTap(2); },
                 ),
               ),
             ],
@@ -115,12 +99,8 @@ class MsBottomNav extends StatelessWidget {
   }
 }
 
-// ── Equal-width button ───────────────────────────────────────────────────────
-
-/// A button that fills its parent's width (used inside [Expanded]).
-/// Height is fixed; width is unconstrained so [Expanded] can size it.
-class _EqualButton extends StatelessWidget {
-  const _EqualButton({
+class _NavButton extends StatelessWidget {
+  const _NavButton({
     required this.icon,
     required this.semanticLabel,
     required this.height,
@@ -144,7 +124,6 @@ class _EqualButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Border radius: pill/round for center, rounded-rect for sides
     final radius = isRound
         ? BorderRadius.circular(height / 2)
         : BorderRadius.circular(AppSpacing.buttonRadius);
@@ -158,13 +137,12 @@ class _EqualButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           height: height,
-          // width is unconstrained — Expanded handles it
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: radius,
             boxShadow: [
               BoxShadow(
-                color: glowColor.withOpacity(isSelected ? 0.6 : 0.28),
+                color: glowColor.withValues(alpha: isSelected ? 0.6 : 0.28),
                 blurRadius: isSelected ? 18 : 8,
                 spreadRadius: isSelected ? 2 : 0,
                 offset: const Offset(0, 3),
@@ -172,12 +150,7 @@ class _EqualButton extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Icon(
-              icon,
-              color: iconColor,
-              // Icon scales with button height
-              size: height * 0.44,
-            ),
+            child: Icon(icon, color: iconColor, size: height * 0.44),
           ),
         ),
       ),

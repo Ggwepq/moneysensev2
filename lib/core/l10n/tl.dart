@@ -297,6 +297,40 @@ abstract final class TlStrings {
   static const String visionLowVision = 'Mababang Paningin';
   static const String visionPartiallyBlind = 'Bahagyang Bulag';
   static const String visionFullyBlind = 'Ganap na Bulag';
+
+  // Onboarding: Navigation style
+  static const String onboardingNavTitle    = 'Paano ka mag-navigate?';
+  static const String onboardingNavSubtitle =
+      'Piliin kung paano gusto mong lumipat sa pagitan ng mga screen. Maaari mong baguhin ito sa Settings.';
+  static const String onboardingNavNormal      = 'Karaniwan';
+  static const String onboardingNavNormalDesc  = 'Gamitin ang mga pindutan at bottom navigation bar.';
+  static const String onboardingNavGestural    = 'Gestural';
+  static const String onboardingNavGesturalDesc = 'I-swipe pakaliwa o pakanan para buksan ang Settings at Tutorial.';
+  static const String onboardingNavInertial    = 'Inertial';
+  static const String onboardingNavInertialDesc = 'Ikiling ang iyong telepono pakaliwa o pakanan para mag-navigate.';
+
+  // Onboarding: Permissions
+  static const String onboardingPermissionTitle    = 'Access sa Camera';
+  static const String onboardingPermissionSubtitle =
+      'Kailangan ng MoneySense ang camera para matukoy ang pera. Pindutin ang pindutan sa ibaba para pahintulutan.';
+  static const String onboardingPermissionGrant    = 'Pahintulutan ang camera';
+  static const String onboardingPermissionGranted  = 'Pinahintulutan na ang camera';
+  static const String onboardingPermissionDenied   =
+      'Hindi pinahintulutan ang camera. Maaari mo itong payagan sa Settings ng iyong device.';
+  static const String onboardingPermissionSkip     = 'Preskindiin muna';
+
+  // Onboarding: Finish
+  static const String onboardingFinishTitle    = 'Handa ka na!';
+  static const String onboardingFinishSubtitle =
+      'Handang gamitin ang MoneySense. Gusto mo bang mabigyan ng mabilis na gabay sa app?';
+  static const String onboardingFinishTour     = 'Ipakita sa akin';
+  static const String onboardingFinishSkip     = 'Magsimulang mag-scan';
+
+  // Tutorial: App Navigation card
+  static const String tutorialCardAppNavTitle = 'Nabigasyon sa App';
+  static const String tutorialCardAppNavDesc  =
+      'Gabay sa tatlong screen at kung paano maabot ang mga ito.';
+
   static const String next = 'Susunod';
   static const String getStarted = 'Magsimula';
 

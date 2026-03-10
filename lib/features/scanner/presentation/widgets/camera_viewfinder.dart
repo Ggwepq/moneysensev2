@@ -113,7 +113,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
     if (glowColor == null) return const [];
     return [
       BoxShadow(
-        color: glowColor.withOpacity(_opacityAnimation.value * 0.6),
+        color: glowColor.withValues(alpha: _opacityAnimation.value * 0.6),
         blurRadius: 18,
         spreadRadius: 2,
       ),
@@ -131,7 +131,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
-              color: _borderColor.withOpacity(_opacityAnimation.value),
+              color: _borderColor.withValues(alpha: _opacityAnimation.value),
               width: _borderWidth,
             ),
             boxShadow: _glow,
@@ -158,7 +158,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
                   padding: const EdgeInsets.symmetric(
                     vertical: AppSpacing.sm,
                   ),
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   child: Text(
                     widget.statusLabel!,
                     textAlign: TextAlign.center,

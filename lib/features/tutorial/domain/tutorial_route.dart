@@ -8,4 +8,5 @@ enum TutorialRoute {
   shakeToGoBack,
   gesturalNavigation,
   inertialNavigation,
+  appNavigation,
 }
