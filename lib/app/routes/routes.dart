@@ -1,4 +1,4 @@
-/// Named route constants for PesoSense.
+/// Named route constants for MoneySense.
 abstract final class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String home = '/';

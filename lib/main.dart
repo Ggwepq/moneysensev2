@@ -1,18 +1,33 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'core/services/haptic_service.dart';
+import 'features/scanner/data/datasources/camera_service.dart';
+import 'features/settings/presentation/providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Lock to portrait orientation — camera scanning works best portrait
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
+  // Load SharedPreferences, cameras, and haptic capabilities in parallel.
+  // All three are needed before the first frame; concurrent startup saves time.
+  final results = await Future.wait([
+    SharedPreferences.getInstance(),
+    availableCameras().catchError((_) => <CameraDescription>[]),
+    HapticService.init(),
   ]);
 
-  // Enforce edge-to-edge display for modern Android
+  final prefs   = results[0] as SharedPreferences;
+  final cameras = results[1] as List<CameraDescription>;
+  // results[2] is HapticService.init() — void, no cast needed.
+
+  // Portrait-only — scanning works best in portrait.
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // Edge-to-edge display on Android.
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -22,8 +37,14 @@ Future<void> main() async {
   );
 
   runApp(
-    const ProviderScope(
-      child: PesoSenseApp(),
+    ProviderScope(
+      overrides: [
+        // SharedPreferences — loaded once, used synchronously by SettingsStorage.
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        // Camera list — seeded so CameraControllerNotifier can pick a lens.
+        availableCamerasProvider.overrideWithValue(cameras),
+      ],
+      child: const MoneySenseApp(),
     ),
   );
 }

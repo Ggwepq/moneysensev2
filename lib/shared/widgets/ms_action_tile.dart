@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 
-/// A tappable settings tile used for action items such as
-/// "Check for Updates", "App Information", etc.
-class PsActionTile extends StatelessWidget {
-  const PsActionTile({
+/// A tappable settings tile (e.g. Check for Updates, App Information).
+///
+/// TalkBack: the entire row is one button node —
+///   "Check for Updates. Lorem ipsum. Button"
+class MsActionTile extends StatelessWidget {
+  const MsActionTile({
     super.key,
     required this.title,
     this.subtitle,
@@ -26,9 +28,13 @@ class PsActionTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final label = semanticLabel ??
+        (subtitle != null ? '$title. $subtitle' : title);
+
     return Semantics(
-      label: semanticLabel ?? title,
+      label: label,
       button: true,
+      excludeSemantics: true,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
@@ -51,13 +57,10 @@ class PsActionTile extends StatelessWidget {
                       : AppColors.lightSurfaceVariant,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: isDark
-                      ? AppColors.darkOnSurface
-                      : AppColors.lightOnSurface,
-                ),
+                child: Icon(icon, size: 20,
+                    color: isDark
+                        ? AppColors.darkOnSurface
+                        : AppColors.lightOnSurface),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -87,12 +90,10 @@ class PsActionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.lightOnSurfaceVariant,
-              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: isDark
+                      ? AppColors.darkOnSurfaceVariant
+                      : AppColors.lightOnSurfaceVariant),
             ],
           ),
         ),

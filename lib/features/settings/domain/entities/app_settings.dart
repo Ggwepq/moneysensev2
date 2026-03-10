@@ -4,11 +4,35 @@ import 'package:flutter/material.dart';
 ///
 /// This is a plain immutable value object.  State management (Riverpod) wraps
 /// this and handles persistence via [SharedPreferences].
+
 enum AppThemeMode { system, light, dark }
 
 enum AppLanguage { english, tagalog }
 
+/// The user's declared vision profile.
+///
+/// This drives [VisionConfig], which in turn controls TTS verbosity,
+/// haptic intensity defaults, font scale floors, and UI density.
 enum VisionProfile { lowVision, partiallyBlind, fullyBlind }
+
+/// How much the TTS engine announces.
+///
+/// [minimal]  — scan results only.
+/// [standard] — results + navigation events + setting confirmations.
+/// [full]     — everything: screen transitions, idle state, all interactions.
+///
+/// [VisionConfig] sets the default for each [VisionProfile].
+/// The user can override this independently in Settings → Accessibility.
+enum TtsVerbosity { minimal, standard, full }
+
+/// How strongly the haptic / vibration engine responds.
+///
+/// [subtle]   — HapticFeedback only (no motor vibration), short patterns.
+/// [medium]   — HapticFeedback + short motor pulse.
+/// [strong]   — HapticFeedback + full motor vibration with rich patterns.
+///
+/// [VisionConfig] sets the default per profile; user can override.
+enum HapticIntensity { subtle, medium, strong }
 
 class AppSettings {
   // ── General ────────────────────────────────────────────────────────────
@@ -34,7 +58,9 @@ class AppSettings {
   // ── Accessibility ─────────────────────────────────────────────────────
   final VisionProfile visionProfile;
   final bool ttsEnabled;
+  final TtsVerbosity ttsVerbosity;
   final bool hapticFeedback;
+  final HapticIntensity hapticIntensity;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -49,7 +75,9 @@ class AppSettings {
     this.inertialNavigation = true,
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
+    this.ttsVerbosity = TtsVerbosity.standard,
     this.hapticFeedback = true,
+    this.hapticIntensity = HapticIntensity.medium,
   });
 
   AppSettings copyWith({
@@ -65,7 +93,9 @@ class AppSettings {
     bool? inertialNavigation,
     VisionProfile? visionProfile,
     bool? ttsEnabled,
+    TtsVerbosity? ttsVerbosity,
     bool? hapticFeedback,
+    HapticIntensity? hapticIntensity,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -73,26 +103,25 @@ class AppSettings {
       fontScale: fontScale ?? this.fontScale,
       useFrontCamera: useFrontCamera ?? this.useFrontCamera,
       useFlashlight: useFlashlight ?? this.useFlashlight,
-      denominationVibration: denominationVibration ?? this.denominationVibration,
+      denominationVibration:
+          denominationVibration ?? this.denominationVibration,
       shakeToGoBack: shakeToGoBack ?? this.shakeToGoBack,
       goBackTimerSeconds: goBackTimerSeconds ?? this.goBackTimerSeconds,
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
       inertialNavigation: inertialNavigation ?? this.inertialNavigation,
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
+      ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
+      hapticIntensity: hapticIntensity ?? this.hapticIntensity,
     );
   }
 
-  /// Converts [themeMode] to Flutter's [ThemeMode].
   ThemeMode get flutterThemeMode {
     switch (themeMode) {
-      case AppThemeMode.light:
-        return ThemeMode.light;
-      case AppThemeMode.dark:
-        return ThemeMode.dark;
-      case AppThemeMode.system:
-        return ThemeMode.system;
+      case AppThemeMode.light:  return ThemeMode.light;
+      case AppThemeMode.dark:   return ThemeMode.dark;
+      case AppThemeMode.system: return ThemeMode.system;
     }
   }
 

@@ -1,4 +1,4 @@
-/// Consistent spacing scale for PesoSense.
+/// Consistent spacing scale for MoneySense.
 ///
 /// All spacing values follow a 4-pt base grid.
 abstract final class AppSpacing {

@@ -3,13 +3,16 @@ enum ScannerState {
   /// Camera is off / preview not started.
   idle,
 
-  /// Camera is running but not scanning.
+  /// Camera is running, live preview visible.
   previewing,
 
-  /// Actively scanning (yellow border in design).
+  /// Preview is paused (double-tap) — camera stays open but feed is frozen.
+  paused,
+
+  /// Actively scanning (yellow border, pulsing).
   scanning,
 
-  /// ML inference in progress (blue border in design).
+  /// ML inference in progress (blue border, pulsing).
   processing,
 
   /// A result is ready to display.
