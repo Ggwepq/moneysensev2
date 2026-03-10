@@ -7,10 +7,10 @@ import '../../features/settings/domain/entities/vision_config.dart';
 
 /// Settings tile: [Icon?]  [Title / Subtitle]  [Switch]  [? Help]
 ///
-/// TalkBack tree — each bullet is one independent focusable node:
-///   • Tile  — "Shake to Go Back. Description. Switch, on"
+/// TalkBack tree: each bullet is one independent focusable node:
+///   - Tile : "Shake to Go Back. Description. Switch, on"
 ///              double-tap → toggles switch
-///   • Help  — "Help for Shake to Go Back. Button"  (only if [showHelpButton])
+///   - Help : "Help for Shake to Go Back. Button"  (only if [showHelpButton])
 ///              double-tap → opens help dialog
 ///
 /// Implementation notes:
@@ -62,7 +62,7 @@ class MsToggleTile extends StatelessWidget {
             child: Semantics(
               label: '$base$sub. Switch, $state',
               toggled: value,
-              container: true,       // hard boundary — no merging with neighbour
+              container: true,       // hard boundary: no merging with neighbour
               excludeSemantics: true, // hide Switch / Text descendants
               onTap: onChanged == null
                   ? null
@@ -123,7 +123,6 @@ class MsToggleTile extends StatelessWidget {
   }
 }
 
-// ── Help button ────────────────────────────────────────────────────────────────
 
 class _HelpButton extends StatelessWidget {
   const _HelpButton({required this.settingName, this.onTap});

@@ -10,28 +10,8 @@ import '../../features/scanner/presentation/screens/scanner_screen.dart'
 import '../../features/settings/presentation/providers/settings_provider.dart';
 import 'inertial_service.dart';
 
-// ---------------------------------------------------------------------------
-// InertialDetectorWidget
-// ---------------------------------------------------------------------------
-//
-// Drives [InertialService] from the widget tree.
-//
-// KEY BEHAVIOURS (matching the reference implementation pattern):
-//
-//   • RouteAware: subscribes to the shared RouteObserver so it knows
-//     when another route is pushed on top (didPushNext) or when the
-//     user returns (didPopNext).
-//
-//   • didPushNext → PAUSE the accelerometer subscription so the sensor
-//     doesn't fire while the user is on another screen.
-//
-//   • didPopNext  → RESUME with a 1.5 s cooldown so the tilt that
-//     triggered the navigation-back doesn't immediately re-fire.
-//
-//   • App lifecycle: paused/hidden/detached → stop; resumed → sync.
-//
-//   • Setting toggle: if inertialNavigation is turned OFF mid-session,
-//     the sensor stops immediately (zero CPU overhead).
+// Connects InertialService to the navigator and the app lifecycle.
+// Uses RouteAware to pause tilt navigation when another screen is on top.
 
 class InertialDetectorWidget extends ConsumerStatefulWidget {
   const InertialDetectorWidget({
@@ -93,14 +73,14 @@ class _InertialDetectorWidgetState
 
   // ── RouteAware ────────────────────────────────────────────────────────────
 
-  /// Another route was pushed on top of us — pause the sensor.
+  /// Another route was pushed on top of us: pause the sensor.
   @override
   void didPushNext() {
     _isActive = false;
     ref.read(inertialServiceProvider).pause();
   }
 
-  /// We're back on top — resume the sensor with a short cooldown so the
+  /// We're back on top: resume the sensor with a short cooldown so the
   /// return-tilt doesn't immediately trigger a second navigation.
   @override
   void didPopNext() {
@@ -151,7 +131,7 @@ class _InertialDetectorWidgetState
 
   void _handleLeft() {
     if (!_isActive || _inCooldown || !mounted) return;
-    // Navigate FIRST — synchronous, on the UI thread, no awaits before it
+    // Navigate FIRST: synchronous, on the UI thread, no awaits before it
     widget.onTiltLeft();
     // Fire-and-forget haptics after navigation is already dispatched
     _vibrate();
@@ -165,7 +145,7 @@ class _InertialDetectorWidgetState
 
   void _vibrate() {
     HapticFeedback.lightImpact();
-    // Vibration.hasVibrator is async — run it detached so it never blocks nav
+    // Vibration.hasVibrator is async: run it detached so it never blocks nav
     Vibration.hasVibrator().then((has) {
       if (has == true) Vibration.vibrate(duration: 40, amplitude: 160);
     }).catchError((_) {});

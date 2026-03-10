@@ -1,37 +1,13 @@
-// ---------------------------------------------------------------------------
-// SpeechScripts — the spoken word layer
-// ---------------------------------------------------------------------------
-//
-// This file is the ONLY place that builds TtsMessage objects from text.
-// It is the single source of truth for everything the app says aloud.
-//
-// STRUCTURE
-//   Each logical area of the app has its own static class:
-//     SpeechScripts.app        — startup, generic app events
-//     SpeechScripts.nav        — screen transitions, back navigation
-//     SpeechScripts.settings   — setting toggle/change confirmations
-//     SpeechScripts.scanner    — see scanner_speech_scripts.dart (dedicated
-//                                 file — imported and re-exported here)
-//
-// ADDING A NEW MESSAGE
-//   1. Find the right class below (or create one).
-//   2. Add a static method that takes AppLocalizations + whatever data it needs.
-//   3. Return a TtsMessage with the right priority and verbosity.
-//   4. Call it from your widget/notifier via the ttsServiceProvider.
-//
-// LANGUAGE
-//   All strings are built from AppLocalizations — never hardcoded English.
-//   Add the TTS-specific string to en.dart and tl.dart if a direct translation
-//   of an existing UI string is not right for speech (e.g. shorter / more
-//   natural when heard vs read).
+// The only place that builds TtsMessage objects. All spoken text lives here.
+// Classes: AppSpeech, NavSpeech, SettingsSpeech, LanguageSpeech, OnboardingSpeech.
+// ScannerSpeech lives in scanner_speech_scripts.dart and is re-exported here.
 
 import '../../core/l10n/app_localizations.dart';
 import 'tts_message.dart';
 
+// Dedicated file: see scanner_speech_scripts.dart.
 // Re-exported here so callers only need one import.
 export 'scanner_speech_scripts.dart';
-
-// ── App-level ────────────────────────────────────────────────────────────────
 
 abstract final class AppSpeech {
   /// Spoken once when TTS is first enabled.
@@ -42,8 +18,6 @@ abstract final class AppSpeech {
   static TtsMessage ttsDisabling(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsSpeechDisabling, id: 'app.ttsDisabling');
 }
-
-// ── Navigation ───────────────────────────────────────────────────────────────
 
 abstract final class NavSpeech {
   /// User opened Settings screen.
@@ -58,8 +32,6 @@ abstract final class NavSpeech {
   static TtsMessage returnedHome(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsNavHome, id: 'nav.home');
 }
-
-// ── Settings confirmations ───────────────────────────────────────────────────
 
 abstract final class SettingsSpeech {
   /// A boolean setting was toggled.
@@ -85,8 +57,6 @@ abstract final class SettingsSpeech {
   );
 }
 
-// ── Language change ───────────────────────────────────────────────────────────
-
 abstract final class LanguageSpeech {
   /// Spoken in the OLD language, before the engine switches.
   /// Tells the user what's happening so the silence isn't confusing.
@@ -97,17 +67,13 @@ abstract final class LanguageSpeech {
       );
 
   /// Spoken in the NEW language, after the engine has switched.
-  /// First thing the user hears in the new voice — confirms it worked.
+  /// First thing the user hears in the new voice: confirms it worked.
   static TtsMessage done(AppLocalizations newL10n, String newLangName) =>
       TtsMessage.navigation(
         newL10n.ttsLangChanged(newLangName),
         id: 'lang.done',
       );
 }
-
-// ── Scanner ──────────────────────────────────────────────────────────────────
-
-// ── Onboarding ───────────────────────────────────────────────────────────────
 
 abstract final class OnboardingSpeech {
   /// Spoken when the welcome step is shown.

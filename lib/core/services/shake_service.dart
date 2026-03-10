@@ -5,24 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
-// ---------------------------------------------------------------------------
-// Shake detection parameters
-// ---------------------------------------------------------------------------
-//
-// HOW IT WORKS
-// 1. Sample accelerometer at ~50 Hz.
-// 2. Remove gravity with a low-pass filter → only dynamic acceleration remains.
-// 3. Compute resultant magnitude of the dynamic vector.
-// 4. A single "jolt" is counted when magnitude ≥ _threshold.
-// 5. Jolts are debounced by _eventCooldown so one physical shake = one event.
-// 6. The callback fires only when _requiredShakes jolts occur within _window ms.
-// 7. The callback is itself throttled by _callbackCooldown to prevent retriggering.
-//
-// THRESHOLD RATIONALE
-// Earth gravity: 9.8 m/s².  Walking dynamic peak: 3–6 m/s².
-// Putting a phone down hard: ~8 m/s².
-// Intentional wrist shake:  12–25 m/s².
-// _threshold = 15.0 sits above all incidental motion.
+// Detects intentional shake gestures using the accelerometer. Gravity is removed
+// with a low-pass filter and a threshold of 15 m/s² filters out walking and
+// incidental motion. Two jolts within 800ms are required before the callback fires.
 
 /// Detects intentional shake gestures using the device accelerometer.
 ///
@@ -32,9 +17,9 @@ class ShakeService {
   // ── Tuning ────────────────────────────────────────────────────────────────
   static const double _threshold       = 15.0; // m/s² dynamic magnitude
   static const int    _requiredShakes  = 2;    // jolts needed in window
-  static const int    _window          = 800;  // ms — confirmation window
-  static const int    _eventCooldown   = 150;  // ms — debounce per jolt
-  static const int    _callbackCooldown = 1200; // ms — min time between callbacks
+  static const int    _window          = 800;  // ms: confirmation window
+  static const int    _eventCooldown   = 150;  // ms: debounce per jolt
+  static const int    _callbackCooldown = 1200; // ms: min time between callbacks
   static const double _alpha           = 0.85; // low-pass filter constant
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -51,7 +36,7 @@ class ShakeService {
 
   bool get isRunning => _running;
 
-  /// Begin listening.  Safe to call multiple times — subsequent calls are no-ops.
+  /// Begin listening.  Safe to call multiple times: subsequent calls are no-ops.
   void start(VoidCallback onShake) {
     if (_running) return;
     _running = true;
@@ -61,7 +46,7 @@ class ShakeService {
       samplingPeriod: const Duration(milliseconds: 20),
     ).listen(
       _tick,
-      onError: (_) {/* accelerometer unavailable on this device — ignore */},
+      onError: (_) {/* accelerometer unavailable on this device, ignore */},
       cancelOnError: false,
     );
   }
@@ -115,9 +100,6 @@ class ShakeService {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 /// Singleton [ShakeService] scoped to the app lifetime.
 /// Automatically stopped when the provider is disposed.

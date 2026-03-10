@@ -2,11 +2,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/app_settings.dart';
 
-// ---------------------------------------------------------------------------
-// Key constants
-// ---------------------------------------------------------------------------
-//
-// Using string constants avoids typos and makes future key renames safe.
+// Reads and writes AppSettings to SharedPreferences.
+// All preference keys are defined as constants to avoid typos.
 
 abstract final class SettingsKeys {
   static const themeMode           = 'settings.themeMode';
@@ -31,13 +28,10 @@ abstract final class SettingsKeys {
   static const onboardingComplete  = 'app.onboardingComplete';
 }
 
-// ---------------------------------------------------------------------------
-// SettingsStorage
-// ---------------------------------------------------------------------------
 
 /// Thin wrapper around [SharedPreferences] that reads and writes [AppSettings].
 ///
-/// All operations are synchronous after construction — [SharedPreferences]
+/// All operations are synchronous after construction: [SharedPreferences]
 /// loads its cache once at startup, so individual get/set calls are O(1)
 /// in-memory operations that batch-flush to disk asynchronously.
 ///
@@ -144,7 +138,7 @@ class SettingsStorage {
   bool loadOnboardingComplete() =>
       _prefs.getBool(SettingsKeys.onboardingComplete) ?? false;
 
-  /// Mark onboarding as complete — persisted immediately.
+  /// Mark onboarding as complete: persisted immediately.
   Future<void> markOnboardingComplete() =>
       _prefs.setBool(SettingsKeys.onboardingComplete, true);
 

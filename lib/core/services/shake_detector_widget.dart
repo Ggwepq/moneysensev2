@@ -11,7 +11,7 @@ import 'shake_service.dart';
 /// On a confirmed shake:
 ///   1. A short haptic pulse (mediumImpact) fires immediately.
 ///   2. If the device supports the vibration package a 60 ms motor buzz
-///      follows — gives a tactile "thud" distinct from normal HapticFeedback.
+///      follows: gives a tactile "thud" distinct from normal HapticFeedback.
 ///   3. The navigator pops the top route (or executes [onShake] if provided).
 ///
 /// Lifecycle:
@@ -66,7 +66,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
         _sync();
         break;
       case AppLifecycleState.inactive:
-        break; // nav-bar swipe — not a real background event
+        break; // nav-bar swipe: not a real background event
     }
   }
 
@@ -88,7 +88,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
     // 1. Immediate haptic click (works on all devices)
     HapticFeedback.mediumImpact();
 
-    // 2. Motor vibration — short, distinct "thud" that confirms the gesture.
+    // 2. Motor vibration: short, distinct "thud" that confirms the gesture.
     //    60 ms is long enough to feel intentional but short enough not to
     //    startle.  We check hasVibrator so nothing explodes on devices/emulators
     //    that lack the motor.
@@ -97,7 +97,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
         Vibration.vibrate(duration: 60, amplitude: 200);
       }
     } catch (_) {
-      // Vibration plugin not available on this device — silently ignore.
+      // Vibration plugin not available on this device: silently ignore.
     }
 
     // 3. Navigate

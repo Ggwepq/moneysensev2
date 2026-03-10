@@ -5,9 +5,6 @@ import '../../data/datasources/settings_storage.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 
-// ---------------------------------------------------------------------------
-// SharedPreferences provider — seeded in main() before runApp
-// ---------------------------------------------------------------------------
 
 /// Holds the [SharedPreferences] instance loaded at startup.
 ///
@@ -20,17 +17,11 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (_) => throw UnimplementedError('sharedPreferencesProvider not initialised'),
 );
 
-// ---------------------------------------------------------------------------
-// Settings provider
-// ---------------------------------------------------------------------------
 
-/// Global settings state — persisted to [SharedPreferences] on every change.
+/// Global settings state: persisted to [SharedPreferences] on every change.
 final appSettingsProvider =
     NotifierProvider<AppSettingsNotifier, AppSettings>(AppSettingsNotifier.new);
 
-// ---------------------------------------------------------------------------
-// Notifier
-// ---------------------------------------------------------------------------
 
 class AppSettingsNotifier extends Notifier<AppSettings> {
   late final SettingsStorage _storage;
@@ -44,10 +35,10 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     final prefs = ref.read(sharedPreferencesProvider);
     _storage = SettingsStorage(prefs);
     _lastTimerSeconds = _storage.loadLastTimerSeconds(fallback: 20);
-    return _storage.load();         // hydrate from disk — synchronous
+    return _storage.load();         // hydrate from disk: synchronous
   }
 
-  // ── Internal helper — update state + persist in one call ─────────────────
+  // ── Internal helper: update state + persist in one call ─────────────────
 
   void _update(AppSettings next) {
     state = next;
@@ -112,7 +103,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   // ── Accessibility ──────────────────────────────────────────────────────
 
   /// Setting the vision profile also applies that profile's recommended
-  /// TTS verbosity and haptic intensity as new defaults — unless the user
+  /// TTS verbosity and haptic intensity as new defaults: unless the user
   /// has already customised those values, in which case we leave them.
   /// For simplicity we always apply the profile defaults on profile change;
   /// the user can adjust again immediately after.
@@ -138,12 +129,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       _update(state.copyWith(hapticIntensity: intensity));
 }
 
-// ---------------------------------------------------------------------------
-// Onboarding gate provider
-// ---------------------------------------------------------------------------
 
 /// True once the user has completed the onboarding flow.
-/// Reads directly from SharedPreferences — synchronous after startup.
+/// Reads directly from SharedPreferences: synchronous after startup.
 final onboardingCompleteProvider = StateProvider<bool>((ref) {
   final prefs = ref.read(sharedPreferencesProvider);
   return SettingsStorage(prefs).loadOnboardingComplete();

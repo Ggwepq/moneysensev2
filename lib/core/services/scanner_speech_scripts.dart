@@ -1,24 +1,6 @@
-// ---------------------------------------------------------------------------
-// ScannerSpeechScripts — every spoken word from the scanner feature
-// ---------------------------------------------------------------------------
-//
-// This file is the ONLY place that builds TtsMessages for the scanner.
-// Keep it here so the scanning team (future) can audit every utterance
-// without touching TtsService or generic speech infrastructure.
-//
-// DESIGN PRINCIPLES
-//   • Messages should sound natural when spoken aloud — not like UI labels.
-//   • Result messages are SHORT and UNAMBIGUOUS.  Confidence and type info
-//     is added only at full verbosity (folded into the message text).
-//   • Idle/hint messages are helpful but never repeated too often — the
-//     caller is responsible for debouncing; the scripts just build the text.
-//   • Error messages are direct — the user needs to know WHAT went wrong
-//     and (if possible) HOW to fix it.
-//
-// ADDING A NEW SCANNER MESSAGE
-//   1. Add a static method here.
-//   2. Add the string to en.dart and tl.dart.
-//   3. Call it from the scanner screen / provider with ttsService.enqueue(…).
+// TTS messages specific to the scanner: results, idle hints, and errors.
+// All text comes from AppLocalizations. To add a new message, add a static
+// method here, add its strings to en.dart and tl.dart, then call it via ttsService.enqueue().
 
 import '../../core/l10n/app_localizations.dart';
 import '../../features/settings/domain/entities/app_settings.dart';
@@ -28,7 +10,7 @@ abstract final class ScannerSpeech {
 
   // ── Results ──────────────────────────────────────────────────────────────
 
-  /// The main denomination result — always spoken at minimal verbosity.
+  /// The main denomination result: always spoken at minimal verbosity.
   ///
   /// At [minimal]: just the denomination, e.g. "One hundred pesos"
   /// At [standard/full]: denomination + type, e.g. "One hundred peso bill"
@@ -43,7 +25,7 @@ abstract final class ScannerSpeech {
     final String text;
 
     if (verbosity == TtsVerbosity.minimal) {
-      // Short and clean — just say the amount
+      // Short and clean: just say the amount
       text = l10n.ttsScanResult(denomination);
     } else if (verbosity == TtsVerbosity.standard) {
       // Denomination + type
@@ -62,19 +44,19 @@ abstract final class ScannerSpeech {
 
   // ── Camera state ─────────────────────────────────────────────────────────
 
-  /// Camera opened — spoken at standard+ verbosity.
+  /// Camera opened: spoken at standard+ verbosity.
   static TtsMessage cameraOpened(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsCameraOpened, id: 'scanner.cameraOpened');
 
-  /// Camera closed — spoken at standard+ verbosity.
+  /// Camera closed: spoken at standard+ verbosity.
   static TtsMessage cameraClosed(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsCameraClosed, id: 'scanner.cameraClosed');
 
-  /// Preview frozen (double-tap) — spoken at standard+ verbosity.
+  /// Preview frozen (double-tap): spoken at standard+ verbosity.
   static TtsMessage previewFrozen(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsPreviewFrozen, id: 'scanner.frozen');
 
-  /// Preview resumed — spoken at standard+ verbosity.
+  /// Preview resumed: spoken at standard+ verbosity.
   static TtsMessage previewResumed(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsPreviewResumed, id: 'scanner.resumed');
 
@@ -85,7 +67,7 @@ abstract final class ScannerSpeech {
         id: 'scanner.flash',
       );
 
-  // ── Scanning hints (ambient — only at full verbosity) ────────────────────
+  // ── Scanning hints (ambient: only at full verbosity) ────────────────────
 
   /// Spoken after the scanner has been idle for several seconds.
   static TtsMessage idleHint(AppLocalizations l10n) =>

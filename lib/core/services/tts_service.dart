@@ -12,37 +12,10 @@ import 'tts_message.dart';
 
 export 'tts_message.dart';
 
-// ---------------------------------------------------------------------------
-// TtsService — priority-queued, TalkBack-safe text-to-speech
-// ---------------------------------------------------------------------------
-//
-// TALKBACK COEXISTENCE
-//   Android TalkBack and flutter_tts both use the system TextToSpeech engine.
-//   They share audio focus but NOT the same TTS channel — so they can talk
-//   over each other. We mitigate this by:
-//
-//   1. setSharedInstance(true)        — tells iOS to share the audio session
-//   2. awaitSpeakCompletion(false)    — never block the UI isolate
-//   3. _accessibilityDelay           — if TalkBack appears active (checked
-//      via accessibility channel), we add a short delay before speaking so
-//      TalkBack's utterance has time to finish first
-//   4. Priority queue + debounce     — low-priority messages are debounced
-//      300 ms so rapid navigation events collapse to one utterance
-//
-// QUEUE BEHAVIOUR
-//   - critical / result:   interrupt current speech immediately, jump queue
-//   - navigation:          debounced 300 ms, same-id deduped
-//   - ambient:             debounced 600 ms, same-id deduped, drops if a
-//                          higher-priority message is already pending
-//
-// SCALABILITY
-//   Callers enqueue a [TtsMessage]. They never touch FlutterTts directly.
-//   Adding a new speak site = call ttsService.enqueue(TtsMessage.navigation(…))
-//   Adding a new message type = subclass / factory constructor in TtsMessage.
-//
-// LANGUAGE
-//   fil-PH → en-PH → en-US fallback chain for Tagalog.
-//   Language is re-applied on every settings change via [ttsInitProvider].
+// Priority-queued text-to-speech engine. Callers enqueue a [TtsMessage] and
+// never touch FlutterTts directly. Critical messages interrupt lower-priority
+// ones. TalkBack coexistence is handled via a short delay when accessibility
+// services are active. Tagalog uses a fil-PH -> en-PH -> en-US fallback chain.
 
 class TtsService {
   TtsService._();
@@ -54,7 +27,7 @@ class TtsService {
 
   // ── Priority queue ─────────────────────────────────────────────────────────
   // Stored as a list sorted by priority descending.
-  // Using a simple list (small N — rarely more than 3–4 items).
+  // Using a simple list (small N: rarely more than 3–4 items).
   final List<TtsMessage> _queue = [];
 
   // Debounce timers keyed by message id
@@ -105,7 +78,7 @@ class TtsService {
 
   /// Switch TTS language and await completion.
   ///
-  /// Unlike [init], this is a targeted call for the language-change flow —
+  /// Unlike [init], this is a targeted call for the language-change flow -
   /// callers can await it to know exactly when the engine is ready, then
   /// speak a confirmation in the new language.
   Future<void> changeLanguage(AppLanguage language) async {
@@ -145,7 +118,7 @@ class TtsService {
   }
 
   /// Detects whether TalkBack / VoiceOver is likely active.
-  /// We use the Flutter accessibility channel — if it throws or returns null
+  /// We use the Flutter accessibility channel: if it throws or returns null
   /// we assume not active and proceed normally.
   Future<void> _detectTalkBack() async {
     try {
@@ -161,12 +134,12 @@ class TtsService {
 
   /// Enqueue a [TtsMessage] for speech.
   ///
-  /// [enabled]          — from appSettings.ttsEnabled
-  /// [currentVerbosity] — from appSettings.ttsVerbosity
+  /// [enabled]         : from appSettings.ttsEnabled
+  /// [currentVerbosity]: from appSettings.ttsVerbosity
   ///
   /// The message is silently dropped if:
-  ///   • TTS is disabled
-  ///   • currentVerbosity < message.requiredVerbosity
+  ///   - TTS is disabled
+  ///   - currentVerbosity < message.requiredVerbosity
   ///
   /// critical and result messages interrupt current speech immediately.
   /// navigation messages are debounced 300 ms (same-id dedup).
@@ -286,14 +259,11 @@ class TtsService {
       '${m.priority.name}.${m.text.hashCode}';
 }
 
-// ---------------------------------------------------------------------------
-// Providers
-// ---------------------------------------------------------------------------
 
 final ttsServiceProvider = Provider<TtsService>((_) => TtsService.instance);
 
 /// Watches settings and re-initialises TTS whenever language or verbosity
-/// changes.  Mount once at app root — already done in app.dart.
+/// changes.  Mount once at app root: already done in app.dart.
 final ttsInitProvider = Provider<void>((ref) {
   final settings = ref.watch(appSettingsProvider);
   ref.watch(visionConfigProvider); // re-init if profile changes verbosity

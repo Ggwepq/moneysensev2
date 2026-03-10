@@ -1,113 +1,19 @@
-# MoneySense 🇵🇭
+# MoneySense
 
-**An accessible, bilingual Philippine currency identifier for visually impaired users.**
+**A free, offline, bilingual currency identifier for visually impaired Filipinos.**
+
+MoneySense uses your phone's camera to detect Philippine peso bills and coins in real time, then announces the denomination out loud in Filipino or English. It works entirely offline and is built from the ground up for users with low vision, partial blindness, or complete blindness.
 
 ---
 
 ## Table of Contents
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
+
 - [Features](#features)
-- [Getting Started](#getting-started)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Setup](#setup)
 - [Contributing](#contributing)
-
----
-
-## Overview
-
-MoneySense uses real-time camera-based ML inference to identify and announce Philippine bills and coins. It is built with accessibility at the core — every feature is designed for users with low vision, partial blindness, or full blindness.
-
----
-
-## Architecture
-
-The project follows a **feature-first Clean Architecture** pattern, combined with **Riverpod** for state management.
-
-```
-Presentation  →  Domain  →  Data
-  (UI/Riverpod)   (entities,   (repos,
-                  use cases)   datasources)
-```
-
-Each feature is fully self-contained: `data`, `domain`, and `presentation` layers live inside the feature folder. Shared UI components live in `lib/shared/widgets/`.
-
-### State Management
-
-[Riverpod](https://riverpod.dev/) is used throughout:
-- `NotifierProvider` — for complex mutable state (settings, scanner)
-- `StateProvider` — for simple boolean/primitive state (camera open)
-
-### Theming
-
-Material 3 `ThemeData` is used. Both `light` and `dark` themes are defined in `lib/core/theme/app_theme.dart` and driven by the `AppSettings.themeMode` setting.
-
-### Localisation
-
-A lightweight, hand-written localisation layer (`AppLocalizations`) supports English and Tagalog. This can be migrated to ARB/gen_l10n in a later sprint.
-
----
-
-## Project Structure
-
-```
-lib/
-├── main.dart                          # Entry point
-├── app/
-│   ├── app.dart                       # MaterialApp root
-│   ├── home_shell.dart                # Bottom-nav shell
-│   └── routes/
-│       └── routes.dart                # Named route constants
-│
-├── core/
-│   ├── constants/
-│   │   ├── app_colors.dart            # Brand & semantic colors
-│   │   ├── app_spacing.dart           # 4-pt spacing grid
-│   │   └── app_typography.dart        # Text styles
-│   ├── theme/
-│   │   └── app_theme.dart             # Light & dark ThemeData
-│   └── l10n/
-│       ├── app_localizations.dart     # Accessor class
-│       ├── en.dart                    # English strings
-│       └── tl.dart                    # Tagalog strings
-│
-├── shared/
-│   └── widgets/
-│       ├── ms_bottom_nav.dart         # 3-button bottom bar
-│       ├── ms_settings_card.dart      # Rounded tile group container
-│       ├── ms_section_header.dart     # Section label
-│       ├── ms_toggle_tile.dart        # Switch row + optional help btn
-│       ├── ms_timer_tile.dart         # Switch + numeric counter
-│       ├── ms_action_tile.dart        # Tappable icon row
-│       ├── ms_segmented_selector.dart # Pill-style 2–3 option selector
-│       └── ms_slider_tile.dart        # Slider row with ± buttons
-│
-└── features/
-    ├── onboarding/
-    │   └── presentation/screens/
-    │       └── onboarding_screen.dart
-    ├── scanner/
-    │   ├── domain/entities/
-    │   │   └── scanner_state.dart     # ScannerState enum, DetectionResult
-    │   └── presentation/
-    │       ├── providers/
-    │       │   └── scanner_provider.dart
-    │       ├── screens/
-    │       │   └── scanner_screen.dart
-    │       └── widgets/
-    │           └── camera_viewfinder.dart
-    ├── settings/
-    │   ├── domain/entities/
-    │   │   └── app_settings.dart      # AppSettings value object
-    │   └── presentation/
-    │       ├── providers/
-    │       │   └── settings_provider.dart
-    │       └── screens/
-    │           └── settings_screen.dart
-    └── tutorial/
-        └── presentation/screens/
-            └── tutorial_screen.dart
-```
+- [Naming Conventions](#naming-conventions)
 
 ---
 
@@ -115,39 +21,86 @@ lib/
 
 | Category | Feature | Status |
 |---|---|---|
-| General | Theme switching (light / dark / system) | ✅ Settings UI |
-| General | Bilingual support (English / Tagalog) | ✅ Settings UI |
-| General | Font size scaling | ✅ Settings UI |
-| Scanning | Front/rear camera toggle | ✅ Settings UI |
-| Scanning | Flashlight toggle | ✅ Settings UI |
-| Scanning | Denomination-specific vibration | ✅ Settings UI |
-| Scanning | Real-time ML scanning | 🔧 Placeholder |
-| Navigation | Gestural navigation (swipe) | ✅ Implemented |
-| Navigation | Inertial navigation (tilt) | ✅ Settings UI |
-| Navigation | Shake to go back | ✅ Settings UI |
-| Navigation | Go back timer on result | ✅ Settings UI |
-| Accessibility | TTS / voice guidance | 🔧 Placeholder |
-| Accessibility | Haptic feedback | 🔧 Placeholder |
-| Accessibility | Vision profile onboarding | ✅ Implemented |
-| Accessibility | TalkBack compatibility | ✅ Semantics added |
-| UX | Onboarding flow | ✅ Implemented |
-| UX | Tutorial screen | 🔧 Placeholder |
+| Scanning | Real-time bill and coin detection | ML wiring pending |
+| Scanning | Multi-bill and multi-coin scanning | ML wiring pending |
+| Scanning | Front and rear camera support | Done |
+| Scanning | Flashlight toggle | Done |
+| Scanning | Denomination-specific vibration patterns | Done |
+| Audio | Text-to-speech voice guidance | Done |
+| Audio | Bilingual support (Filipino and English) | Done |
+| Audio | TTS verbosity control | Done |
+| Accessibility | Vision profile (Low Vision / Partially Blind / Fully Blind) | Done |
+| Accessibility | Contrast-adaptive accent colors per profile | Done |
+| Accessibility | Adjustable font size with profile floor | Done |
+| Accessibility | TalkBack compatibility | Done |
+| Accessibility | Haptic feedback system | Done |
+| Navigation | Gestural navigation (swipe left and right) | Done |
+| Navigation | Inertial navigation (tilt) | Done |
+| Navigation | Shake to go back | Done |
+| Navigation | Auto go-back timer after a result | Done |
+| UX | 6-page onboarding flow | Done |
+| UX | Interactive feature tutorials | Done |
+| UX | Settings persistence across sessions | Done |
 
 ---
 
-## Getting Started
+## Architecture
 
-### Prerequisites
-- Flutter 3.19+ (stable channel)
-- Android SDK (API 24+)
+MoneySense follows **feature-first Clean Architecture** with **Riverpod** for state management.
 
-### Setup
+```
+lib/
+├── main.dart           # App entry point
+├── app/                # Root widget and navigation shell
+├── core/               # Shared constants, theme, l10n, and services
+├── features/           # Self-contained feature slices
+│   ├── onboarding/
+│   ├── scanner/
+│   ├── settings/
+│   └── tutorial/
+└── shared/             # Reusable UI widgets used across two or more features
+```
+
+Each feature owns its own `data/`, `domain/`, and `presentation/` layers so changes to one feature never affect another, and each layer can be tested on its own.
+
+---
+
+## Tech Stack
+
+| Tool | Purpose |
+|---|---|
+| Flutter 3.19+ | Cross-platform UI framework |
+| Dart 3.0+ | Language |
+| flutter_riverpod | Reactive state management |
+| camera | Camera hardware access and lifecycle management |
+| flutter_tts | Text-to-speech output |
+| sensors_plus | Accelerometer for shake and tilt detection |
+| vibration | Motor vibration for denomination feedback patterns |
+| shared_preferences | Persistent settings storage |
+| go_router | Named route constants (full integration pending) |
+| intl + flutter_localizations | Internationalisation support |
+| YOLOv8 | Real-time bill and coin detection model (pending) |
+| MobileNet | Authenticity verification model (pending) |
+
+---
+
+## Setup
+
+**Prerequisites**
+
+- Flutter 3.19+ on the stable channel
+- Android SDK (API level 24 or higher)
+- A physical Android device is recommended for camera and sensor testing
+
+**Install and run**
+
 ```bash
 flutter pub get
 flutter run
 ```
 
-### Build
+**Build a release APK**
+
 ```bash
 flutter build apk --release
 ```
@@ -156,20 +109,22 @@ flutter build apk --release
 
 ## Contributing
 
-1. Each new feature belongs in `lib/features/<feature_name>/`
-2. New shared UI components go in `lib/shared/widgets/` with the `Ms` prefix
-3. All strings must be added to both `en.dart` and `tl.dart`
-4. New settings fields must be added to `AppSettings` + `AppSettingsNotifier`
-5. Follow Material 3 patterns; custom components are named `Ms*`
+1. New features belong in `lib/features/<feature_name>/` with the standard `data/`, `domain/`, and `presentation/` structure.
+2. Shared UI components go in `lib/shared/widgets/` and use the `Ms` prefix.
+3. Every user-facing string must be added to both `lib/core/l10n/en.dart` and `tl.dart`.
+4. New settings fields go into `AppSettings` first, then `AppSettingsNotifier`.
+5. Never hardcode accent colors. Use `VisionConfig.accent(isDark)` so contrast boosts from the vision profile apply automatically everywhere.
 
 ---
 
 ## Naming Conventions
 
-| Prefix | Meaning |
+| Pattern | Meaning |
 |---|---|
-| `Ms` | MoneySense custom widget (e.g. `MsToggleTile`) |
-| `App` | App-wide constant/theme (e.g. `AppColors`) |
+| `Ms*` | MoneySense shared widget, e.g. `MsToggleTile` |
+| `App*` | App-wide constant or theme class, e.g. `AppColors` |
 | `*Screen` | Full-page screen widget |
 | `*Provider` | Riverpod provider file |
 | `*Notifier` | Riverpod notifier class |
+| `*Service` | Stateless platform abstraction |
+| `*Tutorial` | Interactive feature tutorial widget |

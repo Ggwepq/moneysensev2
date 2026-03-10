@@ -4,25 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_settings.dart';
 import '../../presentation/providers/settings_provider.dart';
 
-// ---------------------------------------------------------------------------
-// VisionConfig — computed from VisionProfile
-// ---------------------------------------------------------------------------
-//
-// Single source of truth for every adaptive behaviour driven by the profile.
-// Widgets and services read VisionConfig, never the raw VisionProfile enum.
-//
-// ┌──────────────────────┬──────────────┬──────────────────┬─────────────────┐
-// │                      │  Low Vision  │ Partially Blind  │  Fully Blind    │
-// ├──────────────────────┼──────────────┼──────────────────┼─────────────────┤
-// │ fontScaleFloor       │     1.0      │      1.3         │      1.6        │
-// │ contrastLevel        │   normal     │    elevated      │    maximum      │
-// │ ttsVerbosity default │  minimal     │   standard       │    full         │
-// │ hapticIntensity def  │  subtle      │   medium         │    strong       │
-// │ autoAnnounce         │  false       │   true           │    true         │
-// │ announceNav          │  false       │   true           │    true         │
-// │ announceIdle         │  false       │   false          │    true         │
-// │ preferAudioPrimary   │  false       │   true           │    true         │
-// └──────────────────────┴──────────────┴──────────────────┴─────────────────┘
+// Computed from VisionProfile. Widgets and services read from here, never from
+// the raw VisionProfile enum. Provides the font scale floor, contrast level,
+// TTS and haptic defaults, and the accent(isDark) color method that applies
+// contrast boosts automatically based on the active profile.
 
 enum ContrastLevel { normal, elevated, maximum }
 
@@ -47,9 +32,9 @@ class VisionConfig {
 
   /// Colour contrast amplification level.
   ///
-  /// [normal]   — standard palette (existing AppColors).
-  /// [elevated] — slightly stronger text/border contrast for partial blind.
-  /// [maximum]  — maximum contrast: pure white text, stronger borders,
+  /// [normal]  : standard palette (existing AppColors).
+  /// [elevated]: slightly stronger text/border contrast for partial blind.
+  /// [maximum] : maximum contrast: pure white text, stronger borders,
   ///              boosted accent brightness for fully blind.
   final ContrastLevel contrastLevel;
 
@@ -76,7 +61,7 @@ class VisionConfig {
     return switch (contrastLevel) {
       ContrastLevel.normal   => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E0E0E),
       ContrastLevel.elevated => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-      ContrastLevel.maximum  => const Color(0xFFFFFFFF), // always white — max contrast
+      ContrastLevel.maximum  => const Color(0xFFFFFFFF), // always white: max contrast
     };
   }
 
@@ -98,7 +83,7 @@ class VisionConfig {
     };
   }
 
-  /// Border colour — stronger at higher contrast levels.
+  /// Border colour: stronger at higher contrast levels.
   Color border(bool isDark) {
     return switch (contrastLevel) {
       ContrastLevel.normal   => isDark ? const Color(0xFF243040) : const Color(0xFFDDDDDD),
@@ -107,14 +92,14 @@ class VisionConfig {
     };
   }
 
-  /// Accent yellow — boosted brightness at higher contrast levels.
+  /// Accent yellow: boosted brightness at higher contrast levels.
   Color get accentYellow => switch (contrastLevel) {
         ContrastLevel.normal   => const Color(0xFFE2DA00),
         ContrastLevel.elevated => const Color(0xFFFFEE00),
         ContrastLevel.maximum  => const Color(0xFFFFFF33),
       };
 
-  /// Accent blue — boosted saturation at higher contrast levels.
+  /// Accent blue: boosted saturation at higher contrast levels.
   Color get accentBlue => switch (contrastLevel) {
         ContrastLevel.normal   => const Color(0xFF1E30F0),
         ContrastLevel.elevated => const Color(0xFF2540FF),
@@ -174,9 +159,6 @@ class VisionConfig {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 final visionConfigProvider = Provider<VisionConfig>((ref) {
   final profile = ref.watch(

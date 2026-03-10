@@ -4,52 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
-// ---------------------------------------------------------------------------
-// Inertial Navigation — landscape orientation detection
-// ---------------------------------------------------------------------------
+// Detects phone tilt using the raw accelerometer, not the gyroscope.
+// The X axis dominates when the phone tilts left or right. The phone must hold
+// the tilt for 1 second before the callback fires, and a flat-guard rejects
+// navigation when the phone is lying on a surface.
 //
-// HOW IT WORKS  (accelerometer-based, inspired by production reference code)
-//
-// Instead of reading gyroscope rotation rate (which is hard to threshold
-// reliably), we read the RAW accelerometer, which always reports gravity
-// (≈9.8 m/s²) along whichever axis is pointing "down".
-//
-// Axis conventions (Android portrait, face-up):
-//   X  → positive = phone tilted LEFT  (right edge down)
-//         negative = phone tilted RIGHT (left edge down)
-//   Y  → positive = portrait upright / negative = upside-down
-//   Z  → large positive = phone lying flat face-up
-//         small Z = phone is held upright (edge-on to gravity)
-//
-// DETECTION LOGIC (matches reference implementation)
-//
-//   1. FLAT GUARD: if |z| > _flatThreshold (8 m/s²) → phone is horizontal
-//      → report PORTRAIT (neutral), reject all navigation.
-//
-//   2. LANDSCAPE vs PORTRAIT: compare |x| and |y|.
-//      If |x| > |y| + _dominanceMargin (5 m/s²) → x-axis dominates
-//        → x > 0  = LANDSCAPE LEFT  (fire onTiltLeft)
-//        → x < 0  = LANDSCAPE RIGHT (fire onTiltRight)
-//      Otherwise → PORTRAIT (neutral).
-//
-//   3. HOLD CONFIRMATION: the orientation must remain stable for
-//      _holdDuration (1 s) before the callback fires — the user must
-//      hold the tilt, a quick wave is not enough.
-//
-//   4. STATE MACHINE: each call computes the new orientation; if it
-//      changes, start a new hold timer.  On timer expiry, fire.
-//
-//   5. COOLDOWN: after a navigation fires, a 1.5 s cooldown prevents
-//      re-triggering when the user returns the phone to portrait.
-//
-// WHY ACCELEROMETER (not gyroscope)
-//   • Gravity is always present — no drift, no integration error.
-//   • Orientation is a STATE (where the phone is), not a RATE (how
-//     fast it's moving).  Accelerometer measures state directly.
-//   • Gyroscope measures how fast the phone is rotating; when the user
-//     finishes tilting and holds still, the gyroscope reads zero even
-//     though the phone is still tilted.  This made the previous
-//     implementation fire only during the motion, not the held position.
 
 enum _TiltOrientation { portrait, landscapeLeft, landscapeRight }
 
@@ -194,9 +153,6 @@ class InertialService {
   _TiltOrientation get orientation => _currentOrientation;
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 /// Singleton [InertialService] scoped to the app lifetime.
 final inertialServiceProvider = Provider<InertialService>((ref) {

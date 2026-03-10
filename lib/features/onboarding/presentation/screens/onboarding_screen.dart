@@ -12,19 +12,9 @@ import '../../../settings/domain/entities/app_settings.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 
-// ---------------------------------------------------------------------------
-// OnboardingScreen — 6 pages in a PageView
-// ---------------------------------------------------------------------------
-// Page 0  Welcome
-// Page 1  Vision profile
-// Page 2  Language
-// Page 3  Navigation style (Standard / Gestural / Inertial)
-// Page 4  Camera permissions
-// Page 5  Finish — "Show me around" or "Start scanning"
-//
-// The PageView lets the user swipe / tap Back to revisit earlier choices.
-// Accent colours come from [VisionConfig] so contrast boosts from the vision
-// profile chosen on page 1 apply immediately to pages 2-5.
+// 6-page onboarding flow shown on first launch. The user picks their vision
+// profile, language, and navigation preferences before entering the app.
+// Accent colors update live as the profile is selected on page 1.
 
 enum _NavStyle { standard, gestural, inertial }
 enum _PermStatus { unknown, requesting, granted, denied }
@@ -164,7 +154,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             // Progress bar
             _ProgressBar(current: _page, total: _total, accent: accent),
 
-            // Pages — user can also swipe freely between them
+            // Pages: user can also swipe freely between them
             Expanded(
               child: PageView(
                 controller: _pageCtrl,
@@ -216,7 +206,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ── Progress Bar ──────────────────────────────────────────────────────────────
 
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({required this.current, required this.total, required this.accent});
@@ -245,7 +234,6 @@ class _ProgressBar extends StatelessWidget {
       );
 }
 
-// ── Bottom Button Bar ─────────────────────────────────────────────────────────
 
 class _BottomBar extends StatelessWidget {
   const _BottomBar({
@@ -278,7 +266,7 @@ class _BottomBar extends StatelessWidget {
         ),
       );
 
-  // A secondary filled button that uses a distinct surface color — never
+  // A secondary filled button that uses a distinct surface color: never
   // OutlinedButton, which is transparent and breaks on light backgrounds.
   ButtonStyle _secondaryStyle(BuildContext context) {
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
@@ -365,7 +353,6 @@ class _BottomBar extends StatelessWidget {
       );
 }
 
-// ── Reusable option card ──────────────────────────────────────────────────────
 
 class _OptionCard<T> extends StatelessWidget {
   const _OptionCard({
@@ -449,7 +436,6 @@ class _OptionCard<T> extends StatelessWidget {
   }
 }
 
-// ── Page scaffolding helper ───────────────────────────────────────────────────
 
 Widget _pageScroll({required List<Widget> children}) => SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -461,7 +447,6 @@ Widget _pageScroll({required List<Widget> children}) => SingleChildScrollView(
     );
 
 
-// ── Page 0: Welcome ───────────────────────────────────────────────────────────
 
 class _WelcomePage extends StatelessWidget {
   const _WelcomePage({required this.l10n});
@@ -479,7 +464,6 @@ class _WelcomePage extends StatelessWidget {
       ]);
 }
 
-// ── Page 1: Vision ────────────────────────────────────────────────────────────
 
 class _VisionPage extends StatelessWidget {
   const _VisionPage({
@@ -523,7 +507,6 @@ class _VisionPage extends StatelessWidget {
       ]);
 }
 
-// ── Page 2: Language ──────────────────────────────────────────────────────────
 
 class _LanguagePage extends StatelessWidget {
   const _LanguagePage({
@@ -557,7 +540,6 @@ class _LanguagePage extends StatelessWidget {
       ]);
 }
 
-// ── Page 3: Navigation style ──────────────────────────────────────────────────
 
 class _NavPage extends StatelessWidget {
   const _NavPage({
@@ -601,7 +583,6 @@ class _NavPage extends StatelessWidget {
       ]);
 }
 
-// ── Page 4: Permissions ───────────────────────────────────────────────────────
 
 class _PermPage extends StatelessWidget {
   const _PermPage({
@@ -680,7 +661,6 @@ class _PermPage extends StatelessWidget {
   }
 }
 
-// ── Page 5: Finish ────────────────────────────────────────────────────────────
 
 class _FinishPage extends StatelessWidget {
   const _FinishPage({required this.l10n});
