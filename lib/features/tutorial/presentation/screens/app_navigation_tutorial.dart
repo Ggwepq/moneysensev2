@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 
@@ -20,14 +21,14 @@ class AppNavigationTutorial extends ConsumerStatefulWidget {
       _AppNavigationTutorialState();
 }
 
-class _AppNavigationTutorialState
-    extends ConsumerState<AppNavigationTutorial> {
+class _AppNavigationTutorialState extends ConsumerState<AppNavigationTutorial> {
   final _controller = PageController();
   int _page = 0;
 
   static const int _pageCount = 5;
 
   void _next() {
+    EarconService.instance.play(EarconEvent.tutorialPageTurn);
     if (_page < _pageCount - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 280),
@@ -39,6 +40,7 @@ class _AppNavigationTutorialState
   }
 
   void _prev() {
+    EarconService.instance.play(EarconEvent.tutorialPageTurn);
     if (_page > 0) {
       _controller.previousPage(
         duration: const Duration(milliseconds: 280),
@@ -55,12 +57,12 @@ class _AppNavigationTutorialState
 
   @override
   Widget build(BuildContext context) {
-    final cfg      = ref.watch(visionConfigProvider);
+    final cfg = ref.watch(visionConfigProvider);
     final settings = ref.watch(appSettingsProvider);
-    final l10n     = AppLocalizations.of(settings.isTagalog);
-    final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final accent   = cfg.accent(isDark);
-    final bg       = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final l10n = AppLocalizations.of(settings.isTagalog);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = cfg.accent(isDark);
+    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
 
     return Scaffold(
       backgroundColor: bg,
@@ -78,21 +80,28 @@ class _AppNavigationTutorialState
           // Progress bar
           Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+              horizontal: AppSpacing.xl,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
-              children: List.generate(_pageCount, (i) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: i < _pageCount - 1 ? 4 : 0),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: i <= _page ? accent : accent.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2),
+              children: List.generate(
+                _pageCount,
+                (i) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: i < _pageCount - 1 ? 4 : 0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: i <= _page
+                            ? accent
+                            : accent.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                 ),
-              )),
+              ),
             ),
           ),
 
@@ -114,7 +123,11 @@ class _AppNavigationTutorialState
           // Back / Next buttons
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xl),
+              AppSpacing.xl,
+              AppSpacing.sm,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
             child: Row(
               children: [
                 if (_page > 0)
@@ -122,10 +135,12 @@ class _AppNavigationTutorialState
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.base),
+                          vertical: AppSpacing.base,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
-                              AppSpacing.buttonRadius),
+                            AppSpacing.buttonRadius,
+                          ),
                         ),
                         side: BorderSide(color: accent),
                       ),
@@ -143,10 +158,12 @@ class _AppNavigationTutorialState
                           ? Colors.black
                           : Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.base),
+                        vertical: AppSpacing.base,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            AppSpacing.buttonRadius),
+                          AppSpacing.buttonRadius,
+                        ),
                       ),
                     ),
                     onPressed: _next,
@@ -155,7 +172,9 @@ class _AppNavigationTutorialState
                           ? l10n.appNavTutorialDone
                           : l10n.appNavTutorialNext,
                       style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -167,7 +186,6 @@ class _AppNavigationTutorialState
     );
   }
 }
-
 
 // Each page widget receives l10n so it never touches hardcoded strings.
 
@@ -337,7 +355,6 @@ class _ShakePage extends StatelessWidget {
   }
 }
 
-
 class _TutPage extends StatelessWidget {
   const _TutPage({
     required this.icon,
@@ -354,37 +371,42 @@ class _TutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl, AppSpacing.base, AppSpacing.xl, AppSpacing.base),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 52, height: 52,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: accent, size: 28),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    )),
-            const SizedBox(height: AppSpacing.sm),
-            Text(body,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(height: 1.6)),
-            const SizedBox(height: AppSpacing.xl),
-            ...children,
-          ],
+    padding: const EdgeInsets.fromLTRB(
+      AppSpacing.xl,
+      AppSpacing.base,
+      AppSpacing.xl,
+      AppSpacing.base,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: accent, size: 28),
         ),
-      );
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          body,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        ...children,
+      ],
+    ),
+  );
 }
-
 
 class _ScreenCard extends StatelessWidget {
   const _ScreenCard({
@@ -409,12 +431,14 @@ class _ScreenCard extends StatelessWidget {
         color: surface,
         borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
         border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
       ),
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
@@ -426,18 +450,24 @@ class _ScreenCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppColors.darkOnSurfaceVariant
-                          : AppColors.lightOnSurfaceVariant,
-                      height: 1.4,
-                    )),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark
+                        ? AppColors.darkOnSurfaceVariant
+                        : AppColors.lightOnSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
               ],
             ),
           ),
@@ -466,12 +496,14 @@ class _MockBottomNavState extends State<_MockBottomNav> {
 
   @override
   Widget build(BuildContext context) {
-    final surface = widget.isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final surface = widget.isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
     // Labels come from l10n so they update when the language changes.
     final items = [
       (Icons.settings_rounded, widget.l10n.appNavSettingsLabel),
       (Icons.crop_free_rounded, widget.l10n.appNavScannerLabel),
-      (Icons.school_rounded,   widget.l10n.appNavTutorialLabel),
+      (Icons.school_rounded, widget.l10n.appNavTutorialLabel),
     ];
 
     return Column(
@@ -481,10 +513,15 @@ class _MockBottomNavState extends State<_MockBottomNav> {
             color: surface,
             borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
             border: Border.all(
-                color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              color: widget.isDark
+                  ? AppColors.darkBorder
+                  : AppColors.lightBorder,
+            ),
           ),
           padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.sm + 4, horizontal: AppSpacing.base),
+            vertical: AppSpacing.sm + 4,
+            horizontal: AppSpacing.base,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (i) {
@@ -498,18 +535,22 @@ class _MockBottomNavState extends State<_MockBottomNav> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon,
-                        color: isSelected ? widget.accent : null,
-                        size: 26),
+                    Icon(
+                      icon,
+                      color: isSelected ? widget.accent : null,
+                      size: 26,
+                    ),
                     const SizedBox(height: 3),
-                    Text(label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                          color: isSelected ? widget.accent : null,
-                        )),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
+                        color: isSelected ? widget.accent : null,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -622,9 +663,10 @@ class _ShakeDemoState extends State<_ShakeDemo>
     vsync: this,
     duration: const Duration(milliseconds: 500),
   );
-  late final Animation<double> _shake = Tween(begin: -8.0, end: 8.0).animate(
-    CurvedAnimation(parent: _ctrl, curve: Curves.elasticIn),
-  );
+  late final Animation<double> _shake = Tween(
+    begin: -8.0,
+    end: 8.0,
+  ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticIn));
 
   void _simulate() {
     HapticFeedback.mediumImpact();
@@ -639,7 +681,9 @@ class _ShakeDemoState extends State<_ShakeDemo>
 
   @override
   Widget build(BuildContext context) {
-    final surface = widget.isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final surface = widget.isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
     return Column(
       children: [
         AnimatedBuilder(
@@ -655,18 +699,20 @@ class _ShakeDemoState extends State<_ShakeDemo>
               color: surface,
               borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
               border: Border.all(
-                  color: widget.isDark
-                      ? AppColors.darkBorder
-                      : AppColors.lightBorder),
+                color: widget.isDark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
+              ),
             ),
             child: Column(
               children: [
                 Icon(Icons.vibration_rounded, size: 48, color: widget.accent),
                 const SizedBox(height: AppSpacing.sm),
                 // "Shake!" is a universal sound-effect word — kept as-is.
-                const Text('Shake!',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Shake!',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
               ],
             ),
           ),
@@ -674,8 +720,7 @@ class _ShakeDemoState extends State<_ShakeDemo>
         const SizedBox(height: AppSpacing.md),
         TextButton.icon(
           icon: Icon(Icons.play_arrow_rounded, color: widget.accent),
-          label: Text('Simulate shake',
-              style: TextStyle(color: widget.accent)),
+          label: Text('Simulate shake', style: TextStyle(color: widget.accent)),
           onPressed: _simulate,
         ),
       ],
@@ -706,23 +751,27 @@ class _ArrowCard extends StatelessWidget {
         color: surface,
         borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
         border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
       ),
       child: Column(
         children: [
           Icon(icon, color: accent, size: 28),
           const SizedBox(height: AppSpacing.sm),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.w700)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 2),
-          Text(destination,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.lightOnSurfaceVariant,
-              )),
+          Text(
+            destination,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppColors.darkOnSurfaceVariant
+                  : AppColors.lightOnSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -737,24 +786,28 @@ class _Hint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon,
-              size: 18,
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.lightOnSurfaceVariant),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(text,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant
-                      : AppColors.lightOnSurfaceVariant,
-                  height: 1.4,
-                )),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(
+        icon,
+        size: 18,
+        color: isDark
+            ? AppColors.darkOnSurfaceVariant
+            : AppColors.lightOnSurfaceVariant,
+      ),
+      const SizedBox(width: AppSpacing.sm),
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark
+                ? AppColors.darkOnSurfaceVariant
+                : AppColors.lightOnSurfaceVariant,
+            height: 1.4,
           ),
-        ],
-      );
+        ),
+      ),
+    ],
+  );
 }

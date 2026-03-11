@@ -51,6 +51,18 @@ enum EarconEvent {
   /// The user went back (shake, inertial tilt, or back button).
   navBack,
 
+  // ── Scanner ─ extras ──────────────────────────────────────────────────────
+  /// The flashlight was toggled via swipe gesture on the scanner screen.
+  flashToggled,
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  /// The user advanced to the next onboarding page (Next button).
+  onboardingNext,
+
+  // ── Tutorial ──────────────────────────────────────────────────────────────
+  /// A page was turned inside a multi-page tutorial (Next or Back button).
+  tutorialPageTurn,
+
   // ── Action ────────────────────────────────────────────────────────────────
   /// A toggle or feature was switched ON.
   actionEnabled,
@@ -66,16 +78,32 @@ enum EarconEvent {
 extension _EarconAsset on EarconEvent {
   String get assetPath {
     switch (this) {
-      case EarconEvent.scanStart:      return 'audio/earcon_scan_start.wav';
-      case EarconEvent.scanSuccess:    return 'audio/earcon_scan_success.wav';
-      case EarconEvent.scanFail:       return 'audio/earcon_scan_fail.wav';
-      case EarconEvent.cameraOpen:     return 'audio/earcon_camera_open.wav';
-      case EarconEvent.cameraClose:    return 'audio/earcon_camera_close.wav';
-      case EarconEvent.navForward:     return 'audio/earcon_nav_forward.wav';
-      case EarconEvent.navBack:        return 'audio/earcon_nav_back.wav';
-      case EarconEvent.actionEnabled:  return 'audio/earcon_action_enabled.wav';
-      case EarconEvent.actionDisabled: return 'audio/earcon_action_disabled.wav';
-      case EarconEvent.actionConfirmed:return 'audio/earcon_action_confirmed.wav';
+      case EarconEvent.scanStart:
+        return 'audio/earcon_scan_start.wav';
+      case EarconEvent.scanSuccess:
+        return 'audio/earcon_scan_success.wav';
+      case EarconEvent.scanFail:
+        return 'audio/earcon_scan_fail.wav';
+      case EarconEvent.cameraOpen:
+        return 'audio/earcon_camera_open.wav';
+      case EarconEvent.cameraClose:
+        return 'audio/earcon_camera_close.wav';
+      case EarconEvent.flashToggled:
+        return 'audio/earcon_action_confirmed.wav';
+      case EarconEvent.onboardingNext:
+        return 'audio/earcon_nav_forward.wav';
+      case EarconEvent.tutorialPageTurn:
+        return 'audio/earcon_nav_back.wav';
+      case EarconEvent.navForward:
+        return 'audio/earcon_nav_forward.wav';
+      case EarconEvent.navBack:
+        return 'audio/earcon_nav_back.wav';
+      case EarconEvent.actionEnabled:
+        return 'audio/earcon_action_enabled.wav';
+      case EarconEvent.actionDisabled:
+        return 'audio/earcon_action_disabled.wav';
+      case EarconEvent.actionConfirmed:
+        return 'audio/earcon_action_confirmed.wav';
     }
   }
 }
@@ -88,11 +116,12 @@ class EarconService {
   // We use a low-latency mode to keep the gap between events and sound tight.
   final AudioPlayer _player = AudioPlayer();
 
-  bool _enabled         = true;
-  bool _talkBackActive  = false;
+  bool _enabled = true;
+  bool _talkBackActive = false;
 
-  static const MethodChannel _accessibilityChannel =
-      MethodChannel('flutter/accessibility');
+  static const MethodChannel _accessibilityChannel = MethodChannel(
+    'flutter/accessibility',
+  );
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -128,8 +157,8 @@ class EarconService {
   ///   - earcons are disabled in settings ([_enabled] = false), or
   ///   - TalkBack / VoiceOver is active ([_talkBackActive] = true).
   Future<void> play(EarconEvent event) async {
-    if (!_enabled)        return;
-    if (_talkBackActive)  return;
+    if (!_enabled) return;
+    if (_talkBackActive) return;
 
     try {
       // Stop any in-flight earcon before starting the next one.
@@ -144,8 +173,9 @@ class EarconService {
 
   Future<void> _detectTalkBack() async {
     try {
-      final result = await _accessibilityChannel
-          .invokeMethod<bool>('isAccessibilityServiceEnabled');
+      final result = await _accessibilityChannel.invokeMethod<bool>(
+        'isAccessibilityServiceEnabled',
+      );
       _talkBackActive = result ?? false;
     } catch (_) {
       _talkBackActive = false;

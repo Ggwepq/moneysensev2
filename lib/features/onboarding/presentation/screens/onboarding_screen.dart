@@ -83,7 +83,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  void _next() => _goTo(_page + 1);
+  void _next() {
+    EarconService.instance.play(EarconEvent.onboardingNext);
+    _goTo(_page + 1);
+  }
   void _back() => _goTo(_page - 1);
 
   void _finish({required bool launchTutorial}) {

@@ -363,6 +363,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     final next     = !settings.useFlashlight;
     ref.read(appSettingsProvider.notifier).toggleFlashlight(next);
     ref.read(cameraControllerProvider.notifier).setFlash(next);
+    EarconService.instance.play(EarconEvent.flashToggled);
     _enqueue(ScannerSpeech.flashToggled(_l10n, next));
   }
 }
