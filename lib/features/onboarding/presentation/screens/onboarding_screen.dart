@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
@@ -82,7 +83,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  void _next() => _goTo(_page + 1);
+  void _next() {
+    EarconService.instance.play(EarconEvent.onboardingNext);
+    _goTo(_page + 1);
+  }
   void _back() => _goTo(_page - 1);
 
   void _finish({required bool launchTutorial}) {
@@ -384,7 +388,10 @@ class _OptionCard<T> extends StatelessWidget {
     return Semantics(
       button: true, selected: isSelected, label: '$label. $description',
       child: GestureDetector(
-        onTap: () => onSelect(value),
+        onTap: () {
+          EarconService.instance.play(EarconEvent.actionConfirmed);
+          onSelect(value);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(AppSpacing.base),
@@ -454,7 +461,12 @@ class _WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _pageScroll(children: [
         const SizedBox(height: AppSpacing.xl),
-        const Icon(Icons.currency_exchange_rounded, size: 72),
+        Image.asset(
+          'assets/images/moneysense-favicon.png',
+          width: 88,
+          height: 88,
+          semanticLabel: 'MoneySense',
+        ),
         const SizedBox(height: AppSpacing.xl),
         Text(l10n.onboardingWelcomeTitle,
             style: Theme.of(context).textTheme.displayLarge),

@@ -18,6 +18,7 @@ import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/haptic_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -31,7 +32,7 @@ class SettingsScreen extends ConsumerWidget {
     final l10n         = AppLocalizations.of(settings.isTagalog);
     final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
 
-    // ── TTS helper — one line at every call site ──────────────────────────
+    // ── TTS helper: one line at every call site ──────────────────────────
     void say(TtsMessage msg) {
       ref.read(ttsServiceProvider).enqueue(
             msg,
@@ -44,6 +45,14 @@ class SettingsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.settings),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            onPressed: () {
+              EarconService.instance.play(EarconEvent.navBack);
+              Navigator.of(context).maybePop();
+            },
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.help_outline_rounded),
@@ -70,6 +79,7 @@ class SettingsScreen extends ConsumerWidget {
                 l10n: l10n,
                 visionConfig: visionConfig,
                 onChanged: (v) {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
                   notifier.setThemeMode(v);
                   final label = v == AppThemeMode.system
                       ? l10n.themeSystem
@@ -117,6 +127,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.useFrontCameraSubtitle,
                 value: settings.useFrontCamera,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleFrontCamera(v);
                   say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
                 },
@@ -128,6 +139,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.useFlashlightSubtitle,
                 value: settings.useFlashlight,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleFlashlight(v);
                   say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
                 },
@@ -139,6 +151,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.denominationVibrationSubtitle,
                 value: settings.denominationVibration,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleDenominationVibration(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.denominationVibration, v));
@@ -159,6 +172,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.shakeToGoBackSubtitle,
                 value: settings.shakeToGoBack,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleShakeToGoBack(v);
                   say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
                 },
@@ -176,6 +190,7 @@ class SettingsScreen extends ConsumerWidget {
                     ? settings.goBackTimerSeconds
                     : 20,
                 onToggle: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleGoBackTimer(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.goBackTimerOnResult, v));
@@ -189,6 +204,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.gesturalNavigationSubtitle,
                 value: settings.gesturalNavigation,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleGesturalNavigation(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.gesturalNavigation, v));
@@ -204,6 +220,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.inertialNavigationSubtitle,
                 value: settings.inertialNavigation,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleInertialNavigation(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.inertialNavigation, v));
@@ -226,6 +243,7 @@ class SettingsScreen extends ConsumerWidget {
                 l10n:     l10n,
                 visionConfig: visionConfig,
                 onChanged: (v) {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
                   notifier.setVisionProfile(v);
                   final label = v == VisionProfile.lowVision
                       ? l10n.visionLowVision
@@ -236,7 +254,7 @@ class SettingsScreen extends ConsumerWidget {
                       l10n, l10n.visionProfileTitle, label));
                 },
               ),
-              // TTS toggle — spoken BEFORE turning off so user hears it.
+              // TTS toggle: spoken BEFORE turning off so user hears it.
               MsToggleTile(
                 title:    l10n.ttsTitle,
                 subtitle: isFullVerbosity
@@ -245,12 +263,14 @@ class SettingsScreen extends ConsumerWidget {
                 value: settings.ttsEnabled,
                 onChanged: (v) {
                   if (!v) {
+                    EarconService.instance.play(EarconEvent.actionDisabled);
                     // Announce disabling while TTS is still on, THEN turn off
                     say(AppSpeech.ttsDisabling(l10n));
                     Future.delayed(const Duration(milliseconds: 1200), () {
                       notifier.toggleTts(false);
                     });
                   } else {
+                    EarconService.instance.play(EarconEvent.actionEnabled);
                     notifier.toggleTts(true);
                     say(AppSpeech.ttsEnabled(l10n));
                   }
@@ -266,7 +286,8 @@ class SettingsScreen extends ConsumerWidget {
                   l10n:     l10n,
                   visionConfig: visionConfig,
                   onChanged: (v) {
-                    notifier.setTtsVerbosity(v);
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                  notifier.setTtsVerbosity(v);
                     final label = v == TtsVerbosity.minimal
                         ? l10n.ttsVerbosityMinimal
                         : v == TtsVerbosity.standard
@@ -283,6 +304,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.hapticSubtitle,
                 value: settings.hapticFeedback,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleHapticFeedback(v);
                   say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
                 },
@@ -297,7 +319,8 @@ class SettingsScreen extends ConsumerWidget {
                   l10n:      l10n,
                   visionConfig: visionConfig,
                   onChanged: (v) {
-                    notifier.setHapticIntensity(v);
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                  notifier.setHapticIntensity(v);
                     final label = v == HapticIntensity.subtle
                         ? l10n.hapticIntensitySubtle
                         : v == HapticIntensity.medium
@@ -307,6 +330,19 @@ class SettingsScreen extends ConsumerWidget {
                         l10n, l10n.hapticIntensityTitle, label));
                   },
                 ),
+              MsToggleTile(
+                title:    l10n.earconTitle,
+                subtitle: isFullVerbosity
+                    ? l10n.earconSubtitleFull
+                    : l10n.earconSubtitle,
+                value: settings.earconEnabled,
+                onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
+                  notifier.toggleEarcon(v);
+                  EarconService.instance.setEnabled(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
+                },
+              ),
             ]),
 
             // ── Help & Support ─────────────────────────────────────────
@@ -324,7 +360,8 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.play_arrow_rounded,
                 onTap: () {
                   // Pop settings first so the slide transition is clean,
-                  // then reset the flag — _AppRoot rebuilds to onboarding.
+                  // then reset the flag: _AppRoot rebuilds to onboarding.
+                  EarconService.instance.play(EarconEvent.navBack);
                   Navigator.of(context).pop();
                   ref.read(onboardingCompleteProvider.notifier).state = false;
                 },
@@ -357,7 +394,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Theme Tile ────────────────────────────────────────────────────────────────
 
 class _ThemeTile extends StatelessWidget {
   const _ThemeTile({
@@ -492,7 +528,7 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
     // Persist setting
     widget.onChanged(newLang);
 
-    // Switch the engine — this is the async work being blocked for
+    // Switch the engine: this is the async work being blocked for
     await tts.changeLanguage(newLang);
 
     // Speak "Done. Now speaking X" in the NEW language
@@ -558,7 +594,6 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
   }
 }
 
-// ── Vision Profile Tile ───────────────────────────────────────────────────────
 
 class _VisionProfileTile extends StatelessWidget {
   const _VisionProfileTile({
@@ -631,7 +666,6 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-// ── TTS Verbosity Tile ────────────────────────────────────────────────────────
 
 class _VerbosityTile extends StatelessWidget {
   const _VerbosityTile({
@@ -768,7 +802,6 @@ class _HapticIntensityTile extends StatelessWidget {
   }
 }
 
-// ── Swipe-back wrapper ────────────────────────────────────────────────────────
 
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});
@@ -787,7 +820,10 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return;
         if (ay / ax > _maxCrossRatio) return;
-        if (v.dx < 0) Navigator.of(context).maybePop();
+        if (v.dx < 0) {
+          EarconService.instance.play(EarconEvent.navBack);
+          Navigator.of(context).maybePop();
+        }
       },
       child: child,
     );

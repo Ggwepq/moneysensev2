@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'core/services/earcon_service.dart';
 import 'core/services/haptic_service.dart';
 import 'features/scanner/data/datasources/camera_service.dart';
 import 'features/settings/presentation/providers/settings_provider.dart';
@@ -18,13 +19,14 @@ Future<void> main() async {
     SharedPreferences.getInstance(),
     availableCameras().catchError((_) => <CameraDescription>[]),
     HapticService.init(),
+    EarconService.instance.init(),
   ]);
 
   final prefs   = results[0] as SharedPreferences;
   final cameras = results[1] as List<CameraDescription>;
-  // results[2] is HapticService.init() — void, no cast needed.
+  // results[2] is HapticService.init(): void, no cast needed.
 
-  // Portrait-only — scanning works best in portrait.
+  // Portrait-only: scanning works best in portrait.
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   // Edge-to-edge display on Android.
@@ -39,9 +41,9 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        // SharedPreferences — loaded once, used synchronously by SettingsStorage.
+        // SharedPreferences: loaded once, used synchronously by SettingsStorage.
         sharedPreferencesProvider.overrideWithValue(prefs),
-        // Camera list — seeded so CameraControllerNotifier can pick a lens.
+        // Camera list: seeded so CameraControllerNotifier can pick a lens.
         availableCamerasProvider.overrideWithValue(cameras),
       ],
       child: const MoneySenseApp(),

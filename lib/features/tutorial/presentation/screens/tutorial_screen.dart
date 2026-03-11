@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../../../core/services/earcon_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -10,7 +12,7 @@ import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/tutorial_route.dart';
 import 'tutorial_navigator.dart';
 
-/// Main Tutorial screen — accessible from the bottom nav.
+/// Main Tutorial screen: accessible from the bottom nav.
 ///
 /// Shows a card for each available feature tutorial.
 /// Tapping a card pushes the full interactive tutorial.
@@ -38,6 +40,23 @@ class TutorialScreen extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: bg,
           title: Text(l10n.navTutorial),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            onPressed: () {
+              EarconService.instance.play(EarconEvent.navBack);
+              Navigator.of(context).maybePop();
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline_rounded),
+              tooltip: 'Help',
+              onPressed: () {
+                /* TODO */
+              },
+            ),
+          ],
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(
@@ -137,7 +156,6 @@ class TutorialScreen extends ConsumerWidget {
   }
 }
 
-// ── Section label ─────────────────────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel({required this.label, required this.isDark});
@@ -163,7 +181,6 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-// ── Tutorial card ─────────────────────────────────────────────────────────────
 
 class _TutorialCard extends StatelessWidget {
   const _TutorialCard({
@@ -197,6 +214,7 @@ class _TutorialCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
+          EarconService.instance.play(EarconEvent.navForward);
           TutorialNavigator.push(context, route);
         },
         child: Container(
@@ -209,14 +227,14 @@ class _TutorialCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Left accent panel — stretches to match card height
+                // Left accent panel: stretches to match card height
                 Container(
                   width: 72,
                   decoration: BoxDecoration(
                     // Light: solid accent fill so the icon (white/dark) reads cleanly.
                     // Dark: subtle tint so the accent icon reads against the dark bg.
                     color: isDark
-                        ? accentColor.withOpacity(0.14)
+                        ? accentColor.withValues(alpha: 0.14)
                         : accentColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(AppSpacing.tileRadius),
@@ -283,9 +301,8 @@ class _TutorialCard extends StatelessWidget {
   }
 }
 
-// ── Swipe-back wrapper ────────────────────────────────────────────────────────
 
-/// Swipe LEFT to pop — mirrors the left-swipe gesture that opened this screen.
+/// Swipe LEFT to pop: mirrors the left-swipe gesture that opened this screen.
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});
   final Widget child;
@@ -303,7 +320,10 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return;
         if (ay / ax > _maxCrossRatio) return;
-        if (v.dx > 0) Navigator.of(context).maybePop(); // swipe right = back
+        if (v.dx > 0) {
+          EarconService.instance.play(EarconEvent.navBack);
+          Navigator.of(context).maybePop(); // swipe right = back
+        }
       },
       child: child,
     );

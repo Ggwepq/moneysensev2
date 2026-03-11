@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../features/settings/presentation/providers/settings_provider.dart';
+import 'earcon_service.dart';
 import 'shake_service.dart';
 
 /// Drives [ShakeService] from the widget tree.
@@ -101,6 +102,7 @@ class _ShakeDetectorWidgetState extends ConsumerState<ShakeDetectorWidget>
     }
 
     // 3. Navigate
+    EarconService.instance.play(EarconEvent.navBack);
     if (widget.onShake != null) {
       widget.onShake!();
       return;
