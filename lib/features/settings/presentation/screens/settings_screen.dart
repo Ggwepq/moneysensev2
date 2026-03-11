@@ -45,6 +45,14 @@ class SettingsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.settings),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            onPressed: () {
+              EarconService.instance.play(EarconEvent.navBack);
+              Navigator.of(context).maybePop();
+            },
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.help_outline_rounded),
@@ -71,6 +79,7 @@ class SettingsScreen extends ConsumerWidget {
                 l10n: l10n,
                 visionConfig: visionConfig,
                 onChanged: (v) {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
                   notifier.setThemeMode(v);
                   final label = v == AppThemeMode.system
                       ? l10n.themeSystem
@@ -118,6 +127,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.useFrontCameraSubtitle,
                 value: settings.useFrontCamera,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleFrontCamera(v);
                   say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
                 },
@@ -129,6 +139,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.useFlashlightSubtitle,
                 value: settings.useFlashlight,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleFlashlight(v);
                   say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
                 },
@@ -140,6 +151,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.denominationVibrationSubtitle,
                 value: settings.denominationVibration,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleDenominationVibration(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.denominationVibration, v));
@@ -160,6 +172,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.shakeToGoBackSubtitle,
                 value: settings.shakeToGoBack,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleShakeToGoBack(v);
                   say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
                 },
@@ -177,6 +190,7 @@ class SettingsScreen extends ConsumerWidget {
                     ? settings.goBackTimerSeconds
                     : 20,
                 onToggle: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleGoBackTimer(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.goBackTimerOnResult, v));
@@ -190,6 +204,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.gesturalNavigationSubtitle,
                 value: settings.gesturalNavigation,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleGesturalNavigation(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.gesturalNavigation, v));
@@ -205,6 +220,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.inertialNavigationSubtitle,
                 value: settings.inertialNavigation,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleInertialNavigation(v);
                   say(SettingsSpeech.toggled(
                       l10n, l10n.inertialNavigation, v));
@@ -227,6 +243,7 @@ class SettingsScreen extends ConsumerWidget {
                 l10n:     l10n,
                 visionConfig: visionConfig,
                 onChanged: (v) {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
                   notifier.setVisionProfile(v);
                   final label = v == VisionProfile.lowVision
                       ? l10n.visionLowVision
@@ -246,12 +263,14 @@ class SettingsScreen extends ConsumerWidget {
                 value: settings.ttsEnabled,
                 onChanged: (v) {
                   if (!v) {
+                    EarconService.instance.play(EarconEvent.actionDisabled);
                     // Announce disabling while TTS is still on, THEN turn off
                     say(AppSpeech.ttsDisabling(l10n));
                     Future.delayed(const Duration(milliseconds: 1200), () {
                       notifier.toggleTts(false);
                     });
                   } else {
+                    EarconService.instance.play(EarconEvent.actionEnabled);
                     notifier.toggleTts(true);
                     say(AppSpeech.ttsEnabled(l10n));
                   }
@@ -267,7 +286,8 @@ class SettingsScreen extends ConsumerWidget {
                   l10n:     l10n,
                   visionConfig: visionConfig,
                   onChanged: (v) {
-                    notifier.setTtsVerbosity(v);
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                  notifier.setTtsVerbosity(v);
                     final label = v == TtsVerbosity.minimal
                         ? l10n.ttsVerbosityMinimal
                         : v == TtsVerbosity.standard
@@ -284,6 +304,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.hapticSubtitle,
                 value: settings.hapticFeedback,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleHapticFeedback(v);
                   say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
                 },
@@ -298,7 +319,8 @@ class SettingsScreen extends ConsumerWidget {
                   l10n:      l10n,
                   visionConfig: visionConfig,
                   onChanged: (v) {
-                    notifier.setHapticIntensity(v);
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                  notifier.setHapticIntensity(v);
                     final label = v == HapticIntensity.subtle
                         ? l10n.hapticIntensitySubtle
                         : v == HapticIntensity.medium
@@ -315,6 +337,7 @@ class SettingsScreen extends ConsumerWidget {
                     : l10n.earconSubtitle,
                 value: settings.earconEnabled,
                 onChanged: (v) {
+                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
                   notifier.toggleEarcon(v);
                   EarconService.instance.setEnabled(v);
                   say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
@@ -338,6 +361,7 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () {
                   // Pop settings first so the slide transition is clean,
                   // then reset the flag: _AppRoot rebuilds to onboarding.
+                  EarconService.instance.play(EarconEvent.navBack);
                   Navigator.of(context).pop();
                   ref.read(onboardingCompleteProvider.notifier).state = false;
                 },
@@ -796,7 +820,10 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return;
         if (ay / ax > _maxCrossRatio) return;
-        if (v.dx < 0) Navigator.of(context).maybePop();
+        if (v.dx < 0) {
+          EarconService.instance.play(EarconEvent.navBack);
+          Navigator.of(context).maybePop();
+        }
       },
       child: child,
     );

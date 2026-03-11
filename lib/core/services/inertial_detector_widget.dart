@@ -8,6 +8,7 @@ import 'package:vibration/vibration.dart';
 import '../../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
 import '../../features/settings/presentation/providers/settings_provider.dart';
+import 'earcon_service.dart';
 import 'inertial_service.dart';
 
 // Connects InertialService to the navigator and the app lifecycle.
@@ -131,14 +132,14 @@ class _InertialDetectorWidgetState
 
   void _handleLeft() {
     if (!_isActive || _inCooldown || !mounted) return;
-    // Navigate FIRST: synchronous, on the UI thread, no awaits before it
+    EarconService.instance.play(EarconEvent.navForward);
     widget.onTiltLeft();
-    // Fire-and-forget haptics after navigation is already dispatched
     _vibrate();
   }
 
   void _handleRight() {
     if (!_isActive || _inCooldown || !mounted) return;
+    EarconService.instance.play(EarconEvent.navForward);
     widget.onTiltRight();
     _vibrate();
   }

@@ -20,7 +20,14 @@ import 'package:flutter/services.dart';
 // in assets/audio/ for recommended characteristics per event.
 
 /// All earcon events the app can fire.
+///
+/// Grouped by category so it is easy to see where each one belongs:
+///   Scanner  — scan lifecycle events
+///   Camera   — camera open/close
+///   Navigation — screen transitions
+///   Action   — toggle on, toggle off, action confirmed
 enum EarconEvent {
+  // ── Scanner ───────────────────────────────────────────────────────────────
   /// The scan button was pressed and the scanner has started looking.
   scanStart,
 
@@ -30,21 +37,45 @@ enum EarconEvent {
   /// The scanner gave up without identifying anything.
   scanFail,
 
+  // ── Camera ────────────────────────────────────────────────────────────────
   /// The camera stream started (camera button tapped → camera opens).
   cameraOpen,
 
   /// The camera stream stopped.
   cameraClose,
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  /// A screen was pushed onto the navigator stack (Settings, Tutorial, etc.).
+  navForward,
+
+  /// The user went back (shake, inertial tilt, or back button).
+  navBack,
+
+  // ── Action ────────────────────────────────────────────────────────────────
+  /// A toggle or feature was switched ON.
+  actionEnabled,
+
+  /// A toggle or feature was switched OFF.
+  actionDisabled,
+
+  /// A selection was confirmed (segmented selector changed, onboarding step
+  /// advanced, form submitted).
+  actionConfirmed,
 }
 
 extension _EarconAsset on EarconEvent {
   String get assetPath {
     switch (this) {
-      case EarconEvent.scanStart:   return 'audio/earcon_scan_start.wav';
-      case EarconEvent.scanSuccess: return 'audio/earcon_scan_success.wav';
-      case EarconEvent.scanFail:    return 'audio/earcon_scan_fail.wav';
-      case EarconEvent.cameraOpen:  return 'audio/earcon_camera_open.wav';
-      case EarconEvent.cameraClose: return 'audio/earcon_camera_close.wav';
+      case EarconEvent.scanStart:      return 'audio/earcon_scan_start.wav';
+      case EarconEvent.scanSuccess:    return 'audio/earcon_scan_success.wav';
+      case EarconEvent.scanFail:       return 'audio/earcon_scan_fail.wav';
+      case EarconEvent.cameraOpen:     return 'audio/earcon_camera_open.wav';
+      case EarconEvent.cameraClose:    return 'audio/earcon_camera_close.wav';
+      case EarconEvent.navForward:     return 'audio/earcon_nav_forward.wav';
+      case EarconEvent.navBack:        return 'audio/earcon_nav_back.wav';
+      case EarconEvent.actionEnabled:  return 'audio/earcon_action_enabled.wav';
+      case EarconEvent.actionDisabled: return 'audio/earcon_action_disabled.wav';
+      case EarconEvent.actionConfirmed:return 'audio/earcon_action_confirmed.wav';
     }
   }
 }

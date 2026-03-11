@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
@@ -384,7 +385,10 @@ class _OptionCard<T> extends StatelessWidget {
     return Semantics(
       button: true, selected: isSelected, label: '$label. $description',
       child: GestureDetector(
-        onTap: () => onSelect(value),
+        onTap: () {
+          EarconService.instance.play(EarconEvent.actionConfirmed);
+          onSelect(value);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(AppSpacing.base),
