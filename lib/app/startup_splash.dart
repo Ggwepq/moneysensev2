@@ -40,9 +40,10 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _pulse = Tween(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
+    _pulse = Tween(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
 
     _runStartup();
   }
@@ -65,6 +66,11 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     if (!mounted) return;
     setState(() => _phase = _StartupPhase.ready);
 
+    // Earcon fires the instant "ready" is shown — while the checkmark is
+    // visible and before the screen hands off. This gives audio confirmation
+    // that startup completed without relying on TTS.
+    EarconService.instance.play(EarconEvent.actionConfirmed);
+
     // Brief pause so "Ready" state is visible, then hand off.
     await Future.delayed(const Duration(milliseconds: 400));
     if (mounted) widget.onReady();
@@ -79,14 +85,18 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
-    final l10n     = AppLocalizations.of(settings.isTagalog);
-    final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final bg       = isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final onBg     = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
-    final subtle   = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
+    final l10n = AppLocalizations.of(settings.isTagalog);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final onBg = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final subtle = isDark
+        ? AppColors.darkOnSurfaceVariant
+        : AppColors.lightOnSurfaceVariant;
 
-    final isReady  = _phase == _StartupPhase.ready;
-    final statusText = isReady ? l10n.splashReadyToScan : l10n.splashLoadingVoice;
+    final isReady = _phase == _StartupPhase.ready;
+    final statusText = isReady
+        ? l10n.splashReadyToScan
+        : l10n.splashLoadingVoice;
 
     return Scaffold(
       backgroundColor: bg,
