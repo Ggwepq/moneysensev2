@@ -4,10 +4,10 @@ import '../constants/app_colors.dart';
 /// MoneySense theme.
 ///
 /// Color philosophy:
-///   Yellow (#E2DA00) is the PRIMARY accent on BOTH themes — it drives
+///   Yellow (#E2DA00) is the PRIMARY accent on BOTH themes: it drives
 ///   selected states, sliders, segmented pills, and the Settings/Help nav buttons.
 ///
-///   Blue (#1E30F0) is the SECONDARY accent on BOTH themes — it drives the
+///   Blue (#1E30F0) is the SECONDARY accent on BOTH themes: it drives the
 ///   scan/stop button, Switch tracks, and the help-info button.
 ///
 ///   This makes the UI consistent regardless of theme: "yellow = primary
@@ -15,7 +15,7 @@ import '../constants/app_colors.dart';
 ///
 /// Font scale / WCAG 1.4.4:
 ///   bodyLarge 16 sp, bodySmall 13 sp, labelSmall 11 sp.
-///   At 80% user scale those become 12.8 / 10.4 / 8.8 — still legible.
+///   At 80% user scale those become 12.8 / 10.4 / 8.8: still legible.
 ///   At 200% scale the layout is designed to accommodate without overflow.
 abstract final class AppTheme {
 
@@ -39,6 +39,10 @@ abstract final class AppTheme {
 
   /// Switch track = blue when on, muted when off.
   /// Switch thumb = contrasting on/off colour.
+  ///
+  /// Material 3 Switch ignores trackColor alone when the ColorScheme primary
+  /// overrides it. Setting trackOutlineColor to transparent removes the outline
+  /// border that M3 draws on top, letting our trackColor show through correctly.
   static SwitchThemeData _switchTheme({
     required Color thumbOn,
     required Color thumbOff,
@@ -49,6 +53,13 @@ abstract final class AppTheme {
             s.contains(WidgetState.selected) ? thumbOn : thumbOff),
         trackColor: WidgetStateProperty.resolveWith((s) =>
             s.contains(WidgetState.selected) ? AppColors.accentBlue : trackOff),
+        // Transparent outline lets our trackColor show — without this M3 draws
+        // a coloured border that visually overrides the track on some devices.
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+        overlayColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected)
+                ? AppColors.accentBlue.withValues(alpha: 0.12)
+                : null),
       );
 
   // ── Shared slider theme ────────────────────────────────────────────────────
@@ -126,7 +137,7 @@ abstract final class AppTheme {
       seedColor: AppColors.accentBlue,
       brightness: Brightness.light,
     ).copyWith(
-      // Yellow = primary on light too — fixes blue slider/pill bug
+      // Yellow = primary on light too: fixes blue slider/pill bug
       primary:   AppColors.accentYellow,
       onPrimary: AppColors.lightOnSurface,
       secondary:   AppColors.accentBlue,
