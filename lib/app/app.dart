@@ -10,6 +10,7 @@ import '../features/scanner/presentation/screens/scanner_screen.dart'
 import '../features/settings/domain/entities/vision_config.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import 'home_shell.dart';
+import 'startup_splash.dart';
 
 class MoneySenseApp extends ConsumerWidget {
   const MoneySenseApp({super.key});
@@ -19,6 +20,10 @@ class MoneySenseApp extends ConsumerWidget {
     final settings      = ref.watch(appSettingsProvider);
     final visionConfig  = ref.watch(visionConfigProvider);
     final routeObserver = ref.read(routeObserverProvider);
+
+    // ttsInitProvider stays here to re-init TTS on language or verbosity
+    // changes mid-session. The first init is awaited by StartupSplash so
+    // it is no longer fire-and-forget on launch.
     ref.watch(ttsInitProvider);
 
     final effectiveScale = visionConfig.effectiveFontScale(settings.fontScale);
@@ -50,8 +55,12 @@ class _AppRoot extends ConsumerStatefulWidget {
 }
 
 class _AppRootState extends ConsumerState<_AppRoot> {
-  /// Set to true by onboarding when the user chooses "Show me around".
+  bool _ttsReady       = false;
   bool _launchTutorial = false;
+
+  void _onSplashReady() {
+    setState(() => _ttsReady = true);
+  }
 
   void _onOnboardingComplete({bool launchTutorial = false}) {
     _launchTutorial = launchTutorial;
@@ -60,15 +69,20 @@ class _AppRootState extends ConsumerState<_AppRoot> {
 
   @override
   Widget build(BuildContext context) {
+    // Block everything behind the splash until TTS is fully initialized.
+    if (!_ttsReady) {
+      return StartupSplash(onReady: _onSplashReady);
+    }
+
     final onboardingDone = ref.watch(onboardingCompleteProvider);
 
     if (!onboardingDone) {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
-    // ShakeDetectorWidget is app-level (shake to go back works from anywhere).
-    // InertialDetectorWidget is inside HomeShell so its RouteAware subscription
-    // correctly sees Settings/Tutorial pushes.
+    // ShakeDetectorWidget is app-level so shake-to-go-back works everywhere.
+    // InertialDetectorWidget lives inside HomeShell so its RouteAware
+    // subscription correctly sees Settings/Tutorial pushes.
     return ShakeDetectorWidget(
       child: HomeShell(launchTutorialOnLoad: _launchTutorial),
     );

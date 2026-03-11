@@ -421,4 +421,7 @@ abstract final class EnStrings {
   static const String ttsOnboardingProfileSelected = 'Vision profile set.';
 
   // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.
+  static const String splashReadyToScan = "Ready to Scan";
+  static const String splashLoadingVoice = "Ready to Scan";
+  static const String splashGettingReady = "Preparing to Scan";
 }
