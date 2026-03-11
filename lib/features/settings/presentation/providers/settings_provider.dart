@@ -127,6 +127,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
 
   void setHapticIntensity(HapticIntensity intensity) =>
       _update(state.copyWith(hapticIntensity: intensity));
+
+  void toggleEarcon(bool value) =>
+      _update(state.copyWith(earconEnabled: value));
 }
 
 

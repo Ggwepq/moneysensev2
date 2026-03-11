@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/l10n/app_localizations.dart';
+import '../core/services/earcon_service.dart';
 import '../core/services/tts_service.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 
@@ -56,8 +57,19 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
       verbosity: settings.ttsVerbosity,
     );
 
+    // Sync EarconService with persisted settings and TalkBack state.
+    // TalkBack detection runs inside TTS init; we refresh earcon after so
+    // both services share the same accessibility knowledge.
+    EarconService.instance.setEnabled(settings.earconEnabled);
+    await EarconService.instance.refreshTalkBackState();
+
     if (!mounted) return;
     setState(() => _phase = _StartupPhase.ready);
+
+    // Earcon fires the instant "ready" is shown — while the checkmark is
+    // visible and before the screen hands off. This gives audio confirmation
+    // that startup completed without relying on TTS.
+    EarconService.instance.play(EarconEvent.actionConfirmed);
 
     // Brief pause so "Ready" state is visible, then hand off.
     await Future.delayed(const Duration(milliseconds: 400));
@@ -93,22 +105,30 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo / wordmark
+              // Logo mark
+              Image.asset(
+                'assets/images/moneysense-favicon.png',
+                width: 96,
+                height: 96,
+                semanticLabel: 'MoneySense',
+              ),
+              const SizedBox(height: 20),
+              // Wordmark
               Text(
                 'MoneySense',
                 style: TextStyle(
                   color: onBg,
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 l10n.splashGettingReady,
                 style: TextStyle(
                   color: subtle,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w400,
                 ),
               ),

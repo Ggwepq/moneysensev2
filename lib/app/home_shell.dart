@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/app_localizations.dart';
+import '../core/services/earcon_service.dart';
 import '../core/services/inertial_detector_widget.dart';
 import '../core/services/speech_scripts.dart';
 import '../core/services/tts_service.dart';
@@ -37,7 +38,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void initState() {
     super.initState();
     if (widget.launchTutorialOnLoad) {
-      // Push the app-navigation tutorial directly — not the tutorial list.
+      // Push the app-navigation tutorial directly: not the tutorial list.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) TutorialNavigator.push(context, TutorialRoute.appNavigation);
       });
@@ -45,11 +46,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   void _pushSettings() {
+    EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedSettings(_l10n));
     Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
   }
 
   void _pushTutorial() {
+    EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedTutorial(_l10n));
     Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
   }

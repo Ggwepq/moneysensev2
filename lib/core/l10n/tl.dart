@@ -466,4 +466,14 @@ abstract final class TlStrings {
   static const String splashGettingReady        = 'Naghahanda…';
   static const String splashLoadingVoice        = 'Naglo-load ng boses…';
   static const String splashReadyToScan         = 'Handa nang mag-scan.';
+
+  // Earcon setting
+  static const String earconTitle           = 'Mga Sound Effect';
+  static const String earconSubtitle        =
+      'Maikling audio cues para sa mga scan event.';
+  static const String earconSubtitleFull    =
+      'Nagpapatugtog ng maikling tono kapag nagsisimula ang scan, '
+      'may nakitang resulta, o hindi ma-identify ng scanner. '
+      'Awtomatikong nata-tahimik kapag aktibo ang TalkBack. '
+      'Hiwalay sa voice feedback.';
 }

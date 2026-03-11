@@ -41,6 +41,8 @@ dependencies:
   # UI Helpers
   gap: ^3.0.1
 
+  audioplayers: ^6.6.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

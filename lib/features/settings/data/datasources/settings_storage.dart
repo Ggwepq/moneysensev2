@@ -21,6 +21,7 @@ abstract final class SettingsKeys {
   static const ttsEnabled          = 'settings.ttsEnabled';
   static const ttsVerbosity        = 'settings.ttsVerbosity';
   static const hapticFeedback      = 'settings.hapticFeedback';
+  static const earconEnabled        = 'settings.earconEnabled';
   static const hapticIntensity     = 'settings.hapticIntensity';
 
   /// Set to true once the user completes onboarding.
@@ -95,6 +96,8 @@ class SettingsStorage {
       ),
       hapticFeedback:
           _prefs.getBool(SettingsKeys.hapticFeedback) ?? defaults.hapticFeedback,
+      earconEnabled:
+          _prefs.getBool(SettingsKeys.earconEnabled) ?? defaults.earconEnabled,
       hapticIntensity: _readEnum(
         SettingsKeys.hapticIntensity,
         HapticIntensity.values,
@@ -125,6 +128,7 @@ class SettingsStorage {
     _prefs.setBool  (SettingsKeys.ttsEnabled,          s.ttsEnabled);
     _prefs.setString(SettingsKeys.ttsVerbosity,        s.ttsVerbosity.name);
     _prefs.setBool  (SettingsKeys.hapticFeedback,      s.hapticFeedback);
+    _prefs.setBool  (SettingsKeys.earconEnabled,       s.earconEnabled);
     _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
   }
 
