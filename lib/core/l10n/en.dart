@@ -478,4 +478,12 @@ abstract final class EnStrings {
   static const String splashGettingReady = 'Getting ready…';
   static const String splashLoadingVoice = 'Loading voice…';
   static const String splashReadyToScan = 'Ready to scan.';
+
+  // Earcon setting
+  static const String earconTitle = 'Sound Effects';
+  static const String earconSubtitle = 'Short audio cues for scan events.';
+  static const String earconSubtitleFull =
+      'Plays brief tones when scanning starts, a result is found, or the '
+      'scanner fails to identify. Silenced automatically when TalkBack is '
+      'active. Independent of voice feedback.';
 }

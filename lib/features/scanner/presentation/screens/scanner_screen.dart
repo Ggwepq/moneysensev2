@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -15,17 +16,11 @@ import '../../domain/entities/scanner_state.dart';
 import '../providers/scanner_provider.dart';
 import '../widgets/camera_viewfinder.dart';
 
-// ---------------------------------------------------------------------------
-// RouteObserver
-// ---------------------------------------------------------------------------
 
 final routeObserverProvider = Provider<RouteObserver<ModalRoute<void>>>(
   (ref) => RouteObserver<ModalRoute<void>>(),
 );
 
-// ---------------------------------------------------------------------------
-// Scanner screen
-// ---------------------------------------------------------------------------
 
 class ScannerScreen extends ConsumerStatefulWidget {
   const ScannerScreen({super.key, required this.onNavigate});
@@ -286,9 +281,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   void _onCameraOpenChanged(bool prev, bool next) {
     if (next == prev) return;
     if (next) {
+      EarconService.instance.play(EarconEvent.cameraOpen);
       _enqueue(ScannerSpeech.cameraOpened(_l10n));
       _startIdleTimer();
     } else {
+      EarconService.instance.play(EarconEvent.cameraClose);
       _enqueue(ScannerSpeech.cameraClosed(_l10n));
       _cancelIdleTimer();
     }
@@ -299,6 +296,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
     switch (next) {
       case ScannerState.scanning:
+        EarconService.instance.play(EarconEvent.scanStart);
         _enqueue(ScannerSpeech.scanStarted(_l10n));
         _cancelIdleTimer(); // no idle hint while actively scanning
 
@@ -306,12 +304,16 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         _enqueue(ScannerSpeech.processing(_l10n));
 
       case ScannerState.result:
+        EarconService.instance.play(EarconEvent.scanSuccess);
         // Result speech is handled by the result caller with denominationResult().
         // Reset idle so the user gets a hint if they keep the camera open.
         _resetIdleTimer();
 
       case ScannerState.previewing:
-        // Returned from scan/result back to live preview — restart idle.
+        // Returned from scan/result: fire fail earcon only if scan gave no result.
+        if (prev == ScannerState.scanning || prev == ScannerState.processing) {
+          EarconService.instance.play(EarconEvent.scanFail);
+        }
         if (prev == ScannerState.paused) {
           _enqueue(ScannerSpeech.previewResumed(_l10n));
         }
@@ -365,7 +367,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   }
 }
 
-// ── Inner widgets ─────────────────────────────────────────────────────────────
 
 class _IdlePlaceholder extends StatelessWidget {
   const _IdlePlaceholder({required this.l10n, required this.isDark});

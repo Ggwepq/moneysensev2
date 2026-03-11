@@ -17,9 +17,9 @@ enum VisionProfile { lowVision, partiallyBlind, fullyBlind }
 
 /// How much the TTS engine announces.
 ///
-/// [minimal]  — scan results only.
-/// [standard] — results + navigation events + setting confirmations.
-/// [full]     — everything: screen transitions, idle state, all interactions.
+/// [minimal] : scan results only.
+/// [standard]: results + navigation events + setting confirmations.
+/// [full]    : everything: screen transitions, idle state, all interactions.
 ///
 /// [VisionConfig] sets the default for each [VisionProfile].
 /// The user can override this independently in Settings → Accessibility.
@@ -27,9 +27,9 @@ enum TtsVerbosity { minimal, standard, full }
 
 /// How strongly the haptic / vibration engine responds.
 ///
-/// [subtle]   — HapticFeedback only (no motor vibration), short patterns.
-/// [medium]   — HapticFeedback + short motor pulse.
-/// [strong]   — HapticFeedback + full motor vibration with rich patterns.
+/// [subtle]  : HapticFeedback only (no motor vibration), short patterns.
+/// [medium]  : HapticFeedback + short motor pulse.
+/// [strong]  : HapticFeedback + full motor vibration with rich patterns.
 ///
 /// [VisionConfig] sets the default per profile; user can override.
 enum HapticIntensity { subtle, medium, strong }
@@ -62,6 +62,10 @@ class AppSettings {
   final bool hapticFeedback;
   final HapticIntensity hapticIntensity;
 
+  // ── Earcons ───────────────────────────────────────────────────────────
+  /// Whether short audio cues play for scan events (independent of TTS).
+  final bool earconEnabled;
+
   const AppSettings({
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.english,
@@ -78,6 +82,7 @@ class AppSettings {
     this.ttsVerbosity = TtsVerbosity.standard,
     this.hapticFeedback = true,
     this.hapticIntensity = HapticIntensity.medium,
+    this.earconEnabled = true,
   });
 
   AppSettings copyWith({
@@ -96,6 +101,7 @@ class AppSettings {
     TtsVerbosity? ttsVerbosity,
     bool? hapticFeedback,
     HapticIntensity? hapticIntensity,
+    bool? earconEnabled,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -114,6 +120,7 @@ class AppSettings {
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
+      earconEnabled: earconEnabled ?? this.earconEnabled,
     );
   }
 

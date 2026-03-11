@@ -454,7 +454,12 @@ class _WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _pageScroll(children: [
         const SizedBox(height: AppSpacing.xl),
-        const Icon(Icons.currency_exchange_rounded, size: 72),
+        Image.asset(
+          'assets/images/moneysense-favicon.png',
+          width: 88,
+          height: 88,
+          semanticLabel: 'MoneySense',
+        ),
         const SizedBox(height: AppSpacing.xl),
         Text(l10n.onboardingWelcomeTitle,
             style: Theme.of(context).textTheme.displayLarge),

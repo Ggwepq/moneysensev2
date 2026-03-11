@@ -18,6 +18,7 @@ import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
+import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/haptic_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -31,7 +32,7 @@ class SettingsScreen extends ConsumerWidget {
     final l10n         = AppLocalizations.of(settings.isTagalog);
     final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
 
-    // ── TTS helper — one line at every call site ──────────────────────────
+    // ── TTS helper: one line at every call site ──────────────────────────
     void say(TtsMessage msg) {
       ref.read(ttsServiceProvider).enqueue(
             msg,
@@ -236,7 +237,7 @@ class SettingsScreen extends ConsumerWidget {
                       l10n, l10n.visionProfileTitle, label));
                 },
               ),
-              // TTS toggle — spoken BEFORE turning off so user hears it.
+              // TTS toggle: spoken BEFORE turning off so user hears it.
               MsToggleTile(
                 title:    l10n.ttsTitle,
                 subtitle: isFullVerbosity
@@ -307,6 +308,18 @@ class SettingsScreen extends ConsumerWidget {
                         l10n, l10n.hapticIntensityTitle, label));
                   },
                 ),
+              MsToggleTile(
+                title:    l10n.earconTitle,
+                subtitle: isFullVerbosity
+                    ? l10n.earconSubtitleFull
+                    : l10n.earconSubtitle,
+                value: settings.earconEnabled,
+                onChanged: (v) {
+                  notifier.toggleEarcon(v);
+                  EarconService.instance.setEnabled(v);
+                  say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
+                },
+              ),
             ]),
 
             // ── Help & Support ─────────────────────────────────────────
@@ -324,7 +337,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.play_arrow_rounded,
                 onTap: () {
                   // Pop settings first so the slide transition is clean,
-                  // then reset the flag — _AppRoot rebuilds to onboarding.
+                  // then reset the flag: _AppRoot rebuilds to onboarding.
                   Navigator.of(context).pop();
                   ref.read(onboardingCompleteProvider.notifier).state = false;
                 },
@@ -357,7 +370,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Theme Tile ────────────────────────────────────────────────────────────────
 
 class _ThemeTile extends StatelessWidget {
   const _ThemeTile({
@@ -492,7 +504,7 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
     // Persist setting
     widget.onChanged(newLang);
 
-    // Switch the engine — this is the async work being blocked for
+    // Switch the engine: this is the async work being blocked for
     await tts.changeLanguage(newLang);
 
     // Speak "Done. Now speaking X" in the NEW language
@@ -558,7 +570,6 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
   }
 }
 
-// ── Vision Profile Tile ───────────────────────────────────────────────────────
 
 class _VisionProfileTile extends StatelessWidget {
   const _VisionProfileTile({
@@ -631,7 +642,6 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-// ── TTS Verbosity Tile ────────────────────────────────────────────────────────
 
 class _VerbosityTile extends StatelessWidget {
   const _VerbosityTile({
@@ -768,7 +778,6 @@ class _HapticIntensityTile extends StatelessWidget {
   }
 }
 
-// ── Swipe-back wrapper ────────────────────────────────────────────────────────
 
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});

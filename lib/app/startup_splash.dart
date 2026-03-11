@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/l10n/app_localizations.dart';
+import '../core/services/earcon_service.dart';
 import '../core/services/tts_service.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 
@@ -39,10 +40,9 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _pulse = Tween(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _pulse = Tween(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
 
     _runStartup();
   }
@@ -55,6 +55,12 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
       language: settings.language,
       verbosity: settings.ttsVerbosity,
     );
+
+    // Sync EarconService with persisted settings and TalkBack state.
+    // TalkBack detection runs inside TTS init; we refresh earcon after so
+    // both services share the same accessibility knowledge.
+    EarconService.instance.setEnabled(settings.earconEnabled);
+    await EarconService.instance.refreshTalkBackState();
 
     if (!mounted) return;
     setState(() => _phase = _StartupPhase.ready);
@@ -73,18 +79,14 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
-    final l10n = AppLocalizations.of(settings.isTagalog);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final onBg = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
-    final subtle = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
+    final l10n     = AppLocalizations.of(settings.isTagalog);
+    final isDark   = Theme.of(context).brightness == Brightness.dark;
+    final bg       = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final onBg     = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final subtle   = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
 
-    final isReady = _phase == _StartupPhase.ready;
-    final statusText = isReady
-        ? l10n.splashReadyToScan
-        : l10n.splashLoadingVoice;
+    final isReady  = _phase == _StartupPhase.ready;
+    final statusText = isReady ? l10n.splashReadyToScan : l10n.splashLoadingVoice;
 
     return Scaffold(
       backgroundColor: bg,
@@ -93,22 +95,30 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo / wordmark
+              // Logo mark
+              Image.asset(
+                'assets/images/moneysense-favicon.png',
+                width: 96,
+                height: 96,
+                semanticLabel: 'MoneySense',
+              ),
+              const SizedBox(height: 20),
+              // Wordmark
               Text(
                 'MoneySense',
                 style: TextStyle(
                   color: onBg,
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 l10n.splashGettingReady,
                 style: TextStyle(
                   color: subtle,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w400,
                 ),
               ),
