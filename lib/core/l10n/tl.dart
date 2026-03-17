@@ -467,6 +467,20 @@ abstract final class TlStrings {
   static const String splashLoadingVoice        = 'Naglo-load ng boses…';
   static const String splashReadyToScan         = 'Handa nang mag-scan.';
 
+  // Reset Settings
+  static const String resetSettingsTitle        = 'I-reset ang Mga Setting';
+  static const String resetSettingsSubtitle     =
+      'Ibalik ang lahat ng setting sa default.';
+  static const String resetDialogTitle          = 'I-reset ang Mga Setting?';
+  static const String resetDialogBody           =
+      'Ibabalik ang lahat ng setting sa kanilang default na halaga. '
+      'Hindi maaapektuhan ang kasaysayan ng pag-scan.';
+  static const String resetDialogRunOnboarding  =
+      'Patakbuhin muli ang gabay sa pag-setup pagkatapos ng reset?';
+  static const String resetDialogYesOnboarding  = 'Oo, patakbuhin';
+  static const String resetDialogNoOnboarding   = 'Hindi, i-reset lang';
+  static const String resetDialogCancel         = 'Kanselahin';
+
   // Earcon setting
   static const String earconTitle           = 'Mga Sound Effect';
   static const String earconSubtitle        =

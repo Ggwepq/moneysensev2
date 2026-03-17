@@ -479,6 +479,20 @@ abstract final class EnStrings {
   static const String splashLoadingVoice = 'Loading voice…';
   static const String splashReadyToScan = 'Ready to scan.';
 
+  // Reset Settings
+  static const String resetSettingsTitle = 'Reset Settings';
+  static const String resetSettingsSubtitle =
+      'Restore all settings to default values.';
+  static const String resetDialogTitle = 'Reset Settings?';
+  static const String resetDialogBody =
+      'This will restore all settings to their default values. '
+      'Your scan history is not affected.';
+  static const String resetDialogRunOnboarding =
+      'Run the setup guide again after reset?';
+  static const String resetDialogYesOnboarding = 'Yes, run setup';
+  static const String resetDialogNoOnboarding = 'No, just reset';
+  static const String resetDialogCancel = 'Cancel';
+
   // Earcon setting
   static const String earconTitle = 'Sound Effects';
   static const String earconSubtitle = 'Short audio cues for scan events.';
