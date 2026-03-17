@@ -28,15 +28,17 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings     = ref.watch(appSettingsProvider);
-    final notifier     = ref.read(appSettingsProvider.notifier);
+    final settings = ref.watch(appSettingsProvider);
+    final notifier = ref.read(appSettingsProvider.notifier);
     final visionConfig = ref.watch(visionConfigProvider);
-    final l10n         = AppLocalizations.of(settings.isTagalog);
+    final l10n = AppLocalizations.of(settings.isTagalog);
     final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
 
     // ── TTS helper: one line at every call site ──────────────────────────
     void say(TtsMessage msg) {
-      ref.read(ttsServiceProvider).enqueue(
+      ref
+          .read(ttsServiceProvider)
+          .enqueue(
             msg,
             enabled: settings.ttsEnabled,
             currentVerbosity: settings.ttsVerbosity,
@@ -59,7 +61,9 @@ class SettingsScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.help_outline_rounded),
               tooltip: 'Help',
-              onPressed: () {/* TODO */},
+              onPressed: () {
+                /* TODO */
+              },
             ),
           ],
         ),
@@ -71,323 +75,407 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             // ── General ────────────────────────────────────────────────
             MsSectionHeader(title: l10n.sectionGeneral),
-            MsSettingsCard(children: [
-              _ThemeTile(
-                label: l10n.theme,
-                subtitle: isFullVerbosity
-                    ? l10n.themeSubtitleFull
-                    : l10n.themeSubtitle,
-                themeMode: settings.themeMode,
-                l10n: l10n,
-                visionConfig: visionConfig,
-                onChanged: (v) {
-                  EarconService.instance.play(EarconEvent.actionConfirmed);
-                  notifier.setThemeMode(v);
-                  final label = v == AppThemeMode.system
-                      ? l10n.themeSystem
-                      : v == AppThemeMode.light
-                          ? l10n.themeLight
-                          : l10n.themeDark;
-                  say(SettingsSpeech.changed(l10n, l10n.theme, label));
-                },
-              ),
-              _LanguageTile(
-                label: l10n.language,
-                subtitle: isFullVerbosity
-                    ? l10n.languageSubtitleFull
-                    : l10n.languageSubtitle,
-                language: settings.language,
-                l10n: l10n,
-                visionConfig: visionConfig,
-                onChanged: notifier.setLanguage,
-              ),
-              MsSliderTile(
-                title: l10n.fontSize,
-                subtitle: isFullVerbosity
-                    ? l10n.fontSizeSubtitleFull
-                    : l10n.fontSizeSubtitle,
-                value: settings.fontScale,
-                min: 0.8,
-                max: 2.0,
-                onChanged: (v) {
-                  notifier.setFontScale(v);
-                  final pct = ((v - 0.8) / (2.0 - 0.8) * 100).round();
-                  say(SettingsSpeech.changed(l10n, l10n.fontSize, '$pct%'));
-                },
-                displayLabel:
-                    '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
-              ),
-            ]),
+            MsSettingsCard(
+              children: [
+                _ThemeTile(
+                  label: l10n.theme,
+                  subtitle: isFullVerbosity
+                      ? l10n.themeSubtitleFull
+                      : l10n.themeSubtitle,
+                  themeMode: settings.themeMode,
+                  l10n: l10n,
+                  visionConfig: visionConfig,
+                  onChanged: (v) {
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                    notifier.setThemeMode(v);
+                    final label = v == AppThemeMode.system
+                        ? l10n.themeSystem
+                        : v == AppThemeMode.light
+                        ? l10n.themeLight
+                        : l10n.themeDark;
+                    say(SettingsSpeech.changed(l10n, l10n.theme, label));
+                  },
+                ),
+                _LanguageTile(
+                  label: l10n.language,
+                  subtitle: isFullVerbosity
+                      ? l10n.languageSubtitleFull
+                      : l10n.languageSubtitle,
+                  language: settings.language,
+                  l10n: l10n,
+                  visionConfig: visionConfig,
+                  onChanged: notifier.setLanguage,
+                ),
+                MsSliderTile(
+                  title: l10n.fontSize,
+                  subtitle: isFullVerbosity
+                      ? l10n.fontSizeSubtitleFull
+                      : l10n.fontSizeSubtitle,
+                  value: settings.fontScale,
+                  min: 0.8,
+                  max: 2.0,
+                  onChanged: (v) {
+                    notifier.setFontScale(v);
+                    final pct = ((v - 0.8) / (2.0 - 0.8) * 100).round();
+                    say(SettingsSpeech.changed(l10n, l10n.fontSize, '$pct%'));
+                  },
+                  displayLabel:
+                      '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
+                ),
+              ],
+            ),
 
             // ── Scanning ───────────────────────────────────────────────
             MsSectionHeader(title: l10n.sectionScanning),
-            MsSettingsCard(children: [
-              MsToggleTile(
-                title: l10n.useFrontCamera,
-                subtitle: isFullVerbosity
-                    ? l10n.useFrontCameraSubtitleFull
-                    : l10n.useFrontCameraSubtitle,
-                value: settings.useFrontCamera,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleFrontCamera(v);
-                  say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
-                },
-              ),
-              MsToggleTile(
-                title: l10n.useFlashlight,
-                subtitle: isFullVerbosity
-                    ? l10n.useFlashlightSubtitleFull
-                    : l10n.useFlashlightSubtitle,
-                value: settings.useFlashlight,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleFlashlight(v);
-                  say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
-                },
-              ),
-              MsToggleTile(
-                title: l10n.denominationVibration,
-                subtitle: isFullVerbosity
-                    ? l10n.denominationVibrationSubtitleFull
-                    : l10n.denominationVibrationSubtitle,
-                value: settings.denominationVibration,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleDenominationVibration(v);
-                  say(SettingsSpeech.toggled(
-                      l10n, l10n.denominationVibration, v));
-                },
-                showHelpButton: true,
-                onHelpTap: () => TutorialNavigator.push(
-                    context, TutorialRoute.denominationVibration),
-              ),
-            ]),
+            MsSettingsCard(
+              children: [
+                MsToggleTile(
+                  title: l10n.useFrontCamera,
+                  subtitle: isFullVerbosity
+                      ? l10n.useFrontCameraSubtitleFull
+                      : l10n.useFrontCameraSubtitle,
+                  value: settings.useFrontCamera,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleFrontCamera(v);
+                    say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
+                  },
+                ),
+                MsToggleTile(
+                  title: l10n.useFlashlight,
+                  subtitle: isFullVerbosity
+                      ? l10n.useFlashlightSubtitleFull
+                      : l10n.useFlashlightSubtitle,
+                  value: settings.useFlashlight,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleFlashlight(v);
+                    say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
+                  },
+                ),
+                MsToggleTile(
+                  title: l10n.denominationVibration,
+                  subtitle: isFullVerbosity
+                      ? l10n.denominationVibrationSubtitleFull
+                      : l10n.denominationVibrationSubtitle,
+                  value: settings.denominationVibration,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleDenominationVibration(v);
+                    say(
+                      SettingsSpeech.toggled(
+                        l10n,
+                        l10n.denominationVibration,
+                        v,
+                      ),
+                    );
+                  },
+                  showHelpButton: true,
+                  onHelpTap: () => TutorialNavigator.push(
+                    context,
+                    TutorialRoute.denominationVibration,
+                  ),
+                ),
+              ],
+            ),
 
             // ── Navigation ─────────────────────────────────────────────
             MsSectionHeader(title: l10n.sectionNavigation),
-            MsSettingsCard(children: [
-              MsToggleTile(
-                title: l10n.shakeToGoBack,
-                subtitle: isFullVerbosity
-                    ? l10n.shakeToGoBackSubtitleFull
-                    : l10n.shakeToGoBackSubtitle,
-                value: settings.shakeToGoBack,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleShakeToGoBack(v);
-                  say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
-                },
-                showHelpButton: true,
-                onHelpTap: () => TutorialNavigator.push(
-                    context, TutorialRoute.shakeToGoBack),
-              ),
-              MsTimerTile(
-                title: l10n.goBackTimerOnResult,
-                subtitle: isFullVerbosity
-                    ? l10n.goBackTimerSubtitleFull
-                    : l10n.goBackTimerSubtitle,
-                enabled: settings.goBackTimerSeconds > 0,
-                value: settings.goBackTimerSeconds > 0
-                    ? settings.goBackTimerSeconds
-                    : 20,
-                onToggle: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleGoBackTimer(v);
-                  say(SettingsSpeech.toggled(
-                      l10n, l10n.goBackTimerOnResult, v));
-                },
-                onValueChanged: notifier.setGoBackTimer,
-              ),
-              MsToggleTile(
-                title: l10n.gesturalNavigation,
-                subtitle: isFullVerbosity
-                    ? l10n.gesturalNavigationSubtitleFull
-                    : l10n.gesturalNavigationSubtitle,
-                value: settings.gesturalNavigation,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleGesturalNavigation(v);
-                  say(SettingsSpeech.toggled(
-                      l10n, l10n.gesturalNavigation, v));
-                },
-                showHelpButton: true,
-                onHelpTap: () => TutorialNavigator.push(
-                    context, TutorialRoute.gesturalNavigation),
-              ),
-              MsToggleTile(
-                title: l10n.inertialNavigation,
-                subtitle: isFullVerbosity
-                    ? l10n.inertialNavigationSubtitleFull
-                    : l10n.inertialNavigationSubtitle,
-                value: settings.inertialNavigation,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleInertialNavigation(v);
-                  say(SettingsSpeech.toggled(
-                      l10n, l10n.inertialNavigation, v));
-                },
-                showHelpButton: true,
-                onHelpTap: () => TutorialNavigator.push(
-                    context, TutorialRoute.inertialNavigation),
-              ),
-            ]),
+            MsSettingsCard(
+              children: [
+                MsToggleTile(
+                  title: l10n.shakeToGoBack,
+                  subtitle: isFullVerbosity
+                      ? l10n.shakeToGoBackSubtitleFull
+                      : l10n.shakeToGoBackSubtitle,
+                  value: settings.shakeToGoBack,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleShakeToGoBack(v);
+                    say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
+                  },
+                  showHelpButton: true,
+                  onHelpTap: () => TutorialNavigator.push(
+                    context,
+                    TutorialRoute.shakeToGoBack,
+                  ),
+                ),
+                MsTimerTile(
+                  title: l10n.goBackTimerOnResult,
+                  subtitle: isFullVerbosity
+                      ? l10n.goBackTimerSubtitleFull
+                      : l10n.goBackTimerSubtitle,
+                  enabled: settings.goBackTimerSeconds > 0,
+                  value: settings.goBackTimerSeconds > 0
+                      ? settings.goBackTimerSeconds
+                      : 20,
+                  onToggle: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleGoBackTimer(v);
+                    say(
+                      SettingsSpeech.toggled(l10n, l10n.goBackTimerOnResult, v),
+                    );
+                  },
+                  onValueChanged: notifier.setGoBackTimer,
+                ),
+                MsToggleTile(
+                  title: l10n.gesturalNavigation,
+                  subtitle: isFullVerbosity
+                      ? l10n.gesturalNavigationSubtitleFull
+                      : l10n.gesturalNavigationSubtitle,
+                  value: settings.gesturalNavigation,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleGesturalNavigation(v);
+                    say(
+                      SettingsSpeech.toggled(l10n, l10n.gesturalNavigation, v),
+                    );
+                  },
+                  showHelpButton: true,
+                  onHelpTap: () => TutorialNavigator.push(
+                    context,
+                    TutorialRoute.gesturalNavigation,
+                  ),
+                ),
+                MsToggleTile(
+                  title: l10n.inertialNavigation,
+                  subtitle: isFullVerbosity
+                      ? l10n.inertialNavigationSubtitleFull
+                      : l10n.inertialNavigationSubtitle,
+                  value: settings.inertialNavigation,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleInertialNavigation(v);
+                    say(
+                      SettingsSpeech.toggled(l10n, l10n.inertialNavigation, v),
+                    );
+                  },
+                  showHelpButton: true,
+                  onHelpTap: () => TutorialNavigator.push(
+                    context,
+                    TutorialRoute.inertialNavigation,
+                  ),
+                ),
+              ],
+            ),
 
             // ── Accessibility ───────────────────────────────────────────
             MsSectionHeader(title: l10n.sectionAccessibility),
-            MsSettingsCard(children: [
-              _VisionProfileTile(
-                label:    l10n.visionProfileTitle,
-                subtitle: isFullVerbosity
-                    ? l10n.visionProfileSubtitleFull
-                    : l10n.visionProfileSubtitle,
-                profile:  settings.visionProfile,
-                l10n:     l10n,
-                visionConfig: visionConfig,
-                onChanged: (v) {
-                  EarconService.instance.play(EarconEvent.actionConfirmed);
-                  notifier.setVisionProfile(v);
-                  final label = v == VisionProfile.lowVision
-                      ? l10n.visionLowVision
-                      : v == VisionProfile.partiallyBlind
-                          ? l10n.visionPartiallyBlind
-                          : l10n.visionFullyBlind;
-                  say(SettingsSpeech.changed(
-                      l10n, l10n.visionProfileTitle, label));
-                },
-              ),
-              // TTS toggle: spoken BEFORE turning off so user hears it.
-              MsToggleTile(
-                title:    l10n.ttsTitle,
-                subtitle: isFullVerbosity
-                    ? l10n.ttsSubtitleFull
-                    : l10n.ttsSubtitle,
-                value: settings.ttsEnabled,
-                onChanged: (v) {
-                  if (!v) {
-                    EarconService.instance.play(EarconEvent.actionDisabled);
-                    // Announce disabling while TTS is still on, THEN turn off
-                    say(AppSpeech.ttsDisabling(l10n));
-                    Future.delayed(const Duration(milliseconds: 1200), () {
-                      notifier.toggleTts(false);
-                    });
-                  } else {
-                    EarconService.instance.play(EarconEvent.actionEnabled);
-                    notifier.toggleTts(true);
-                    say(AppSpeech.ttsEnabled(l10n));
-                  }
-                },
-              ),
-              if (settings.ttsEnabled)
-                _VerbosityTile(
-                  label:    l10n.ttsVerbosityTitle,
+            MsSettingsCard(
+              children: [
+                _VisionProfileTile(
+                  label: l10n.visionProfileTitle,
                   subtitle: isFullVerbosity
-                      ? l10n.ttsVerbositySubtitleFull
-                      : l10n.ttsVerbositySubtitle,
-                  verbosity: settings.ttsVerbosity,
-                  l10n:     l10n,
+                      ? l10n.visionProfileSubtitleFull
+                      : l10n.visionProfileSubtitle,
+                  profile: settings.visionProfile,
+                  l10n: l10n,
                   visionConfig: visionConfig,
                   onChanged: (v) {
                     EarconService.instance.play(EarconEvent.actionConfirmed);
-                  notifier.setTtsVerbosity(v);
-                    final label = v == TtsVerbosity.minimal
-                        ? l10n.ttsVerbosityMinimal
-                        : v == TtsVerbosity.standard
-                            ? l10n.ttsVerbosityStandard
-                            : l10n.ttsVerbosityFull;
-                    say(SettingsSpeech.changed(
-                        l10n, l10n.ttsVerbosityTitle, label));
+                    notifier.setVisionProfile(v);
+                    final label = v == VisionProfile.lowVision
+                        ? l10n.visionLowVision
+                        : v == VisionProfile.partiallyBlind
+                        ? l10n.visionPartiallyBlind
+                        : l10n.visionFullyBlind;
+                    say(
+                      SettingsSpeech.changed(
+                        l10n,
+                        l10n.visionProfileTitle,
+                        label,
+                      ),
+                    );
                   },
                 ),
-              MsToggleTile(
-                title:    l10n.hapticTitle,
-                subtitle: isFullVerbosity
-                    ? l10n.hapticSubtitleFull
-                    : l10n.hapticSubtitle,
-                value: settings.hapticFeedback,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleHapticFeedback(v);
-                  say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
-                },
-              ),
-              if (settings.hapticFeedback)
-                _HapticIntensityTile(
-                  label:     l10n.hapticIntensityTitle,
-                  subtitle:  isFullVerbosity
-                      ? l10n.hapticIntensitySubtitleFull
-                      : l10n.hapticIntensitySubtitle,
-                  intensity: settings.hapticIntensity,
-                  l10n:      l10n,
-                  visionConfig: visionConfig,
+                // TTS toggle: spoken BEFORE turning off so user hears it.
+                MsToggleTile(
+                  title: l10n.ttsTitle,
+                  subtitle: isFullVerbosity
+                      ? l10n.ttsSubtitleFull
+                      : l10n.ttsSubtitle,
+                  value: settings.ttsEnabled,
                   onChanged: (v) {
-                    EarconService.instance.play(EarconEvent.actionConfirmed);
-                  notifier.setHapticIntensity(v);
-                    final label = v == HapticIntensity.subtle
-                        ? l10n.hapticIntensitySubtle
-                        : v == HapticIntensity.medium
-                            ? l10n.hapticIntensityMedium
-                            : l10n.hapticIntensityStrong;
-                    say(SettingsSpeech.changed(
-                        l10n, l10n.hapticIntensityTitle, label));
+                    if (!v) {
+                      EarconService.instance.play(EarconEvent.actionDisabled);
+                      // Announce disabling while TTS is still on, THEN turn off
+                      say(AppSpeech.ttsDisabling(l10n));
+                      Future.delayed(const Duration(milliseconds: 1200), () {
+                        notifier.toggleTts(false);
+                      });
+                    } else {
+                      EarconService.instance.play(EarconEvent.actionEnabled);
+                      notifier.toggleTts(true);
+                      say(AppSpeech.ttsEnabled(l10n));
+                    }
                   },
                 ),
-              MsToggleTile(
-                title:    l10n.earconTitle,
-                subtitle: isFullVerbosity
-                    ? l10n.earconSubtitleFull
-                    : l10n.earconSubtitle,
-                value: settings.earconEnabled,
-                onChanged: (v) {
-                  EarconService.instance.play(v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled);
-                  notifier.toggleEarcon(v);
-                  EarconService.instance.setEnabled(v);
-                  say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
-                },
-              ),
-            ]),
+                if (settings.ttsEnabled)
+                  _VerbosityTile(
+                    label: l10n.ttsVerbosityTitle,
+                    subtitle: isFullVerbosity
+                        ? l10n.ttsVerbositySubtitleFull
+                        : l10n.ttsVerbositySubtitle,
+                    verbosity: settings.ttsVerbosity,
+                    l10n: l10n,
+                    visionConfig: visionConfig,
+                    onChanged: (v) {
+                      EarconService.instance.play(EarconEvent.actionConfirmed);
+                      notifier.setTtsVerbosity(v);
+                      final label = v == TtsVerbosity.minimal
+                          ? l10n.ttsVerbosityMinimal
+                          : v == TtsVerbosity.standard
+                          ? l10n.ttsVerbosityStandard
+                          : l10n.ttsVerbosityFull;
+                      say(
+                        SettingsSpeech.changed(
+                          l10n,
+                          l10n.ttsVerbosityTitle,
+                          label,
+                        ),
+                      );
+                    },
+                  ),
+                MsToggleTile(
+                  title: l10n.hapticTitle,
+                  subtitle: isFullVerbosity
+                      ? l10n.hapticSubtitleFull
+                      : l10n.hapticSubtitle,
+                  value: settings.hapticFeedback,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleHapticFeedback(v);
+                    say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
+                  },
+                ),
+                if (settings.hapticFeedback)
+                  _HapticIntensityTile(
+                    label: l10n.hapticIntensityTitle,
+                    subtitle: isFullVerbosity
+                        ? l10n.hapticIntensitySubtitleFull
+                        : l10n.hapticIntensitySubtitle,
+                    intensity: settings.hapticIntensity,
+                    l10n: l10n,
+                    visionConfig: visionConfig,
+                    onChanged: (v) {
+                      EarconService.instance.play(EarconEvent.actionConfirmed);
+                      notifier.setHapticIntensity(v);
+                      final label = v == HapticIntensity.subtle
+                          ? l10n.hapticIntensitySubtle
+                          : v == HapticIntensity.medium
+                          ? l10n.hapticIntensityMedium
+                          : l10n.hapticIntensityStrong;
+                      say(
+                        SettingsSpeech.changed(
+                          l10n,
+                          l10n.hapticIntensityTitle,
+                          label,
+                        ),
+                      );
+                    },
+                  ),
+                MsToggleTile(
+                  title: l10n.earconTitle,
+                  subtitle: isFullVerbosity
+                      ? l10n.earconSubtitleFull
+                      : l10n.earconSubtitle,
+                  value: settings.earconEnabled,
+                  onChanged: (v) {
+                    EarconService.instance.play(
+                      v
+                          ? EarconEvent.actionEnabled
+                          : EarconEvent.actionDisabled,
+                    );
+                    notifier.toggleEarcon(v);
+                    EarconService.instance.setEnabled(v);
+                    say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
+                  },
+                ),
+              ],
+            ),
 
             // ── Help & Support ─────────────────────────────────────────
             MsSectionHeader(title: l10n.sectionHelpSupport),
-            MsSettingsCard(children: [
-              MsActionTile(
-                title: l10n.checkForUpdates,
-                subtitle: l10n.checkForUpdatesSubtitle,
-                icon: Icons.refresh_rounded,
-                onTap: () {/* TODO */},
-              ),
-              MsActionTile(
-                title: l10n.playOnboardingSetup,
-                subtitle: l10n.playOnboardingSubtitle,
-                icon: Icons.play_arrow_rounded,
-                onTap: () {
-                  // Pop settings first so the slide transition is clean,
-                  // then reset the flag: _AppRoot rebuilds to onboarding.
-                  EarconService.instance.play(EarconEvent.navBack);
-                  Navigator.of(context).pop();
-                  ref.read(onboardingCompleteProvider.notifier).state = false;
-                },
-              ),
-              MsActionTile(
-                title: l10n.appInformation,
-                subtitle: l10n.appInformationSubtitle,
-                icon: Icons.info_outline_rounded,
-                onTap: () {/* TODO */},
-              ),
-              MsActionTile(
-                title: l10n.leaveAFeedback,
-                subtitle: l10n.leaveAFeedbackSubtitle,
-                icon: Icons.campaign_outlined,
-                onTap: () {/* TODO */},
-              ),
-              MsActionTile(
-                title: l10n.termsOfServices,
-                subtitle: l10n.termsOfServicesSubtitle,
-                icon: Icons.description_outlined,
-                onTap: () {/* TODO */},
-              ),
-            ]),
-
+            MsSettingsCard(
+              children: [
+                MsActionTile(
+                  title: l10n.checkForUpdates,
+                  subtitle: l10n.checkForUpdatesSubtitle,
+                  icon: Icons.refresh_rounded,
+                  onTap: () {
+                    /* TODO */
+                  },
+                ),
+                MsActionTile(
+                  title: l10n.playOnboardingSetup,
+                  subtitle: l10n.playOnboardingSubtitle,
+                  icon: Icons.play_arrow_rounded,
+                  onTap: () {
+                    // Pop settings first so the slide transition is clean,
+                    // then reset the flag: _AppRoot rebuilds to onboarding.
+                    EarconService.instance.play(EarconEvent.navBack);
+                    Navigator.of(context).pop();
+                    ref.read(onboardingCompleteProvider.notifier).state = false;
+                  },
+                ),
+                MsActionTile(
+                  title: l10n.appInformation,
+                  subtitle: l10n.appInformationSubtitle,
+                  icon: Icons.info_outline_rounded,
+                  onTap: () {
+                    /* TODO */
+                  },
+                ),
+                MsActionTile(
+                  title: l10n.leaveAFeedback,
+                  subtitle: l10n.leaveAFeedbackSubtitle,
+                  icon: Icons.campaign_outlined,
+                  onTap: () {
+                    /* TODO */
+                  },
+                ),
+                MsActionTile(
+                  title: l10n.termsOfServices,
+                  subtitle: l10n.termsOfServicesSubtitle,
+                  icon: Icons.description_outlined,
+                  onTap: () {
+                    /* TODO */
+                  },
+                ),
+              ],
+            ),
 
             // ── Reset Settings ─────────────────────────────────────────
             const SizedBox(height: AppSpacing.lg),
@@ -400,7 +488,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 }
-
 
 class _ThemeTile extends StatelessWidget {
   const _ThemeTile({
@@ -421,17 +508,19 @@ class _ThemeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
+    final theme = Theme.of(context);
 
     final selectedLabel = themeMode == AppThemeMode.system
         ? l10n.themeSystem
         : themeMode == AppThemeMode.light
-            ? l10n.themeLight
-            : l10n.themeDark;
+        ? l10n.themeLight
+        : l10n.themeDark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.md),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -442,12 +531,13 @@ class _ThemeTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    )),
-                Text(subtitle,
-                    style: theme.textTheme.bodySmall),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -508,10 +598,10 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
   Future<void> _handleChange(AppLanguage newLang) async {
     if (_isChanging || newLang == widget.language) return;
 
-    final tts      = ref.read(ttsServiceProvider);
+    final tts = ref.read(ttsServiceProvider);
     final settings = ref.read(appSettingsProvider);
-    final oldL10n  = widget.l10n;
-    final newL10n  = AppLocalizations.of(newLang == AppLanguage.tagalog);
+    final oldL10n = widget.l10n;
+    final newL10n = AppLocalizations.of(newLang == AppLanguage.tagalog);
     final newLangName = newLang == AppLanguage.tagalog
         ? newL10n.languageTagalog
         : newL10n.languageEnglish;
@@ -565,21 +655,26 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.md),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Semantics(
             header: true,
-            label: '${widget.label}. ${widget.subtitle}. Currently: $selectedLabel',
+            label:
+                '${widget.label}. ${widget.subtitle}. Currently: $selectedLabel',
             excludeSemantics: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    )),
+                Text(
+                  widget.label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 Text(widget.subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
@@ -587,10 +682,7 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
           const SizedBox(height: AppSpacing.sm),
           MsSegmentedSelector<AppLanguage>(
             options: AppLanguage.values,
-            labels: [
-              widget.l10n.languageEnglish,
-              widget.l10n.languageTagalog,
-            ],
+            labels: [widget.l10n.languageEnglish, widget.l10n.languageTagalog],
             selected: widget.language,
             onSelected: _handleChange,
             accentColor: widget.visionConfig.accentYellow,
@@ -600,7 +692,6 @@ class _LanguageTileState extends ConsumerState<_LanguageTile> {
     );
   }
 }
-
 
 class _VisionProfileTile extends StatelessWidget {
   const _VisionProfileTile({
@@ -621,14 +712,16 @@ class _VisionProfileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
+    final theme = Theme.of(context);
     // Use theme-aware color so text is always legible regardless of contrast level
     final titleColor = theme.textTheme.bodyLarge?.color;
     final subtitleColor = theme.textTheme.bodySmall?.color;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.md),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -639,14 +732,19 @@ class _VisionProfileTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: titleColor,
-                    )),
-                Text(subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: subtitleColor)),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: titleColor,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: subtitleColor,
+                  ),
+                ),
               ],
             ),
           ),
@@ -673,7 +771,6 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-
 class _VerbosityTile extends StatelessWidget {
   const _VerbosityTile({
     required this.label,
@@ -697,7 +794,9 @@ class _VerbosityTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.md),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -708,10 +807,12 @@ class _VerbosityTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    )),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
@@ -764,7 +865,9 @@ class _HapticIntensityTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.md),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -775,10 +878,12 @@ class _HapticIntensityTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    )),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),
@@ -809,19 +914,18 @@ class _HapticIntensityTile extends StatelessWidget {
   }
 }
 
-
 class _SwipeBackWrapper extends StatelessWidget {
   const _SwipeBackWrapper({required this.child});
   final Widget child;
 
-  static const double _minVelocity   = 300.0;
+  static const double _minVelocity = 300.0;
   static const double _maxCrossRatio = 0.55;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanEnd: (details) {
-        final v  = details.velocity.pixelsPerSecond;
+        final v = details.velocity.pixelsPerSecond;
         final ax = v.dx.abs();
         final ay = v.dy.abs();
         if (ax < _minVelocity) return;
@@ -837,7 +941,6 @@ class _SwipeBackWrapper extends StatelessWidget {
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Reset Settings tile + dialog
 // ─────────────────────────────────────────────────────────────────────────────
@@ -850,12 +953,13 @@ class _ResetSettingsTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme  = Theme.of(context);
+    final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    const red    = AppColors.error;
+    const red = AppColors.error;
 
     return Semantics(
-      label: '${l10n.resetSettingsTitle}. ${l10n.resetSettingsSubtitle}. Button',
+      label:
+          '${l10n.resetSettingsTitle}. ${l10n.resetSettingsSubtitle}. Button',
       button: true,
       excludeSemantics: true,
       child: InkWell(
@@ -947,14 +1051,19 @@ class _ResetDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme  = Theme.of(context);
+    final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    const red    = AppColors.error;
-    final bg     = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final onBg   = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    const red = AppColors.error;
+    final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final onBg = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
     final subtle = isDark
         ? AppColors.darkOnSurfaceVariant
         : AppColors.lightOnSurfaceVariant;
+
+    // Constrain to 90% of screen height so the dialog never overflows at
+    // large font scales. SingleChildScrollView lets the user scroll to
+    // reach Cancel when content is tall.
+    final maxHeight = MediaQuery.of(context).size.height * 0.90;
 
     return Dialog(
       backgroundColor: bg,
@@ -962,108 +1071,115 @@ class _ResetDialog extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
         side: BorderSide(color: red.withValues(alpha: 0.35)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Icon + title
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: red.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.restart_alt_rounded,
-                      color: red, size: 22),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    l10n.resetDialogTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Icon + title
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: red.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.restart_alt_rounded,
                       color: red,
-                      fontWeight: FontWeight.w700,
+                      size: 22,
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.md),
-
-            // Body
-            Text(
-              l10n.resetDialogBody,
-              style: theme.textTheme.bodyMedium?.copyWith(color: onBg),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-            Divider(color: red.withValues(alpha: 0.20), height: 1),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Question
-            Text(
-              l10n.resetDialogRunOnboarding,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: onBg,
-                fontWeight: FontWeight.w600,
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      l10n.resetDialogTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: red,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
 
-            const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
 
-            // Yes, run setup
-            _DialogButton(
-              label: l10n.resetDialogYesOnboarding,
-              semanticLabel:
-                  '${l10n.resetDialogYesOnboarding}. Resets all settings and re-runs the setup guide.',
-              color: red,
-              filled: true,
-              onPressed: () {
-                EarconService.instance.play(EarconEvent.actionConfirmed);
-                ref.read(appSettingsProvider.notifier).resetSettings();
-                Navigator.of(context)
-                  ..pop()   // close dialog
-                  ..pop();  // close settings
-                ref.read(onboardingCompleteProvider.notifier).state = false;
-              },
-            ),
+              // Body
+              Text(
+                l10n.resetDialogBody,
+                style: theme.textTheme.bodyMedium?.copyWith(color: onBg),
+              ),
 
-            const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.lg),
+              Divider(color: red.withValues(alpha: 0.20), height: 1),
+              const SizedBox(height: AppSpacing.lg),
 
-            // No, just reset
-            _DialogButton(
-              label: l10n.resetDialogNoOnboarding,
-              semanticLabel:
-                  '${l10n.resetDialogNoOnboarding}. Resets all settings and stays on the settings screen.',
-              color: red,
-              filled: false,
-              onPressed: () {
-                EarconService.instance.play(EarconEvent.actionConfirmed);
-                ref.read(appSettingsProvider.notifier).resetSettings();
-                Navigator.of(context).pop();
-              },
-            ),
+              // Question
+              Text(
+                l10n.resetDialogRunOnboarding,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: onBg,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
 
-            const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.md),
 
-            // Cancel
-            _DialogButton(
-              label: l10n.resetDialogCancel,
-              semanticLabel: '${l10n.resetDialogCancel}. Go back without making any changes.',
-              color: subtle,
-              filled: false,
-              onPressed: () {
-                EarconService.instance.play(EarconEvent.navBack);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+              // Yes, run setup
+              _DialogButton(
+                label: l10n.resetDialogYesOnboarding,
+                semanticLabel:
+                    '${l10n.resetDialogYesOnboarding}. Resets all settings and re-runs the setup guide.',
+                color: red,
+                filled: true,
+                onPressed: () {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
+                  ref.read(appSettingsProvider.notifier).resetSettings();
+                  Navigator.of(context)
+                    ..pop() // close dialog
+                    ..pop(); // close settings
+                  ref.read(onboardingCompleteProvider.notifier).state = false;
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              // No, just reset
+              _DialogButton(
+                label: l10n.resetDialogNoOnboarding,
+                semanticLabel:
+                    '${l10n.resetDialogNoOnboarding}. Resets all settings and stays on the settings screen.',
+                color: red,
+                filled: false,
+                onPressed: () {
+                  EarconService.instance.play(EarconEvent.actionConfirmed);
+                  ref.read(appSettingsProvider.notifier).resetSettings();
+                  Navigator.of(context).pop();
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              // Cancel
+              _DialogButton(
+                label: l10n.resetDialogCancel,
+                semanticLabel:
+                    '${l10n.resetDialogCancel}. Go back without making any changes.',
+                color: subtle,
+                filled: false,
+                onPressed: () {
+                  EarconService.instance.play(EarconEvent.navBack);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1081,11 +1197,11 @@ class _DialogButton extends StatelessWidget {
     required this.onPressed,
   });
 
-  final String        label;
-  final String        semanticLabel;
-  final Color         color;
-  final bool          filled;
-  final VoidCallback  onPressed;
+  final String label;
+  final String semanticLabel;
+  final Color color;
+  final bool filled;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1104,8 +1220,7 @@ class _DialogButton extends StatelessWidget {
                   backgroundColor: color,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.tileRadius),
+                    borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
                   ),
                   elevation: 0,
                 ),
@@ -1113,26 +1228,33 @@ class _DialogButton extends StatelessWidget {
                   HapticFeedback.mediumImpact();
                   onPressed();
                 },
-                child: Text(label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white, fontWeight: FontWeight.w600)),
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               )
             : OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: color,
                   side: BorderSide(color: color.withValues(alpha: 0.5)),
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.tileRadius),
+                    borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
                   ),
                 ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   onPressed();
                 },
-                child: Text(label,
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(color: color, fontWeight: FontWeight.w500)),
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
       ),
     );
