@@ -595,6 +595,23 @@ class AppLocalizations {
   String get resetDialogNoOnboarding  => isTagalog ? TlStrings.resetDialogNoOnboarding  : EnStrings.resetDialogNoOnboarding;
   String get resetDialogCancel        => isTagalog ? TlStrings.resetDialogCancel        : EnStrings.resetDialogCancel;
 
+  // Tutorial audio guides
+  String get ttsInertialGuide       => isTagalog ? TlStrings.ttsInertialGuide       : EnStrings.ttsInertialGuide;
+  String get ttsGesturalGuide       => isTagalog ? TlStrings.ttsGesturalGuide       : EnStrings.ttsGesturalGuide;
+  String get ttsShakeGuide          => isTagalog ? TlStrings.ttsShakeGuide          : EnStrings.ttsShakeGuide;
+  String get ttsHapticGuide         => isTagalog ? TlStrings.ttsHapticGuide         : EnStrings.ttsHapticGuide;
+
+  // Tutorial hero semantics
+  String get inertialHeroSemantic   => isTagalog ? TlStrings.inertialHeroSemantic   : EnStrings.inertialHeroSemantic;
+  String get gesturalHeroSemantic   => isTagalog ? TlStrings.gesturalHeroSemantic   : EnStrings.gesturalHeroSemantic;
+  String get shakeHeroSemantic      => isTagalog ? TlStrings.shakeHeroSemantic      : EnStrings.shakeHeroSemantic;
+  String get hapticHeroSemantic     => isTagalog ? TlStrings.hapticHeroSemantic     : EnStrings.hapticHeroSemantic;
+
+  // Tutorial interactive zone semantics
+  String get inertialPlaygroundSemantic  => isTagalog ? TlStrings.inertialPlaygroundSemantic  : EnStrings.inertialPlaygroundSemantic;
+  String get gesturalPlaygroundSemantic  => isTagalog ? TlStrings.gesturalPlaygroundSemantic  : EnStrings.gesturalPlaygroundSemantic;
+  String get shakePlaygroundSemantic     => isTagalog ? TlStrings.shakePlaygroundSemantic     : EnStrings.shakePlaygroundSemantic;
+
   // Earcon setting
   String get earconTitle        => isTagalog ? TlStrings.earconTitle        : EnStrings.earconTitle;
   String get earconSubtitle     => isTagalog ? TlStrings.earconSubtitle     : EnStrings.earconSubtitle;
