@@ -481,6 +481,11 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             _ResetSettingsTile(l10n: l10n),
 
+
+            // ── Reset Settings ─────────────────────────────────────────
+            const SizedBox(height: AppSpacing.lg),
+            _ResetSettingsTile(l10n: l10n),
+
             const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
