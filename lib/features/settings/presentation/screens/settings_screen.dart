@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
@@ -385,6 +387,11 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () {/* TODO */},
               ),
             ]),
+
+
+            // ── Reset Settings ─────────────────────────────────────────
+            const SizedBox(height: AppSpacing.lg),
+            _ResetSettingsTile(l10n: l10n),
 
             const SizedBox(height: AppSpacing.xxxl),
           ],
@@ -826,6 +833,308 @@ class _SwipeBackWrapper extends StatelessWidget {
         }
       },
       child: child,
+    );
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reset Settings tile + dialog
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// A red-accented action tile that opens [_ResetDialog].
+/// Styled like MsActionTile but with AppColors.error as the accent colour.
+class _ResetSettingsTile extends ConsumerWidget {
+  const _ResetSettingsTile({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme  = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    const red    = AppColors.error;
+
+    return Semantics(
+      label: '${l10n.resetSettingsTitle}. ${l10n.resetSettingsSubtitle}. Button',
+      button: true,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          EarconService.instance.play(EarconEvent.actionConfirmed);
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false, // force explicit choice
+            builder: (_) => _ResetDialog(l10n: l10n),
+          );
+        },
+        borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+        child: Container(
+          decoration: BoxDecoration(
+            color: red.withValues(alpha: isDark ? 0.08 : 0.05),
+            borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+            border: Border.all(
+              color: red.withValues(alpha: isDark ? 0.35 : 0.25),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.base,
+            vertical: AppSpacing.md,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: red.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.restart_alt_rounded,
+                  size: 20,
+                  color: red,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.resetSettingsTitle,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.resetSettingsSubtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: red.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: red.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Accessible two-step reset confirmation dialog.
+///
+/// Accessibility design:
+///   - `barrierDismissible: false` prevents accidental dismissal.
+///   - Every button has a full Semantics label so TalkBack reads the action,
+///     not just the short button text.
+///   - Buttons are full-width and at least 56 dp tall — easy tap targets.
+///   - Destructive buttons use error colour; Cancel is neutral.
+///   - Tab / focus order: Cancel first, then the two actions.
+///   - A divider separates the question from the action buttons to give
+///     visual hierarchy for low-vision users.
+class _ResetDialog extends ConsumerWidget {
+  const _ResetDialog({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme  = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    const red    = AppColors.error;
+    final bg     = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final onBg   = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final subtle = isDark
+        ? AppColors.darkOnSurfaceVariant
+        : AppColors.lightOnSurfaceVariant;
+
+    return Dialog(
+      backgroundColor: bg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+        side: BorderSide(color: red.withValues(alpha: 0.35)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Icon + title
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: red.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.restart_alt_rounded,
+                      color: red, size: 22),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    l10n.resetDialogTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: red,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Body
+            Text(
+              l10n.resetDialogBody,
+              style: theme.textTheme.bodyMedium?.copyWith(color: onBg),
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+            Divider(color: red.withValues(alpha: 0.20), height: 1),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Question
+            Text(
+              l10n.resetDialogRunOnboarding,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: onBg,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Yes, run setup
+            _DialogButton(
+              label: l10n.resetDialogYesOnboarding,
+              semanticLabel:
+                  '${l10n.resetDialogYesOnboarding}. Resets all settings and re-runs the setup guide.',
+              color: red,
+              filled: true,
+              onPressed: () {
+                EarconService.instance.play(EarconEvent.actionConfirmed);
+                ref.read(appSettingsProvider.notifier).resetSettings();
+                Navigator.of(context)
+                  ..pop()   // close dialog
+                  ..pop();  // close settings
+                ref.read(onboardingCompleteProvider.notifier).state = false;
+              },
+            ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            // No, just reset
+            _DialogButton(
+              label: l10n.resetDialogNoOnboarding,
+              semanticLabel:
+                  '${l10n.resetDialogNoOnboarding}. Resets all settings and stays on the settings screen.',
+              color: red,
+              filled: false,
+              onPressed: () {
+                EarconService.instance.play(EarconEvent.actionConfirmed);
+                ref.read(appSettingsProvider.notifier).resetSettings();
+                Navigator.of(context).pop();
+              },
+            ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            // Cancel
+            _DialogButton(
+              label: l10n.resetDialogCancel,
+              semanticLabel: '${l10n.resetDialogCancel}. Go back without making any changes.',
+              color: subtle,
+              filled: false,
+              onPressed: () {
+                EarconService.instance.play(EarconEvent.navBack);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-width button used inside [_ResetDialog].
+/// Large hit target (min 56 dp), full semantic label, colour-coded.
+class _DialogButton extends StatelessWidget {
+  const _DialogButton({
+    required this.label,
+    required this.semanticLabel,
+    required this.color,
+    required this.filled,
+    required this.onPressed,
+  });
+
+  final String        label;
+  final String        semanticLabel;
+  final Color         color;
+  final bool          filled;
+  final VoidCallback  onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      excludeSemantics: true,
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: filled
+            ? ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.tileRadius),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  onPressed();
+                },
+                child: Text(label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
+              )
+            : OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: color,
+                  side: BorderSide(color: color.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.tileRadius),
+                  ),
+                ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  onPressed();
+                },
+                child: Text(label,
+                    style: theme.textTheme.bodyLarge
+                        ?.copyWith(color: color, fontWeight: FontWeight.w500)),
+              ),
+      ),
     );
   }
 }
