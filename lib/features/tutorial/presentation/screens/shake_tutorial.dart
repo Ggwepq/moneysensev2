@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/speech_scripts.dart';
+import '../../../../core/services/tts_service.dart';
 import '../../../../core/services/shake_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../settings/domain/entities/vision_config.dart';
@@ -31,11 +33,22 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(shakeServiceProvider).start(_onShake);
     });
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      final s = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(s.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+        TutorialSpeech.shakeGuide(l10n),
+        enabled: s.ttsEnabled,
+        currentVerbosity: s.ttsVerbosity,
+      );
+    });
   }
 
   @override
   void dispose() {
-    // Don't stop the service — ShakeDetectorWidget manages start/stop based
+    // Don't stop the service: ShakeDetectorWidget manages start/stop based
     // on the user's setting.  But we do need to remove our tutorial callback
     // by calling start() again with the detector widget's handler.
     // Since we can't easily get that reference here, we just stop and the
@@ -73,6 +86,8 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
         l10n.shakeTutorialStep3,
         l10n.shakeTutorialStep4,
       ],
+      heroSemantic: l10n.shakeHeroSemantic,
+      interactiveSemantic: l10n.shakePlaygroundSemantic,
       hero: _ShakeHero(isDark: isDark, justShook: _justShook),
       accentColor: blue,
       interactive: _ShakeDemo(
@@ -85,9 +100,6 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero
-// ---------------------------------------------------------------------------
 
 class _ShakeHero extends StatefulWidget {
   const _ShakeHero({required this.isDark, required this.justShook});
@@ -263,9 +275,6 @@ class _MotionLine extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Interactive demo zone
-// ---------------------------------------------------------------------------
 
 class _ShakeDemo extends StatelessWidget {
   const _ShakeDemo({

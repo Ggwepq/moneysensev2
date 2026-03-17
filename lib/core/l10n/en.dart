@@ -479,6 +479,84 @@ abstract final class EnStrings {
   static const String splashLoadingVoice = 'Loading voice…';
   static const String splashReadyToScan = 'Ready to scan.';
 
+  // Reset Settings
+  static const String resetSettingsTitle = 'Reset Settings';
+  static const String resetSettingsSubtitle =
+      'Restore all settings to default values.';
+  static const String resetDialogTitle = 'Reset Settings?';
+  static const String resetDialogBody =
+      'This will restore all settings to their default values. '
+      'Your scan history is not affected.';
+  static const String resetDialogRunOnboarding =
+      'Run the setup guide again after reset?';
+  static const String resetDialogYesOnboarding = 'Yes, run setup';
+  static const String resetDialogNoOnboarding = 'No, just reset';
+  static const String resetDialogCancel = 'Cancel';
+
+  // Tutorial audio guides — spoken on screen entry (TTS)
+  static const String ttsInertialGuide =
+      'Inertial Navigation Tutorial. '
+      'This feature lets you navigate by tilting your phone. '
+      'Tilt right to open Settings. Tilt left to open the Tutorial. '
+      'Hold the tilt for one second to trigger. '
+      'The phone must be upright, not flat on a surface. '
+      'Scroll down to try the live tilt demo.';
+
+  static const String ttsGesturalGuide =
+      'Gestural Navigation Tutorial. '
+      'This feature lets you navigate using swipe gestures on the scanner screen. '
+      'Swipe right to open Settings. Swipe left to open the Tutorial. '
+      'Swipe up to toggle the flashlight. Double-tap to freeze the preview. '
+      'Scroll down to try the gesture playground.';
+
+  static const String ttsShakeGuide =
+      'Shake to Go Back Tutorial. '
+      'This feature lets you go back to the previous screen by shaking your phone. '
+      'Give the phone a short firm shake, like saying no. '
+      'A vibration confirms the gesture was detected. '
+      'Scroll down to test the shake detector.';
+
+  static const String ttsHapticGuide =
+      'Denomination Vibration Tutorial. '
+      'This feature plays a unique vibration pattern when a currency is identified. '
+      'Coins use one long pulse followed by short pulses. Bills use only short pulses. '
+      'The number of short pulses matches the denomination tier. '
+      'Scroll down to feel each pattern individually.';
+
+  // Tutorial hero semantic descriptions (read by TalkBack instead of visual labels)
+  static const String inertialHeroSemantic =
+      'Animated phone graphic showing left and right tilt directions. '
+      'The phone rotates to show tilt angle. '
+      'An indicator bar shows how far you are tilting.';
+
+  static const String gesturalHeroSemantic =
+      'Animated phone graphic cycling through swipe gestures. '
+      'Shows swipe right for Settings, swipe left for Tutorial, '
+      'swipe up for Flash, and double-tap for Scan.';
+
+  static const String shakeHeroSemantic =
+      'Animated phone graphic floating gently. '
+      'Motion lines on the sides indicate a shaking motion. '
+      'When a shake is detected the phone glows and shows a checkmark.';
+
+  static const String hapticHeroSemantic =
+      'Animated vibration graphic with ripple rings radiating outward '
+      'from a pulsing phone icon, representing haptic feedback.';
+
+  // Tutorial interactive zone semantic hints
+  static const String inertialPlaygroundSemantic =
+      'Live tilt meter. Tilt your phone left or right. '
+      'A moving dot shows your current tilt position. '
+      'Hold the tilt for one second to register a navigation event.';
+
+  static const String gesturalPlaygroundSemantic =
+      'Gesture practice zone. Swipe right, left, or up, or double-tap '
+      'anywhere in this area to test each gesture.';
+
+  static const String shakePlaygroundSemantic =
+      'Shake counter. Shake your phone to test the detector. '
+      'Each detected shake increments the counter.';
+
   // Earcon setting
   static const String earconTitle = 'Sound Effects';
   static const String earconSubtitle = 'Short audio cues for scan events.';

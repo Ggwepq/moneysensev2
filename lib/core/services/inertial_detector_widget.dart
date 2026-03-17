@@ -31,12 +31,10 @@ class InertialDetectorWidget extends ConsumerStatefulWidget {
       _InertialDetectorWidgetState();
 }
 
-class _InertialDetectorWidgetState
-    extends ConsumerState<InertialDetectorWidget>
+class _InertialDetectorWidgetState extends ConsumerState<InertialDetectorWidget>
     with WidgetsBindingObserver, RouteAware {
-
-  bool _isActive   = true;   // false while another route is on top
-  bool _inCooldown = false;  // true briefly after returning from a sub-screen
+  bool _isActive = true; // false while another route is on top
+  bool _inCooldown = false; // true briefly after returning from a sub-screen
   Timer? _cooldownTimer;
 
   RouteObserver<ModalRoute<void>>? _routeObserver;
@@ -85,7 +83,7 @@ class _InertialDetectorWidgetState
   /// return-tilt doesn't immediately trigger a second navigation.
   @override
   void didPopNext() {
-    _isActive   = true;
+    _isActive = true;
     _inCooldown = true;
     ref.read(inertialServiceProvider).resume();
 
@@ -117,7 +115,7 @@ class _InertialDetectorWidgetState
 
   void _sync() {
     final enabled = ref.read(appSettingsProvider).inertialNavigation;
-    final svc     = ref.read(inertialServiceProvider);
+    final svc = ref.read(inertialServiceProvider);
     if (enabled && !svc.isRunning) {
       svc.start(onTiltLeft: _handleLeft, onTiltRight: _handleRight);
     } else if (!enabled && svc.isRunning) {
@@ -147,9 +145,11 @@ class _InertialDetectorWidgetState
   void _vibrate() {
     HapticFeedback.lightImpact();
     // Vibration.hasVibrator is async: run it detached so it never blocks nav
-    Vibration.hasVibrator().then((has) {
-      if (has == true) Vibration.vibrate(duration: 40, amplitude: 160);
-    }).catchError((_) {});
+    Vibration.hasVibrator()
+        .then((has) {
+          if (has == true) Vibration.vibrate(duration: 40, amplitude: 160);
+        })
+        .catchError((_) {});
   }
 
   // ── Build ──────────────────────────────────────────────────────────────────
@@ -158,7 +158,8 @@ class _InertialDetectorWidgetState
   Widget build(BuildContext context) {
     // React to setting changes mid-session
     final enabled = ref.watch(
-        appSettingsProvider.select((s) => s.inertialNavigation));
+      appSettingsProvider.select((s) => s.inertialNavigation),
+    );
     final svc = ref.read(inertialServiceProvider);
 
     if (enabled && !svc.isRunning) {
