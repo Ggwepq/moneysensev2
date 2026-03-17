@@ -8,14 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/speech_scripts.dart';
+import '../../../../core/services/tts_service.dart';
 import '../../../../core/services/inertial_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
 
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
 
 class InertialNavigationTutorial extends ConsumerStatefulWidget {
   const InertialNavigationTutorial({super.key});
@@ -39,15 +38,30 @@ class _InertialNavigationTutorialState
   void initState() {
     super.initState();
 
-    // Start / ensure the service is running so the playground shows live data.
-    // We temporarily override the callbacks to capture detections visually.
+    // The InertialDetectorWidget in HomeShell owns the service and has already
+    // paused it via didPushNext(). We stop-and-restart here with tutorial
+    // callbacks so the live tilt bar works. On dispose() we stop again and
+    // InertialDetectorWidget.didPopNext() will do a full svc.start() restart
+    // because it detects isRunning == false.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final svc = ref.read(inertialServiceProvider);
-      // Stop whatever was running and restart with tutorial callbacks
       svc.stop();
       svc.start(
         onTiltLeft:  () => _onDetected('left'),
         onTiltRight: () => _onDetected('right'),
+      );
+    });
+
+    // Play the audio guide after a short delay so TTS doesn't clash with
+    // the route transition announcement.
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      final s = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(s.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+        TutorialSpeech.inertialGuide(l10n),
+        enabled: s.ttsEnabled,
+        currentVerbosity: s.ttsVerbosity,
       );
     });
 
@@ -64,8 +78,31 @@ class _InertialNavigationTutorialState
   @override
   void dispose() {
     _pollTimer?.cancel();
-    // Stop and let InertialDetectorWidget restart on next frame
-    ref.read(inertialServiceProvider).stop();
+
+    // Read everything we need before super.dispose() invalidates the ref.
+    final container = ProviderScope.containerOf(context, listen: false);
+    final enabled   = container.read(appSettingsProvider).inertialNavigation;
+
+    // Stop the tutorial's sensor subscription immediately.
+    container.read(inertialServiceProvider).stop();
+
+    // Replicate the exact user action that is known to fix the service:
+    // toggle inertial off then back on. This forces InertialDetectorWidget
+    // to call svc.start() with its own navigation callbacks.
+    //
+    // Two separate microtasks are used so Riverpod processes each state
+    // change individually and cannot coalesce them into a single rebuild
+    // that skips the intermediate false → true transition.
+    if (enabled) {
+      final notifier = container.read(appSettingsProvider.notifier);
+      Future.microtask(() {
+        notifier.toggleInertialNavigation(false);
+        Future.microtask(() {
+          notifier.toggleInertialNavigation(true);
+        });
+      });
+    }
+
     super.dispose();
   }
 
@@ -104,6 +141,8 @@ class _InertialNavigationTutorialState
         l10n.inertialTutorialStep4,
         l10n.inertialTutorialStep5,
       ],
+      heroSemantic: l10n.inertialHeroSemantic,
+      interactiveSemantic: l10n.inertialPlaygroundSemantic,
       hero: _TiltHero(
         isDark: isDark,
         rawX: _rawX,
@@ -122,9 +161,6 @@ class _InertialNavigationTutorialState
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero — phone body that physically tilts matching the real accelerometer X
-// ---------------------------------------------------------------------------
 
 class _TiltHero extends StatelessWidget {
   const _TiltHero({
@@ -189,7 +225,7 @@ class _TiltHero extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Phone — rotates with raw accelerometer data
+            // Phone: rotates with raw accelerometer data
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: tiltRad),
               duration: const Duration(milliseconds: 100),
@@ -258,9 +294,6 @@ class _TiltHero extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Interactive playground
-// ---------------------------------------------------------------------------
 
 class _TiltPlayground extends StatelessWidget {
   const _TiltPlayground({
@@ -341,12 +374,12 @@ class _TiltPlayground extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              // Tilt bar — maps accelerometer X to bar position
+              // Tilt bar: maps accelerometer X to bar position
               _TiltBar(rawX: rawX, isDark: isDark, isFlat: isFlat),
 
               const SizedBox(height: AppSpacing.xs + 2),
 
-              // Labels — Flexible so they never overflow at large font scales
+              // Labels: Flexible so they never overflow at large font scales
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -420,9 +453,6 @@ class _TiltPlayground extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Tilt bar — accelerometer X mapped to position
-// ---------------------------------------------------------------------------
 
 class _TiltBar extends StatelessWidget {
   const _TiltBar({required this.rawX, required this.isDark, required this.isFlat});
@@ -537,9 +567,6 @@ class _TiltBar extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Legend row
-// ---------------------------------------------------------------------------
 
 class _LegendRow extends StatelessWidget {
   const _LegendRow({
@@ -577,7 +604,7 @@ class _LegendRow extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: AppSpacing.md),
-          // Label — gets the bulk of the row
+          // Label: gets the bulk of the row
           Expanded(
             flex: 3,
             child: Text(
@@ -587,7 +614,7 @@ class _LegendRow extends StatelessWidget {
                   ?.copyWith(color: onSurface, fontWeight: FontWeight.w500),
             ),
           ),
-          // Action badge — only shown when non-empty
+          // Action badge: only shown when non-empty
           if (hasAction) ...[
             const SizedBox(width: AppSpacing.sm),
             Expanded(

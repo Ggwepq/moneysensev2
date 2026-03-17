@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/speech_scripts.dart';
+import '../../../../core/services/tts_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
@@ -20,6 +22,21 @@ class GesturalNavigationTutorial extends ConsumerStatefulWidget {
 class _GesturalNavigationTutorialState
     extends ConsumerState<GesturalNavigationTutorial> {
   _GestureResult? _lastResult;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      final s = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(s.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+        TutorialSpeech.gesturalGuide(l10n),
+        enabled: s.ttsEnabled,
+        currentVerbosity: s.ttsVerbosity,
+      );
+    });
+  }
 
   void _onGesture(_GestureResult result) {
     HapticFeedback.lightImpact();
@@ -46,6 +63,8 @@ class _GesturalNavigationTutorialState
         l10n.gestureTutorialStep4,
         l10n.gestureTutorialStep5,
       ],
+      heroSemantic: l10n.gesturalHeroSemantic,
+      interactiveSemantic: l10n.gesturalPlaygroundSemantic,
       hero: _GestureHero(isDark: isDark, lastResult: _lastResult),
       interactive: _GesturePlayground(
         isDark: isDark,
@@ -57,9 +76,6 @@ class _GesturalNavigationTutorialState
   }
 }
 
-// ---------------------------------------------------------------------------
-// Result type
-// ---------------------------------------------------------------------------
 
 enum _GestureResult { swipeRight, swipeLeft, swipeUp, doubleTap }
 
@@ -92,9 +108,6 @@ extension _GestureResultExt on _GestureResult {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero — animated phone showing gestures cycling
-// ---------------------------------------------------------------------------
 
 class _GestureHero extends StatefulWidget {
   const _GestureHero({required this.isDark, required this.lastResult});
@@ -299,9 +312,6 @@ class _GestureArrow extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Interactive playground — detects actual swipes and double-taps
-// ---------------------------------------------------------------------------
 
 class _GesturePlayground extends StatelessWidget {
   const _GesturePlayground({
@@ -502,7 +512,7 @@ class _LegendRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          // Action badge — fixed flex share, clips to ellipsis only if truly extreme
+          // Action badge: fixed flex share, clips to ellipsis only if truly extreme
           Expanded(
             flex: 2,
             child: Text(

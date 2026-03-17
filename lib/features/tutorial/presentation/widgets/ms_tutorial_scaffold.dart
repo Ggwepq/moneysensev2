@@ -23,7 +23,7 @@ import '../../../settings/presentation/providers/settings_provider.dart';
 ///   │    • [Interactive zone]           │
 ///   └───────────────────────────────────┘
 ///
-/// Adding a new tutorial: create a widget that extends nothing — just provide
+/// Adding a new tutorial: create a widget that extends nothing: just provide
 /// [hero], [badge], [title], [description], [steps], and [interactive].
 class MsTutorialScaffold extends StatelessWidget {
   const MsTutorialScaffold({
@@ -34,13 +34,15 @@ class MsTutorialScaffold extends StatelessWidget {
     required this.steps,
     required this.hero,
     this.interactive,
-    this.accentColor, // null = resolved from visionConfigProvider at build time
+    this.accentColor,
+    this.heroSemantic,
+    this.interactiveSemantic,
   });
 
   /// AppBar title AND content heading.
   final String title;
 
-  /// Small chip label above the title — e.g. "Navigation", "Scanning".
+  /// Small chip label above the title: e.g. "Navigation", "Scanning".
   final String badge;
 
   /// One-paragraph explanation shown below the title.
@@ -54,6 +56,13 @@ class MsTutorialScaffold extends StatelessWidget {
 
   /// Optional interactive widget rendered below the steps.
   final Widget? interactive;
+
+  /// Semantic label for the hero zone — read by TalkBack instead of
+  /// whatever text fragments the animated widgets contain.
+  final String? heroSemantic;
+
+  /// Semantic label for the interactive zone.
+  final String? interactiveSemantic;
 
   /// Colour used for the badge chip, step numbers, and interactive accents.
   /// When null, resolved from [visionConfigProvider] at build time.
@@ -93,7 +102,13 @@ class MsTutorialScaffold extends StatelessWidget {
             // ── Hero zone ────────────────────────────────────────────────
             SizedBox(
               height: 260,
-              child: hero,
+              child: heroSemantic != null
+                  ? Semantics(
+                      label: heroSemantic,
+                      excludeSemantics: true,
+                      child: hero,
+                    )
+                  : hero,
             ),
 
             // ── Content zone ─────────────────────────────────────────────
@@ -168,7 +183,12 @@ class MsTutorialScaffold extends StatelessWidget {
                   // Interactive zone
                   if (interactive != null) ...[
                     const SizedBox(height: AppSpacing.xl),
-                    interactive!,
+                    interactiveSemantic != null
+                        ? Semantics(
+                            label: interactiveSemantic,
+                            child: interactive!,
+                          )
+                        : interactive!,
                   ],
 
                   const SizedBox(height: AppSpacing.xxxl),
@@ -182,7 +202,6 @@ class MsTutorialScaffold extends StatelessWidget {
   }
 }
 
-// ── Step row ──────────────────────────────────────────────────────────────────
 
 class _StepRow extends StatelessWidget {
   const _StepRow({

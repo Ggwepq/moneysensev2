@@ -467,6 +467,84 @@ abstract final class TlStrings {
   static const String splashLoadingVoice        = 'Naglo-load ng boses…';
   static const String splashReadyToScan         = 'Handa nang mag-scan.';
 
+  // Reset Settings
+  static const String resetSettingsTitle        = 'I-reset ang Mga Setting';
+  static const String resetSettingsSubtitle     =
+      'Ibalik ang lahat ng setting sa default.';
+  static const String resetDialogTitle          = 'I-reset ang Mga Setting?';
+  static const String resetDialogBody           =
+      'Ibabalik ang lahat ng setting sa kanilang default na halaga. '
+      'Hindi maaapektuhan ang kasaysayan ng pag-scan.';
+  static const String resetDialogRunOnboarding  =
+      'Patakbuhin muli ang gabay sa pag-setup pagkatapos ng reset?';
+  static const String resetDialogYesOnboarding  = 'Oo, patakbuhin';
+  static const String resetDialogNoOnboarding   = 'Hindi, i-reset lang';
+  static const String resetDialogCancel         = 'Kanselahin';
+
+  // Tutorial audio guides — spoken on screen entry (TTS)
+  static const String ttsInertialGuide =
+      'Tutorial sa Inertial Navigation. '
+      'Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate sa pamamagitan ng pag-tilt ng iyong telepono. '
+      'I-tilt pakanan para buksan ang Mga Setting. I-tilt pakaliwa para buksan ang Tutorial. '
+      'Hawakan ang tilt nang isang segundo para ma-trigger. '
+      'Ang telepono ay dapat nakatayo, hindi patag sa ibabaw. '
+      'Mag-scroll pababa para subukan ang live tilt demo.';
+
+  static const String ttsGesturalGuide =
+      'Tutorial sa Gestural Navigation. '
+      'Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate gamit ang mga swipe gesture sa scanner screen. '
+      'Mag-swipe pakanan para buksan ang Mga Setting. Mag-swipe pakaliwa para buksan ang Tutorial. '
+      'Mag-swipe pataas para i-toggle ang flashlight. Mag-double-tap para i-freeze ang preview. '
+      'Mag-scroll pababa para subukan ang gesture playground.';
+
+  static const String ttsShakeGuide =
+      'Tutorial sa Shake to Go Back. '
+      'Ang feature na ito ay nagbibigay-daan sa iyo na bumalik sa nakaraang screen sa pamamagitan ng pag-shake ng iyong telepono. '
+      'Bigyan ng maikling matibay na shake ang telepono, parang sinasabing hindi. '
+      'Ang vibration ay nagpapatunay na natukoy ang gesture. '
+      'Mag-scroll pababa para subukan ang shake detector.';
+
+  static const String ttsHapticGuide =
+      'Tutorial sa Denomination Vibration. '
+      'Ang feature na ito ay nagpe-play ng natatanging pattern ng vibration kapag nakilala ang isang pera. '
+      'Ang mga barya ay gumagamit ng isang mahabang pulse na sinusundan ng mga maikling pulse. Ang mga papel na pera ay gumagamit lamang ng mga maikling pulse. '
+      'Ang bilang ng mga maikling pulse ay tumutugma sa tier ng denominasyon. '
+      'Mag-scroll pababa para maramdaman ang bawat pattern nang isa-isa.';
+
+  // Tutorial hero semantic descriptions
+  static const String inertialHeroSemantic =
+      'Animated na graphic ng telepono na nagpapakita ng kaliwa at kanang direksyon ng tilt. '
+      'Ang telepono ay umiikot para ipakita ang anggulo ng tilt. '
+      'Isang indicator bar ang nagpapakita kung gaano kalayo ang iyong tilt.';
+
+  static const String gesturalHeroSemantic =
+      'Animated na graphic ng telepono na nagsu-cycle sa mga swipe gesture. '
+      'Nagpapakita ng swipe pakanan para sa Mga Setting, swipe pakaliwa para sa Tutorial, '
+      'swipe pataas para sa Flash, at double-tap para sa Scan.';
+
+  static const String shakeHeroSemantic =
+      'Animated na graphic ng telepono na dahan-dahang lumulutang. '
+      'Ang mga motion line sa mga gilid ay nagpapahiwatig ng galaw ng pag-shake. '
+      'Kapag natukoy ang shake, ang telepono ay nagniningning at nagpapakita ng checkmark.';
+
+  static const String hapticHeroSemantic =
+      'Animated na graphic ng vibration na may mga ripple ring na lumalayo '
+      'mula sa isang kumikislap na icon ng telepono, na kumakatawan sa haptic feedback.';
+
+  // Tutorial interactive zone semantic hints
+  static const String inertialPlaygroundSemantic =
+      'Live na tilt meter. I-tilt ang iyong telepono pakaliwa o pakanan. '
+      'Ang gumagalaw na tuldok ay nagpapakita ng iyong kasalukuyang posisyon ng tilt. '
+      'Hawakan ang tilt nang isang segundo para mairehistro ang isang navigation event.';
+
+  static const String gesturalPlaygroundSemantic =
+      'Lugar ng pagsasanay sa gesture. Mag-swipe pakanan, pakaliwa, o pataas, o mag-double-tap '
+      'kahit saan sa lugar na ito para subukan ang bawat gesture.';
+
+  static const String shakePlaygroundSemantic =
+      'Shake counter. I-shake ang iyong telepono para subukan ang detector. '
+      'Bawat natukoy na shake ay nagdaragdag sa counter.';
+
   // Earcon setting
   static const String earconTitle           = 'Mga Sound Effect';
   static const String earconSubtitle        =

@@ -5,8 +5,6 @@
 import '../../core/l10n/app_localizations.dart';
 import 'tts_message.dart';
 
-// Dedicated file: see scanner_speech_scripts.dart.
-// Re-exported here so callers only need one import.
 export 'scanner_speech_scripts.dart';
 
 abstract final class AppSpeech {
@@ -18,6 +16,7 @@ abstract final class AppSpeech {
   static TtsMessage ttsDisabling(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsSpeechDisabling, id: 'app.ttsDisabling');
 }
+
 
 abstract final class NavSpeech {
   /// User opened Settings screen.
@@ -33,29 +32,27 @@ abstract final class NavSpeech {
       TtsMessage.navigation(l10n.ttsNavHome, id: 'nav.home');
 }
 
+
 abstract final class SettingsSpeech {
   /// A boolean setting was toggled.
   static TtsMessage toggled(
-    AppLocalizations l10n,
-    String settingName,
-    bool isOn,
-  ) => TtsMessage.navigation(
-    isOn
-        ? l10n.ttsSettingEnabled(settingName)
-        : l10n.ttsSettingDisabled(settingName),
-    id: 'settings.toggle.$settingName',
-  );
+          AppLocalizations l10n, String settingName, bool isOn) =>
+      TtsMessage.navigation(
+        isOn
+            ? l10n.ttsSettingEnabled(settingName)
+            : l10n.ttsSettingDisabled(settingName),
+        id: 'settings.toggle.$settingName',
+      );
 
   /// A selector setting changed (theme, verbosity, etc.).
   static TtsMessage changed(
-    AppLocalizations l10n,
-    String settingName,
-    String newValue,
-  ) => TtsMessage.navigation(
-    l10n.ttsSettingChanged(settingName, newValue),
-    id: 'settings.change.$settingName',
-  );
+          AppLocalizations l10n, String settingName, String newValue) =>
+      TtsMessage.navigation(
+        l10n.ttsSettingChanged(settingName, newValue),
+        id: 'settings.change.$settingName',
+      );
 }
+
 
 abstract final class LanguageSpeech {
   /// Spoken in the OLD language, before the engine switches.
@@ -77,10 +74,8 @@ abstract final class LanguageSpeech {
 
 abstract final class OnboardingSpeech {
   /// Spoken when the welcome step is shown.
-  static TtsMessage welcome(AppLocalizations l10n) => TtsMessage.navigation(
-    l10n.ttsOnboardingWelcome,
-    id: 'onboarding.welcome',
-  );
+  static TtsMessage welcome(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsOnboardingWelcome, id: 'onboarding.welcome');
 
   /// Spoken when the vision profile step is shown.
   static TtsMessage visionStep(AppLocalizations l10n) =>
@@ -88,15 +83,29 @@ abstract final class OnboardingSpeech {
 
   /// Spoken when a profile is selected (confirmation).
   static TtsMessage profileSelected(AppLocalizations l10n) =>
-      TtsMessage.navigation(
-        l10n.ttsOnboardingProfileSelected,
-        id: 'onboarding.profileSelected',
-      );
+      TtsMessage.navigation(l10n.ttsOnboardingProfileSelected,
+          id: 'onboarding.profileSelected');
 
   /// Spoken when the language step is shown.
   static TtsMessage languageStep(AppLocalizations l10n) =>
-      TtsMessage.navigation(
-        l10n.ttsOnboardingLanguage,
-        id: 'onboarding.language',
-      );
+      TtsMessage.navigation(l10n.ttsOnboardingLanguage,
+          id: 'onboarding.language');
+}
+
+abstract final class TutorialSpeech {
+  /// Spoken when the inertial navigation tutorial opens.
+  static TtsMessage inertialGuide(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsInertialGuide, id: 'tutorial.inertial');
+
+  /// Spoken when the gestural navigation tutorial opens.
+  static TtsMessage gesturalGuide(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsGesturalGuide, id: 'tutorial.gestural');
+
+  /// Spoken when the shake tutorial opens.
+  static TtsMessage shakeGuide(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsShakeGuide, id: 'tutorial.shake');
+
+  /// Spoken when the haptic/denomination vibration tutorial opens.
+  static TtsMessage hapticGuide(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsHapticGuide, id: 'tutorial.haptic');
 }
