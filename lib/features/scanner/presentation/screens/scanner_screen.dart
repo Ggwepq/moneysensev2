@@ -83,12 +83,16 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   void didPushNext() {
     _routeObscured = true;
     _cancelIdleTimer();
+    if (ref.read(cameraOpenProvider)) _suspend();
   }
 
   @override
   void didPopNext() {
     _routeObscured = false;
-    if (ref.read(cameraOpenProvider)) _startIdleTimer();
+    if (ref.read(cameraOpenProvider)) {
+      _resume();
+      _startIdleTimer();
+    }
   }
 
   @override
@@ -111,6 +115,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     _cancelIdleTimer();
     _streamBoundController = null;
     ref.read(cameraControllerProvider.notifier).suspendCamera();
+    ref.read(scannerStateProvider.notifier).suspendScanner();
   }
 
   void _resume() {
@@ -119,7 +124,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       useFrontCamera: s.useFrontCamera,
       useFlash:       s.useFlashlight,
     );
-    ref.read(scannerStateProvider.notifier).openCamera();
+    ref.read(scannerStateProvider.notifier).restoreScanner();
   }
 
   // ── Image stream ───────────────────────────────────────────────────────────
@@ -134,9 +139,52 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     });
   }
 
+  bool _autoFlashEvaluated = false;
+  int  _darkFrames         = 0;
+
   void _onFrame(CameraImage image) {
-    // Fire-and-forget: processFrame is rate-limited internally
+    // 1. Process Frame for detection
     ref.read(scannerStateProvider.notifier).processFrame(image);
+
+    // 2. Evaluate auto-flash if we haven't already this session
+    if (!_autoFlashEvaluated && image.planes.isNotEmpty) {
+      final s = ref.read(appSettingsProvider);
+      if (!s.useFlashlight && !s.useFrontCamera) {
+        _evaluateAutoFlash(image);
+      } else {
+        _autoFlashEvaluated = true; // Skip checking if flash is already on or using front cam
+      }
+    }
+  }
+
+  void _evaluateAutoFlash(CameraImage image) {
+    final yPlane = image.planes[0].bytes;
+    int sum = 0;
+    
+    // Sample ~400 pixels effectively
+    final step = (yPlane.length / 400).ceil().clamp(1, yPlane.length);
+    int count = 0;
+    for (int i = 0; i < yPlane.length; i += step) {
+      sum += yPlane[i];
+      count++;
+    }
+    
+    final avg = sum / count;
+    
+    // Threshold for "too dark"
+    if (avg < 40) {
+      _darkFrames++;
+      if (_darkFrames >= 5) {
+        _autoFlashEvaluated = true;
+        _darkFrames = 0;
+        ref.read(appSettingsProvider.notifier).toggleFlashlight(true);
+        ref.read(cameraControllerProvider.notifier).setFlash(true);
+        _enqueue(ScannerSpeech.flashToggled(_l10n, true));
+      }
+    } else {
+      _autoFlashEvaluated = true;
+      _darkFrames = 0;
+    }
   }
 
   // ── Idle timer ─────────────────────────────────────────────────────────────
@@ -264,6 +312,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
   void _onCameraOpenChanged(bool prev, bool next) {
     if (next == prev) return;
     if (next) {
+      _autoFlashEvaluated = false;
+      _darkFrames = 0;
       EarconService.instance.play(EarconEvent.cameraOpen);
       _enqueue(ScannerSpeech.cameraOpened(_l10n));
       _startIdleTimer();

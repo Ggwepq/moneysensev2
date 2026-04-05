@@ -27,6 +27,7 @@ class ScannerNotifier extends Notifier<ScannerState> {
 
   int              _consecutiveFrames = 0;
   DetectionResult? _candidate;
+  ScannerState?    _lastState;
 
   // ── State transitions ─────────────────────────────────────────────────────
 
@@ -41,7 +42,32 @@ class ScannerNotifier extends Notifier<ScannerState> {
   void closeCamera() {
     _consecutiveFrames = 0;
     _candidate = null;
+    _lastState = null;
     state = ScannerState.idle;
+  }
+
+  /// Called when navigating away to another screen to freeze the scanner gracefully.
+  void suspendScanner() {
+    if (state != ScannerState.idle) {
+      _lastState = state;
+      state = ScannerState.paused;
+    }
+  }
+
+  /// Called when returning to the camera from another screen.
+  void restoreScanner() {
+    if (_lastState != null) {
+      if (_lastState == ScannerState.scanning || _lastState == ScannerState.processing) {
+         _consecutiveFrames = 0;
+         _candidate = null;
+         state = ScannerState.scanning;
+      } else {
+         state = _lastState!;
+      }
+      _lastState = null;
+    } else {
+      openCamera();
+    }
   }
 
   void pausePreview() {

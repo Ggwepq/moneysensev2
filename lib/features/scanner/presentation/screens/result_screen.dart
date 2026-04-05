@@ -10,7 +10,6 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
-import '../../../settings/domain/entities/app_settings.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/entities/scanner_state.dart';
@@ -284,12 +283,12 @@ class _BillRepresentation extends StatelessWidget {
 
   Color get _dominantColor {
     switch (denomination) {
-      case '1000': return const Color(0xFF1976D2); // Blue
-      case '500':  return const Color(0xFFFBC02D); // Yellow
-      case '200':  return const Color(0xFF388E3C); // Green
-      case '100':  return const Color(0xFF7B1FA2); // Purple
-      case '50':   return const Color(0xFFD32F2F); // Red
-      case '20':   return const Color(0xFFF57C00); // Orange
+      case '1000': return const Color(0xFF007BFF); // Vivid Blue
+      case '500':  return const Color(0xFFFFC107); // Vivid Amber
+      case '200':  return const Color(0xFF28A745); // Vivid Green
+      case '100':  return const Color(0xFF9C27B0); // Vivid Purple
+      case '50':   return const Color(0xFFDC3545); // Vivid Red
+      case '20':   return const Color(0xFFFF5722); // Vivid Deep Orange
       default:     return Colors.grey.shade700;
     }
   }
@@ -351,19 +350,25 @@ class _BillRepresentation extends StatelessWidget {
                   Text(
                     '₱',
                     style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     denomination,
-                    style: const TextStyle(
-                      fontSize: 72,
+                    style: TextStyle(
+                      fontSize: 84,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: -2,
+                      shadows: [
+                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
+                      ],
                     ),
                   ),
                 ],
@@ -382,12 +387,12 @@ class _CoinRepresentation extends StatelessWidget {
 
   List<Color> get _gradientColors {
     if (denomination == '20') {
-      return [const Color(0xFFFFCA28), const Color(0xFFF57F17)]; // Gold/Bronze
+      return [const Color(0xFFFFD54F), const Color(0xFFFF8F00)]; // High contrast Gold/Bronze
     } else if (denomination == '5') {
-      return [const Color(0xFFFFD54F), const Color(0xFFFFB300)]; // Pale Gold
+      return [const Color(0xFFFFE082), const Color(0xFFFFCA28)]; // Bright Pale Gold
     }
-    // Silver (10, 1)
-    return [const Color(0xFFEEEEEE), const Color(0xFF9E9E9E)];
+    // Very bright Silver (10, 1)
+    return [const Color(0xFFFFFFFF), const Color(0xFFBDBDBD)];
   }
 
   @override
@@ -427,10 +432,13 @@ class _CoinRepresentation extends StatelessWidget {
                 Text(
                   '₱$denomination',
                   style: TextStyle(
-                    fontSize: 56,
+                    fontSize: 64,
                     fontWeight: FontWeight.w900,
                     color: textColor,
                     height: 1.0,
+                    shadows: [
+                      Shadow(color: Colors.white.withValues(alpha: 0.8), blurRadius: 4, offset: const Offset(0, 2)),
+                    ],
                   ),
                 ),
               ],
@@ -472,9 +480,10 @@ class _ConfidenceSentence extends StatelessWidget {
       final kw = result.confidenceLevel == ConfidenceLevel.veryConfident
           ? l10n.confidenceVeryConfident
           : l10n.confidenceConfident;
+      final pct = (result.confidence * 100).toStringAsFixed(0);
       span = TextSpan(style: base, children: [
         TextSpan(text: l10n.resultConfidencePre),
-        TextSpan(text: kw, style: keyword),
+        TextSpan(text: '$kw ($pct%)', style: keyword),
         TextSpan(text: l10n.resultConfidentSuffix(
             result.denomination, result.type)),
       ]);
