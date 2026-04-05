@@ -44,7 +44,7 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
       description,
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
     _controller = controller;
     state = const AsyncValue.loading();

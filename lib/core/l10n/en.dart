@@ -564,4 +564,45 @@ abstract final class EnStrings {
       'Plays brief tones when scanning starts, a result is found, or the '
       'scanner fails to identify. Silenced automatically when TalkBack is '
       'active. Independent of voice feedback.';
+
+  static const String resultUncertainLabel = 'UNCERTAIN';
+  static const String resultTypeCoin = 'coin';
+  static const String resultTypeBill = 'bill';
+
+  static const String confidenceVeryConfident = 'very confident';
+  static const String confidenceConfident = 'confident';
+  static const String confidenceUncertain = 'uncertain';
+
+  static const String resultConfidencePre = 'I am ';
+  static const String resultUncertainSuffix =
+      ' about the scanned bill. Please re-scan.';
+  static String resultConfidentSuffix(String denomination, String type) =>
+      ' that the scanned $type is $denomination pesos.';
+
+  static String resultGoBackHintPre(String seconds) =>
+      'Shake or wait $seconds seconds to ';
+  static const String resultGoBackLink = 'go back';
+
+  static const String resultDismissLabel =
+      'Dismiss result. Go back to scanner.';
+  static const String resultConfirmLabel =
+      'Accept result. Close result screen.';
+
+  static const String resultSemanticUncertain =
+      'Result: Uncertain. Could not identify the currency. Please re-scan.';
+  static String resultSemanticConfident(
+    String denomination,
+    String type,
+    String level,
+  ) => 'Result: $denomination pesos $type. Confidence: $level.';
+  static String resultGoBackHintSemantic(String seconds) =>
+      'Shake or wait $seconds seconds to go back.';
+
+  // ── Scanner screen status labels ───────────────────────────────────────────
+  static const String scannerStatusIdle = 'Camera is off';
+  static const String scannerStatusPreviewing = 'Point camera at currency';
+  static const String scannerStatusScanning = 'Scanning…';
+  static const String scannerStatusProcessing = 'Identifying…';
+  static const String scannerStatusResult = 'Result ready';
+  static const String scannerTapToOpen = 'Tap to open camera';
 }
