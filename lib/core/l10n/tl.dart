@@ -14,9 +14,9 @@ abstract final class TlStrings {
   // Section headers
   static const String sectionGeneral = 'Pangkalahatan';
   static const String sectionScanning = 'Pag-scan';
-  static const String sectionNavigation    = 'Nabigasyon';
+  static const String sectionNavigation = 'Nabigasyon';
   static const String sectionAccessibility = 'Aksesibilidad';
-  static const String sectionHelpSupport   = 'Tulong at Suporta';
+  static const String sectionHelpSupport = 'Tulong at Suporta';
 
   // General: titles
   static const String theme = 'Tema';
@@ -133,17 +133,18 @@ abstract final class TlStrings {
   static const String inertialTutorialStep5 =
       'Ang telepono ay dapat ikiling nang tuluy-tuloy. Ang mabilis na pagkilos ay hindi mag-a-activate.';
   static const String inertialTiltRight = 'Ikiling pakanan → Settings';
-  static const String inertialTiltLeft  = 'Ikiling pakaliwa → Tutorial';
-  static const String inertialTiltBack  = 'Ikiling kahit saan → Bumalik';
-  static const String inertialTryItHint = 'Ikiling ang telepono pakaliwa o pakanan para subukan';
+  static const String inertialTiltLeft = 'Ikiling pakaliwa → Tutorial';
+  static const String inertialTiltBack = 'Ikiling kahit saan → Bumalik';
+  static const String inertialTryItHint =
+      'Ikiling ang telepono pakaliwa o pakanan para subukan';
   static const String inertialTiltDetected = '✓ Natukoy ang pag-ikiling!';
   static const String inertialFlatWarning =
       'Nakahiga ang telepono. Hawakan ito nang patayo para i-activate';
   static const String inertialLegendRight = 'Ikiling pakanan';
-  static const String inertialLegendLeft  = 'Ikiling pakaliwa';
-  static const String inertialLegendOpensSettings  = 'Nagbubukas ng Settings';
-  static const String inertialLegendOpensTutorial  = 'Nagbubukas ng Tutorial';
-  static const String inertialLegendGoBack         = 'Bumalik (mula sa mga sub-screen)';
+  static const String inertialLegendLeft = 'Ikiling pakaliwa';
+  static const String inertialLegendOpensSettings = 'Nagbubukas ng Settings';
+  static const String inertialLegendOpensTutorial = 'Nagbubukas ng Tutorial';
+  static const String inertialLegendGoBack = 'Bumalik (mula sa mga sub-screen)';
 
   // ── Scanner screen ────────────────────────────────────────────────────────
   static const String scanning = 'Nag-scan...';
@@ -189,7 +190,8 @@ abstract final class TlStrings {
   static const String denomTutorialStep4 =
       'Gamitin ang listahang ito para matutunan ang bawat pattern.';
   static const String denomPlayDemoLabel = 'I-play ang Demo ng Vibrasyon';
-  static const String denomPlayDemoSub = 'Pinapalaro ang lahat ng pattern nang sunud-sunod';
+  static const String denomPlayDemoSub =
+      'Pinapalaro ang lahat ng pattern nang sunud-sunod';
   static const String denomPatternsLabel = 'MGA PATTERN';
 
   // ── Tutorial: Shake to Go Back ────────────────────────────────────────────
@@ -226,7 +228,8 @@ abstract final class TlStrings {
       'Mag-swipe PATAAS para i-toggle ang flashlight.';
   static const String gestureTutorialStep5 =
       'Mag-double-tap sa scanner para i-freeze o ituloy ang live preview.';
-  static const String gestureTryHint = 'Mag-swipe o mag-double-tap dito para subukan';
+  static const String gestureTryHint =
+      'Mag-swipe o mag-double-tap dito para subukan';
   static const String gestureSwipeRight = 'Swipe pakanan';
   static const String gestureSwipeLeft = 'Swipe pakaliwa';
   static const String gestureSwipeUp = 'Swipe pataas';
@@ -234,7 +237,8 @@ abstract final class TlStrings {
   static const String gestureOpensSettings = 'Nagbubukas ng Settings';
   static const String gestureOpensTutorial = 'Nagbubukas ng Tutorial';
   static const String gestureTogglesFlash = 'Nag-toggle ng flashlight';
-  static const String gestureFreezesPreview = 'Nagpe-freeze / nagpapatuloy ng preview';
+  static const String gestureFreezesPreview =
+      'Nagpe-freeze / nagpapatuloy ng preview';
   static const String gestureLabelRight = '→ Nagbubukas ng Settings';
   static const String gestureLabelLeft = '← Nagbubukas ng Tutorial';
   static const String gestureLabelUp = '↑ Nag-toggle ng Flashlight';
@@ -243,41 +247,41 @@ abstract final class TlStrings {
   // ── Accessibility settings ────────────────────────────────────────────────
 
   // Vision profile
-  static const String visionProfileTitle    = 'Uri ng Paningin';
+  static const String visionProfileTitle = 'Uri ng Paningin';
   static const String visionProfileSubtitle =
       'Inaangkop ang TTS verbosity, lakas ng haptic, at laki ng font sa iyong pangangailangan.';
   static const String visionProfileSubtitleFull =
       'Ang iyong vision profile ang pundasyon ng accessibility system ng MoneySense. Ang pagpili ng profile ay awtomatikong nagtatakda ng speech verbosity, lakas ng haptic, minimum na laki ng font, at kung ang audio ay itinuturing na pangunahin. Maaari mo pa ring i-fine-tune ang bawat setting nang paisa-isa pagkatapos pumili.';
 
   // TTS
-  static const String ttsTitle    = 'Text-to-Speech';
+  static const String ttsTitle = 'Text-to-Speech';
   static const String ttsSubtitle =
       'Binibigkas ang mga resulta ng scan at mga kaganapan sa app.';
   static const String ttsSubtitleFull =
       'Kapag naka-enable, binabasa ng MoneySense nang malakas ang denominasyon ng bawat bill na na-scan. Sa mas mataas na antas ng verbosity, inuanunsyo rin nito ang mga navigation event, pangalan ng screen, at estado ng system. Gumagamit ng built-in na speech engine ng iyong device.';
-  static const String ttsVerbosityTitle    = 'Antas ng Pagsasalita';
+  static const String ttsVerbosityTitle = 'Antas ng Pagsasalita';
   static const String ttsVerbositySubtitle =
       'Gaano karami ang sinasalita ng app: resulta lamang, o buong narrasyon.';
   static const String ttsVerbositySubtitleFull =
       'Resulta: ang na-scan na denominasyon lamang ang binibigkas. Karaniwan: mga resulta kasama ang mga navigation event at mga kumpirmasyon ng setting. Buo: lahat ay binabalita: mga paglipat ng screen, estado ng scanner, idle na mga prompt, at lahat ng interaksyon.';
-  static const String ttsVerbosityMinimal  = 'Minimal';
+  static const String ttsVerbosityMinimal = 'Minimal';
   static const String ttsVerbosityStandard = 'Karaniwan';
-  static const String ttsVerbosityFull     = 'Buo';
+  static const String ttsVerbosityFull = 'Buo';
 
   // Haptics
-  static const String hapticTitle    = 'Haptic Feedback';
+  static const String hapticTitle = 'Haptic Feedback';
   static const String hapticSubtitle =
       'Vibrasyon na feedback para sa mga resulta ng scan at nabigasyon.';
   static const String hapticSubtitleFull =
       'Kapag naka-enable, nagvi-vibrate ang iyong telepono bilang tugon sa mga resulta ng scan, nabigasyon, at iba pang mga kaganapan. Ang mga pattern ng vibrasyon ay natatangi sa bawat uri ng kaganapan upang maaari itong makilala sa pamamagitan ng pakiramdam, lalo na mahalaga kapag hindi available ang audio.';
-  static const String hapticIntensityTitle    = 'Lakas ng Haptic';
+  static const String hapticIntensityTitle = 'Lakas ng Haptic';
   static const String hapticIntensitySubtitle =
       'Gaano kalakas ang pag-vibrate ng telepono para sa bawat kaganapan.';
   static const String hapticIntensitySubtitleFull =
       'Banayad: magaang na haptic click lamang, walang motor vibration. Katamtaman: haptic click kasama ang maikling motor pulse. Malakas: haptic click kasama ang mayamang multi-pulse na mga pattern. Bawat uri ng kaganapan (resulta ng scan, error, nabigasyon) ay may natatanging pattern na maaari mong matutunan.';
-  static const String hapticIntensitySubtle  = 'Banayad';
-  static const String hapticIntensityMedium  = 'Katamtaman';
-  static const String hapticIntensityStrong  = 'Malakas';
+  static const String hapticIntensitySubtle = 'Banayad';
+  static const String hapticIntensityMedium = 'Katamtaman';
+  static const String hapticIntensityStrong = 'Malakas';
 
   // Vision profile descriptions
   static const String visionLowVisionDesc =
@@ -288,7 +292,8 @@ abstract final class TlStrings {
       'Audio ang pangunahin. Lahat ay binabalita ng TTS. Mga mayamang haptic pattern ang nagdadala ng kahulugan.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
-  static const String onboardingWelcomeTitle = 'Maligayang Pagdating sa MoneySense';
+  static const String onboardingWelcomeTitle =
+      'Maligayang Pagdating sa MoneySense';
   static const String onboardingWelcomeSubtitle =
       'Ang iyong accessible na identifier ng piso.';
   static const String onboardingVisionTitle = 'Paano ka nakakita?';
@@ -299,36 +304,40 @@ abstract final class TlStrings {
   static const String visionFullyBlind = 'Ganap na Bulag';
 
   // Onboarding: Navigation style
-  static const String onboardingNavTitle    = 'Paano ka mag-navigate?';
+  static const String onboardingNavTitle = 'Paano ka mag-navigate?';
   static const String onboardingNavSubtitle =
       'Piliin kung paano gusto mong lumipat sa pagitan ng mga screen. Maaari mong baguhin ito sa Settings.';
-  static const String onboardingNavNormal      = 'Karaniwan';
-  static const String onboardingNavNormalDesc  = 'Gamitin ang mga pindutan at bottom navigation bar.';
-  static const String onboardingNavGestural    = 'Gestural';
-  static const String onboardingNavGesturalDesc = 'I-swipe pakaliwa o pakanan para buksan ang Settings at Tutorial.';
-  static const String onboardingNavInertial    = 'Inertial';
-  static const String onboardingNavInertialDesc = 'Ikiling ang iyong telepono pakaliwa o pakanan para mag-navigate.';
+  static const String onboardingNavNormal = 'Karaniwan';
+  static const String onboardingNavNormalDesc =
+      'Gamitin ang mga pindutan at bottom navigation bar.';
+  static const String onboardingNavGestural = 'Gestural';
+  static const String onboardingNavGesturalDesc =
+      'I-swipe pakaliwa o pakanan para buksan ang Settings at Tutorial.';
+  static const String onboardingNavInertial = 'Inertial';
+  static const String onboardingNavInertialDesc =
+      'Ikiling ang iyong telepono pakaliwa o pakanan para mag-navigate.';
 
   // Onboarding: Permissions
-  static const String onboardingPermissionTitle    = 'Access sa Camera';
+  static const String onboardingPermissionTitle = 'Access sa Camera';
   static const String onboardingPermissionSubtitle =
       'Kailangan ng MoneySense ang camera para matukoy ang pera. Pindutin ang pindutan sa ibaba para pahintulutan.';
-  static const String onboardingPermissionGrant    = 'Pahintulutan ang camera';
-  static const String onboardingPermissionGranted  = 'Pinahintulutan na ang camera';
-  static const String onboardingPermissionDenied   =
+  static const String onboardingPermissionGrant = 'Pahintulutan ang camera';
+  static const String onboardingPermissionGranted =
+      'Pinahintulutan na ang camera';
+  static const String onboardingPermissionDenied =
       'Hindi pinahintulutan ang camera. Maaari mo itong payagan sa Settings ng iyong device.';
-  static const String onboardingPermissionSkip     = 'Preskindiin muna';
+  static const String onboardingPermissionSkip = 'Preskindiin muna';
 
   // Onboarding: Finish
-  static const String onboardingFinishTitle    = 'Handa ka na!';
+  static const String onboardingFinishTitle = 'Handa ka na!';
   static const String onboardingFinishSubtitle =
       'Handang gamitin ang MoneySense. Gusto mo bang mabigyan ng mabilis na gabay sa app?';
-  static const String onboardingFinishTour     = 'Ipakita sa akin';
-  static const String onboardingFinishSkip     = 'Magsimulang mag-scan';
+  static const String onboardingFinishTour = 'Ipakita sa akin';
+  static const String onboardingFinishSkip = 'Magsimulang mag-scan';
 
   // Tutorial: App Navigation card
   static const String tutorialCardAppNavTitle = 'Nabigasyon sa App';
-  static const String tutorialCardAppNavDesc  =
+  static const String tutorialCardAppNavDesc =
       'Gabay sa tatlong screen at kung paano maabot ang mga ito.';
 
   static const String next = 'Susunod';
@@ -337,13 +346,13 @@ abstract final class TlStrings {
   // ── TTS speech strings ────────────────────────────────────────────────────
 
   // App-level
-  static const String ttsSpeechEnabled   = 'Naka-on na ang text to speech.';
+  static const String ttsSpeechEnabled = 'Naka-on na ang text to speech.';
   static const String ttsSpeechDisabling = 'Papatayin ang text to speech.';
 
   // Navigation
   static const String ttsNavSettings = 'Mga Setting.';
   static const String ttsNavTutorial = 'Tutorial.';
-  static const String ttsNavHome     = 'Scanner.';
+  static const String ttsNavHome = 'Scanner.';
 
   // Language change
   static String ttsLangChanging(String langName) =>
@@ -355,45 +364,44 @@ abstract final class TlStrings {
   static const String ttsLangChangingLabel = 'Binabago ang wika…';
 
   // Scanner: results
-  static String ttsScanResult(String denomination) =>
-      denomination;
+  static String ttsScanResult(String denomination) => denomination;
   static String ttsScanResultWithType(String denomination, String type) =>
       '$denomination na $type.';
   static String ttsScanResultLowConfidence(String denomination, String type) =>
       '$denomination na $type. Hindi ganap na sigurado. Pakiverify.';
 
   // Scanner: camera state
-  static const String ttsCameraOpened   = 'Handa na ang kamera.';
-  static const String ttsCameraClosed   = 'Sarado ang kamera.';
-  static const String ttsPreviewFrozen  = 'Na-freeze ang preview.';
+  static const String ttsCameraOpened = 'Handa na ang kamera.';
+  static const String ttsCameraClosed = 'Sarado ang kamera.';
+  static const String ttsPreviewFrozen = 'Na-freeze ang preview.';
   static const String ttsPreviewResumed = 'Na-resume ang preview.';
-  static const String ttsFlashOn        = 'Naka-on ang flashlight.';
-  static const String ttsFlashOff       = 'Naka-off ang flashlight.';
+  static const String ttsFlashOn = 'Naka-on ang flashlight.';
+  static const String ttsFlashOff = 'Naka-off ang flashlight.';
 
   // Scanner: ambient hints
-  static const String ttsScannerIdle  =
+  static const String ttsScannerIdle =
       'Ilagay ang isang bill o barya nang patag sa harap ng kamera para i-scan.';
-  static const String ttsScanStarted  = 'Nagsa-scan.';
-  static const String ttsProcessing   = 'Pinoproseso.';
+  static const String ttsScanStarted = 'Nagsa-scan.';
+  static const String ttsProcessing = 'Pinoproseso.';
 
   // Scanner: errors
   static const String ttsCameraPermissionDenied =
       'Hindi pinahintulutan ang kamera. Mangyaring payagan ang camera permission sa Settings.';
-  static const String ttsScanFailed   =
+  static const String ttsScanFailed =
       'Hindi ma-identify ang pera. Subukan ulit sa mas maayos na ilaw.';
-  static const String ttsCameraError  =
+  static const String ttsCameraError =
       'Error sa kamera. Pakisara at buksan ulit ang scanner.';
 
   // ── Scanner Semantics labels ───────────────────────────────────────────────
-  static const String scannerSemanticIdle       =
+  static const String scannerSemanticIdle =
       'Scanner. Naka-off ang kamera. I-tap ang camera button para magsimula.';
-  static const String scannerSemanticReady      =
+  static const String scannerSemanticReady =
       'Handa na ang scanner. I-double tap para i-scan ang bill o barya.';
-  static const String scannerSemanticScanning   = 'Nagsa-scan. Huwag gumalaw.';
+  static const String scannerSemanticScanning = 'Nagsa-scan. Huwag gumalaw.';
   static const String scannerSemanticProcessing = 'Pinoproseso. Sandali na.';
-  static const String scannerSemanticPaused     =
+  static const String scannerSemanticPaused =
       'Na-pause ang preview. I-double tap para i-resume.';
-  static const String scannerSemanticResult     = 'Handa na ang resulta.';
+  static const String scannerSemanticResult = 'Handa na ang resulta.';
 
   // ── Onboarding TTS ────────────────────────────────────────────────────────
   static const String ttsOnboardingWelcome =
@@ -411,75 +419,75 @@ abstract final class TlStrings {
       'Na-set na ang vision profile.';
 
   // App Navigation Tutorial
-  static const String appNavTutorialTitle       = 'Nabigasyon sa App';
-  static const String appNavTutorialClose       = 'Isara ang tutorial';
-  static const String appNavTutorialBack        = 'Bumalik';
-  static const String appNavTutorialNext        = 'Susunod';
-  static const String appNavTutorialDone        = 'Tapos';
+  static const String appNavTutorialTitle = 'Nabigasyon sa App';
+  static const String appNavTutorialClose = 'Isara ang tutorial';
+  static const String appNavTutorialBack = 'Bumalik';
+  static const String appNavTutorialNext = 'Susunod';
+  static const String appNavTutorialDone = 'Tapos';
 
-  static const String appNavPage1Title          = 'Tatlong screen';
-  static const String appNavPage1Body           =
+  static const String appNavPage1Title = 'Tatlong screen';
+  static const String appNavPage1Body =
       'Ang MoneySense ay may tatlong screen na palaging maabot mula kahit saan sa app.';
-  static const String appNavScannerLabel        = 'Scanner';
-  static const String appNavScannerDesc         =
+  static const String appNavScannerLabel = 'Scanner';
+  static const String appNavScannerDesc =
       'Itutok ang camera sa piso para makilala ito.';
-  static const String appNavSettingsLabel       = 'Mga Setting';
-  static const String appNavSettingsDesc        =
+  static const String appNavSettingsLabel = 'Mga Setting';
+  static const String appNavSettingsDesc =
       'Baguhin ang vision profile, wika, nabigasyon, at audio.';
-  static const String appNavTutorialLabel       = 'Tutorial';
-  static const String appNavTutorialDesc        =
+  static const String appNavTutorialLabel = 'Tutorial';
+  static const String appNavTutorialDesc =
       'Mga gabay para sa bawat feature ng app.';
 
-  static const String appNavPage2Title          = 'Bottom navigation';
-  static const String appNavPage2Body           =
+  static const String appNavPage2Title = 'Bottom navigation';
+  static const String appNavPage2Body =
       'Laging nakita ang bottom bar. I-tap ang kaliwang icon para sa Mga Setting, '
       'ang gitna para magsimula o tumigil sa pag-scan, at ang kanang icon para sa Tutorial.';
-  static const String appNavPage2Note           =
+  static const String appNavPage2Note =
       'Ito ang pangunahing paraan ng nabigasyon. Sinusuportahan ng lahat ng tatlong estilo.';
 
-  static const String appNavPage3Title          = 'Gestural na nabigasyon';
-  static const String appNavPage3Body           =
+  static const String appNavPage3Title = 'Gestural na nabigasyon';
+  static const String appNavPage3Body =
       'Kapag naka-on ang Gestural mode, maaari kang mag-swipe pakaliwa o pakanan '
       'gamit ang isang daliri sa scanner screen para buksan ang Mga Setting o Tutorial.';
-  static const String appNavPage3Note           =
+  static const String appNavPage3Note =
       'I-enable sa Mga Setting sa ilalim ng Nabigasyon, o bumalik at baguhin ang iyong estilo.';
 
-  static const String appNavPage4Title          = 'Inertial na nabigasyon';
-  static const String appNavPage4Body           =
+  static const String appNavPage4Title = 'Inertial na nabigasyon';
+  static const String appNavPage4Body =
       'Kapag naka-on ang Inertial mode, ihilig ang telepono pakaliwa para buksan ang Tutorial '
       'at pakanan para buksan ang Mga Setting. Hawakan ang tilt ng isang segundo para kumpirmahin.';
-  static const String appNavPage4Note           =
+  static const String appNavPage4Note =
       'Kapaki-pakinabang kapag kailangan mo ng hands-free na nabigasyon habang hawak ang pera.';
 
-  static const String appNavPage5Title          = 'I-shake para bumalik';
-  static const String appNavPage5Body           =
+  static const String appNavPage5Title = 'I-shake para bumalik';
+  static const String appNavPage5Body =
       'Mula sa anumang screen, i-shake ang telepono para bumalik sa scanner. '
       'Hindi na kailangan ng button.';
-  static const String appNavPage5Note           =
+  static const String appNavPage5Note =
       'I-enable o i-disable ito sa Mga Setting sa ilalim ng Nabigasyon.';
 
-  static const String appNavNavBottomBar        = 'Bottom Bar';
-  static const String appNavNavGestural         = 'Gestural';
-  static const String appNavNavInertial         = 'Inertial';
+  static const String appNavNavBottomBar = 'Bottom Bar';
+  static const String appNavNavGestural = 'Gestural';
+  static const String appNavNavInertial = 'Inertial';
 
   // Splash / startup screen
-  static const String splashGettingReady        = 'Naghahanda…';
-  static const String splashLoadingVoice        = 'Naglo-load ng boses…';
-  static const String splashReadyToScan         = 'Handa nang mag-scan.';
+  static const String splashGettingReady = 'Naghahanda…';
+  static const String splashLoadingVoice = 'Naglo-load ng boses…';
+  static const String splashReadyToScan = 'Handa nang mag-scan.';
 
   // Reset Settings
-  static const String resetSettingsTitle        = 'I-reset ang Mga Setting';
-  static const String resetSettingsSubtitle     =
+  static const String resetSettingsTitle = 'I-reset ang Mga Setting';
+  static const String resetSettingsSubtitle =
       'Ibalik ang lahat ng setting sa default.';
-  static const String resetDialogTitle          = 'I-reset ang Mga Setting?';
-  static const String resetDialogBody           =
+  static const String resetDialogTitle = 'I-reset ang Mga Setting?';
+  static const String resetDialogBody =
       'Ibabalik ang lahat ng setting sa kanilang default na halaga. '
       'Hindi maaapektuhan ang kasaysayan ng pag-scan.';
-  static const String resetDialogRunOnboarding  =
+  static const String resetDialogRunOnboarding =
       'Patakbuhin muli ang gabay sa pag-setup pagkatapos ng reset?';
-  static const String resetDialogYesOnboarding  = 'Oo, patakbuhin';
-  static const String resetDialogNoOnboarding   = 'Hindi, i-reset lang';
-  static const String resetDialogCancel         = 'Kanselahin';
+  static const String resetDialogYesOnboarding = 'Oo, patakbuhin';
+  static const String resetDialogNoOnboarding = 'Hindi, i-reset lang';
+  static const String resetDialogCancel = 'Kanselahin';
 
   // Tutorial audio guides — spoken on screen entry (TTS)
   static const String ttsInertialGuide =
@@ -546,12 +554,54 @@ abstract final class TlStrings {
       'Bawat natukoy na shake ay nagdaragdag sa counter.';
 
   // Earcon setting
-  static const String earconTitle           = 'Mga Sound Effect';
-  static const String earconSubtitle        =
+  static const String earconTitle = 'Mga Sound Effect';
+  static const String earconSubtitle =
       'Maikling audio cues para sa mga scan event.';
-  static const String earconSubtitleFull    =
+  static const String earconSubtitleFull =
       'Nagpapatugtog ng maikling tono kapag nagsisimula ang scan, '
       'may nakitang resulta, o hindi ma-identify ng scanner. '
       'Awtomatikong nata-tahimik kapag aktibo ang TalkBack. '
       'Hiwalay sa voice feedback.';
+
+  // ── Result screen ──────────────────────────────────────────────────────────
+  static const String resultUncertainLabel = 'HINDI SIGURADO';
+  static const String resultTypeCoin = 'barya';
+  static const String resultTypeBill = 'bill';
+
+  static const String confidenceVeryConfident = 'lubos na sigurado';
+  static const String confidenceConfident = 'sigurado';
+  static const String confidenceUncertain = 'hindi sigurado';
+
+  static const String resultConfidencePre = 'Ako ay ';
+  static const String resultUncertainSuffix =
+      ' tungkol sa na-scan na pera. Pakisubukan ulit.';
+  static String resultConfidentSuffix(String denomination, String type) =>
+      ' na ang na-scan na $type ay $denomination piso.';
+
+  static String resultGoBackHintPre(String seconds) =>
+      'I-shake o maghintay ng $seconds segundo para ';
+  static const String resultGoBackLink = 'bumalik';
+
+  static const String resultDismissLabel =
+      'I-dismiss ang resulta. Bumalik sa scanner.';
+  static const String resultConfirmLabel =
+      'Tanggapin ang resulta. Isara ang result screen.';
+
+  static const String resultSemanticUncertain =
+      'Resulta: Hindi sigurado. Hindi ma-identify ang pera. Pakisubukan ulit.';
+  static String resultSemanticConfident(
+    String denomination,
+    String type,
+    String level,
+  ) => 'Resulta: $denomination piso na $type. Antas ng kumpiyansa: $level.';
+  static String resultGoBackHintSemantic(String seconds) =>
+      'I-shake o maghintay ng $seconds segundo para bumalik.';
+
+  // ── Scanner screen status labels ───────────────────────────────────────────
+  static const String scannerStatusIdle = 'Naka-off ang kamera';
+  static const String scannerStatusPreviewing = 'Ituro ang kamera sa pera';
+  static const String scannerStatusScanning = 'Nagsa-scan…';
+  static const String scannerStatusProcessing = 'Kinikilala…';
+  static const String scannerStatusResult = 'Handa na ang resulta';
+  static const String scannerTapToOpen = 'I-tap para buksan ang kamera';
 }

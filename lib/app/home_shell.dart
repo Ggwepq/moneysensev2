@@ -6,6 +6,7 @@ import '../core/services/earcon_service.dart';
 import '../core/services/inertial_detector_widget.dart';
 import '../core/services/speech_scripts.dart';
 import '../core/services/tts_service.dart';
+import '../features/scanner/domain/entities/scanner_state.dart';
 import '../features/scanner/presentation/providers/scanner_provider.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
@@ -117,6 +118,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final cameraOpen = ref.watch(cameraOpenProvider);
+    final scannerState = ref.watch(scannerStateProvider);
 
     return InertialDetectorWidget(
       onTiltLeft:  _pushTutorial,
@@ -128,7 +130,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             if (index == 2) _pushTutorial();
           },
         ),
-        bottomNavigationBar: MsBottomNav(
+        bottomNavigationBar: scannerState == ScannerState.result 
+          ? null 
+          : MsBottomNav(
           currentIndex: 1,
           isCameraOpen: cameraOpen,
           onTap: (index) {
