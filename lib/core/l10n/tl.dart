@@ -10,6 +10,8 @@ abstract final class TlStrings {
 
   // ── Settings screen ───────────────────────────────────────────────────────
   static const String settings = 'Mga Setting';
+  static const String simpleMode = 'Simpleng Menu';
+  static const String advancedMode = 'Detalyadong Menu';
 
   // Section headers
   static const String sectionGeneral = 'Pangkalahatan';

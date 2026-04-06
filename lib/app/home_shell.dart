@@ -10,7 +10,7 @@ import '../features/scanner/domain/entities/scanner_state.dart';
 import '../features/scanner/presentation/providers/scanner_provider.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
-import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/settings/presentation/screens/simple_settings_screen.dart';
 import '../features/tutorial/domain/tutorial_route.dart';
 import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -49,7 +49,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedSettings(_l10n));
-    Navigator.of(context).push(_slideFromLeft(const SettingsScreen()));
+    Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen()));
   }
 
   void _pushTutorial() {

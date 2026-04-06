@@ -26,6 +26,8 @@ class AppLocalizations {
 
   // ── Settings ──────────────────────────────────────────────────────────────
   String get settings => isTagalog ? TlStrings.settings : EnStrings.settings;
+  String get simpleMode => isTagalog ? TlStrings.simpleMode : EnStrings.simpleMode;
+  String get advancedMode => isTagalog ? TlStrings.advancedMode : EnStrings.advancedMode;
 
   // Sections
   String get sectionGeneral =>
