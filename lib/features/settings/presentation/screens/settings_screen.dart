@@ -46,6 +46,7 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return _SwipeBackWrapper(
+      isGesturalNavigationEnabled: settings.gesturalNavigation,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.settings),
@@ -67,427 +68,483 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
-        body: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.pagePadding,
-            vertical: AppSpacing.base,
-          ),
+        body: Column(
           children: [
-            // ── General ────────────────────────────────────────────────
-            MsSectionHeader(title: l10n.sectionGeneral),
-            MsSettingsCard(
-              children: [
-                _ThemeTile(
-                  label: l10n.theme,
-                  subtitle: isFullVerbosity
-                      ? l10n.themeSubtitleFull
-                      : l10n.themeSubtitle,
-                  themeMode: settings.themeMode,
-                  l10n: l10n,
-                  visionConfig: visionConfig,
-                  onChanged: (v) {
-                    EarconService.instance.play(EarconEvent.actionConfirmed);
-                    notifier.setThemeMode(v);
-                    final label = v == AppThemeMode.system
-                        ? l10n.themeSystem
-                        : v == AppThemeMode.light
-                        ? l10n.themeLight
-                        : l10n.themeDark;
-                    say(SettingsSpeech.changed(l10n, l10n.theme, label));
-                  },
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pagePadding,
+                  vertical: AppSpacing.base,
                 ),
-                _LanguageTile(
-                  label: l10n.language,
-                  subtitle: isFullVerbosity
-                      ? l10n.languageSubtitleFull
-                      : l10n.languageSubtitle,
-                  language: settings.language,
-                  l10n: l10n,
-                  visionConfig: visionConfig,
-                  onChanged: notifier.setLanguage,
-                ),
-                MsSliderTile(
-                  title: l10n.fontSize,
-                  subtitle: isFullVerbosity
-                      ? l10n.fontSizeSubtitleFull
-                      : l10n.fontSizeSubtitle,
-                  value: settings.fontScale,
-                  min: 0.8,
-                  max: 2.0,
-                  onChanged: (v) {
-                    notifier.setFontScale(v);
-                    final pct = ((v - 0.8) / (2.0 - 0.8) * 100).round();
-                    say(SettingsSpeech.changed(l10n, l10n.fontSize, '$pct%'));
-                  },
-                  displayLabel:
-                      '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
-                ),
-              ],
-            ),
-
-            // ── Scanning ───────────────────────────────────────────────
-            MsSectionHeader(title: l10n.sectionScanning),
-            MsSettingsCard(
-              children: [
-                MsToggleTile(
-                  title: l10n.useFrontCamera,
-                  subtitle: isFullVerbosity
-                      ? l10n.useFrontCameraSubtitleFull
-                      : l10n.useFrontCameraSubtitle,
-                  value: settings.useFrontCamera,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleFrontCamera(v);
-                    say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, v));
-                  },
-                ),
-                MsToggleTile(
-                  title: l10n.useFlashlight,
-                  subtitle: isFullVerbosity
-                      ? l10n.useFlashlightSubtitleFull
-                      : l10n.useFlashlightSubtitle,
-                  value: settings.useFlashlight,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleFlashlight(v);
-                    say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, v));
-                  },
-                ),
-                MsToggleTile(
-                  title: l10n.denominationVibration,
-                  subtitle: isFullVerbosity
-                      ? l10n.denominationVibrationSubtitleFull
-                      : l10n.denominationVibrationSubtitle,
-                  value: settings.denominationVibration,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleDenominationVibration(v);
-                    say(
-                      SettingsSpeech.toggled(
-                        l10n,
-                        l10n.denominationVibration,
-                        v,
+                children: [
+                  // ── General ────────────────────────────────────────────────
+                  MsSectionHeader(title: l10n.sectionGeneral),
+                  MsSettingsCard(
+                    children: [
+                      _ThemeTile(
+                        label: l10n.theme,
+                        subtitle: isFullVerbosity
+                            ? l10n.themeSubtitleFull
+                            : l10n.themeSubtitle,
+                        themeMode: settings.themeMode,
+                        l10n: l10n,
+                        visionConfig: visionConfig,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          notifier.setThemeMode(v);
+                          final label = v == AppThemeMode.system
+                              ? l10n.themeSystem
+                              : v == AppThemeMode.light
+                              ? l10n.themeLight
+                              : l10n.themeDark;
+                          say(SettingsSpeech.changed(l10n, l10n.theme, label));
+                        },
                       ),
-                    );
-                  },
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.denominationVibration,
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Navigation ─────────────────────────────────────────────
-            MsSectionHeader(title: l10n.sectionNavigation),
-            MsSettingsCard(
-              children: [
-                MsToggleTile(
-                  title: l10n.shakeToGoBack,
-                  subtitle: isFullVerbosity
-                      ? l10n.shakeToGoBackSubtitleFull
-                      : l10n.shakeToGoBackSubtitle,
-                  value: settings.shakeToGoBack,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleShakeToGoBack(v);
-                    say(SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v));
-                  },
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.shakeToGoBack,
-                  ),
-                ),
-                MsTimerTile(
-                  title: l10n.goBackTimerOnResult,
-                  subtitle: isFullVerbosity
-                      ? l10n.goBackTimerSubtitleFull
-                      : l10n.goBackTimerSubtitle,
-                  enabled: settings.goBackTimerSeconds > 0,
-                  value: settings.goBackTimerSeconds > 0
-                      ? settings.goBackTimerSeconds
-                      : 20,
-                  onToggle: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleGoBackTimer(v);
-                    say(
-                      SettingsSpeech.toggled(l10n, l10n.goBackTimerOnResult, v),
-                    );
-                  },
-                  onValueChanged: notifier.setGoBackTimer,
-                ),
-                MsToggleTile(
-                  title: l10n.gesturalNavigation,
-                  subtitle: isFullVerbosity
-                      ? l10n.gesturalNavigationSubtitleFull
-                      : l10n.gesturalNavigationSubtitle,
-                  value: settings.gesturalNavigation,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleGesturalNavigation(v);
-                    say(
-                      SettingsSpeech.toggled(l10n, l10n.gesturalNavigation, v),
-                    );
-                  },
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.gesturalNavigation,
-                  ),
-                ),
-                MsToggleTile(
-                  title: l10n.inertialNavigation,
-                  subtitle: isFullVerbosity
-                      ? l10n.inertialNavigationSubtitleFull
-                      : l10n.inertialNavigationSubtitle,
-                  value: settings.inertialNavigation,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleInertialNavigation(v);
-                    say(
-                      SettingsSpeech.toggled(l10n, l10n.inertialNavigation, v),
-                    );
-                  },
-                  showHelpButton: true,
-                  onHelpTap: () => TutorialNavigator.push(
-                    context,
-                    TutorialRoute.inertialNavigation,
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Accessibility ───────────────────────────────────────────
-            MsSectionHeader(title: l10n.sectionAccessibility),
-            MsSettingsCard(
-              children: [
-                _VisionProfileTile(
-                  label: l10n.visionProfileTitle,
-                  subtitle: isFullVerbosity
-                      ? l10n.visionProfileSubtitleFull
-                      : l10n.visionProfileSubtitle,
-                  profile: settings.visionProfile,
-                  l10n: l10n,
-                  visionConfig: visionConfig,
-                  onChanged: (v) {
-                    EarconService.instance.play(EarconEvent.actionConfirmed);
-                    notifier.setVisionProfile(v);
-                    final label = v == VisionProfile.lowVision
-                        ? l10n.visionLowVision
-                        : v == VisionProfile.partiallyBlind
-                        ? l10n.visionPartiallyBlind
-                        : l10n.visionFullyBlind;
-                    say(
-                      SettingsSpeech.changed(
-                        l10n,
-                        l10n.visionProfileTitle,
-                        label,
+                      _LanguageTile(
+                        label: l10n.language,
+                        subtitle: isFullVerbosity
+                            ? l10n.languageSubtitleFull
+                            : l10n.languageSubtitle,
+                        language: settings.language,
+                        l10n: l10n,
+                        visionConfig: visionConfig,
+                        onChanged: notifier.setLanguage,
                       ),
-                    );
-                  },
-                ),
-                // TTS toggle: spoken BEFORE turning off so user hears it.
-                MsToggleTile(
-                  title: l10n.ttsTitle,
-                  subtitle: isFullVerbosity
-                      ? l10n.ttsSubtitleFull
-                      : l10n.ttsSubtitle,
-                  value: settings.ttsEnabled,
-                  onChanged: (v) {
-                    if (!v) {
-                      EarconService.instance.play(EarconEvent.actionDisabled);
-                      // Announce disabling while TTS is still on, THEN turn off
-                      say(AppSpeech.ttsDisabling(l10n));
-                      Future.delayed(const Duration(milliseconds: 1200), () {
-                        notifier.toggleTts(false);
-                      });
-                    } else {
-                      EarconService.instance.play(EarconEvent.actionEnabled);
-                      notifier.toggleTts(true);
-                      say(AppSpeech.ttsEnabled(l10n));
-                    }
-                  },
-                ),
-                if (settings.ttsEnabled)
-                  _VerbosityTile(
-                    label: l10n.ttsVerbosityTitle,
-                    subtitle: isFullVerbosity
-                        ? l10n.ttsVerbositySubtitleFull
-                        : l10n.ttsVerbositySubtitle,
-                    verbosity: settings.ttsVerbosity,
-                    l10n: l10n,
-                    visionConfig: visionConfig,
-                    onChanged: (v) {
-                      EarconService.instance.play(EarconEvent.actionConfirmed);
-                      notifier.setTtsVerbosity(v);
-                      final label = v == TtsVerbosity.minimal
-                          ? l10n.ttsVerbosityMinimal
-                          : v == TtsVerbosity.standard
-                          ? l10n.ttsVerbosityStandard
-                          : l10n.ttsVerbosityFull;
-                      say(
-                        SettingsSpeech.changed(
-                          l10n,
-                          l10n.ttsVerbosityTitle,
-                          label,
-                        ),
-                      );
-                    },
+                      MsSliderTile(
+                        title: l10n.fontSize,
+                        subtitle: isFullVerbosity
+                            ? l10n.fontSizeSubtitleFull
+                            : l10n.fontSizeSubtitle,
+                        value: settings.fontScale,
+                        min: 0.8,
+                        max: 2.0,
+                        onChanged: (v) {
+                          notifier.setFontScale(v);
+                          final pct = ((v - 0.8) / (2.0 - 0.8) * 100).round();
+                          say(
+                            SettingsSpeech.changed(
+                              l10n,
+                              l10n.fontSize,
+                              '$pct%',
+                            ),
+                          );
+                        },
+                        displayLabel:
+                            '${((settings.fontScale - 0.8) / (2.0 - 0.8) * 100).round()}%',
+                      ),
+                    ],
                   ),
-                MsToggleTile(
-                  title: l10n.hapticTitle,
-                  subtitle: isFullVerbosity
-                      ? l10n.hapticSubtitleFull
-                      : l10n.hapticSubtitle,
-                  value: settings.hapticFeedback,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleHapticFeedback(v);
-                    say(SettingsSpeech.toggled(l10n, l10n.hapticTitle, v));
-                  },
-                ),
-                if (settings.hapticFeedback)
-                  _HapticIntensityTile(
-                    label: l10n.hapticIntensityTitle,
-                    subtitle: isFullVerbosity
-                        ? l10n.hapticIntensitySubtitleFull
-                        : l10n.hapticIntensitySubtitle,
-                    intensity: settings.hapticIntensity,
-                    l10n: l10n,
-                    visionConfig: visionConfig,
-                    onChanged: (v) {
-                      EarconService.instance.play(EarconEvent.actionConfirmed);
-                      notifier.setHapticIntensity(v);
-                      final label = v == HapticIntensity.subtle
-                          ? l10n.hapticIntensitySubtle
-                          : v == HapticIntensity.medium
-                          ? l10n.hapticIntensityMedium
-                          : l10n.hapticIntensityStrong;
-                      say(
-                        SettingsSpeech.changed(
-                          l10n,
-                          l10n.hapticIntensityTitle,
-                          label,
+
+                  // ── Scanning ───────────────────────────────────────────────
+                  MsSectionHeader(title: l10n.sectionScanning),
+                  MsSettingsCard(
+                    children: [
+                      MsToggleTile(
+                        title: l10n.useFrontCamera,
+                        subtitle: isFullVerbosity
+                            ? l10n.useFrontCameraSubtitleFull
+                            : l10n.useFrontCameraSubtitle,
+                        value: settings.useFrontCamera,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleFrontCamera(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.useFrontCamera,
+                              v,
+                            ),
+                          );
+                        },
+                      ),
+                      MsToggleTile(
+                        title: l10n.useFlashlight,
+                        subtitle: isFullVerbosity
+                            ? l10n.useFlashlightSubtitleFull
+                            : l10n.useFlashlightSubtitle,
+                        value: settings.useFlashlight,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleFlashlight(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, l10n.useFlashlight, v),
+                          );
+                        },
+                      ),
+                      MsToggleTile(
+                        title: l10n.denominationVibration,
+                        subtitle: isFullVerbosity
+                            ? l10n.denominationVibrationSubtitleFull
+                            : l10n.denominationVibrationSubtitle,
+                        value: settings.denominationVibration,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleDenominationVibration(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.denominationVibration,
+                              v,
+                            ),
+                          );
+                        },
+                        showHelpButton: true,
+                        onHelpTap: () => TutorialNavigator.push(
+                          context,
+                          TutorialRoute.denominationVibration,
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                MsToggleTile(
-                  title: l10n.earconTitle,
-                  subtitle: isFullVerbosity
-                      ? l10n.earconSubtitleFull
-                      : l10n.earconSubtitle,
-                  value: settings.earconEnabled,
-                  onChanged: (v) {
-                    EarconService.instance.play(
-                      v
-                          ? EarconEvent.actionEnabled
-                          : EarconEvent.actionDisabled,
-                    );
-                    notifier.toggleEarcon(v);
-                    EarconService.instance.setEnabled(v);
-                    say(SettingsSpeech.toggled(l10n, l10n.earconTitle, v));
-                  },
-                ),
-              ],
+
+                  // ── Navigation ─────────────────────────────────────────────
+                  MsSectionHeader(title: l10n.sectionNavigation),
+                  MsSettingsCard(
+                    children: [
+                      MsToggleTile(
+                        title: l10n.shakeToGoBack,
+                        subtitle: isFullVerbosity
+                            ? l10n.shakeToGoBackSubtitleFull
+                            : l10n.shakeToGoBackSubtitle,
+                        value: settings.shakeToGoBack,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleShakeToGoBack(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, l10n.shakeToGoBack, v),
+                          );
+                        },
+                        showHelpButton: true,
+                        onHelpTap: () => TutorialNavigator.push(
+                          context,
+                          TutorialRoute.shakeToGoBack,
+                        ),
+                      ),
+                      MsTimerTile(
+                        title: l10n.goBackTimerOnResult,
+                        subtitle: isFullVerbosity
+                            ? l10n.goBackTimerSubtitleFull
+                            : l10n.goBackTimerSubtitle,
+                        enabled: settings.goBackTimerSeconds > 0,
+                        value: settings.goBackTimerSeconds > 0
+                            ? settings.goBackTimerSeconds
+                            : 20,
+                        onToggle: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleGoBackTimer(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.goBackTimerOnResult,
+                              v,
+                            ),
+                          );
+                        },
+                        onValueChanged: notifier.setGoBackTimer,
+                      ),
+                      MsToggleTile(
+                        title: l10n.gesturalNavigation,
+                        subtitle: isFullVerbosity
+                            ? l10n.gesturalNavigationSubtitleFull
+                            : l10n.gesturalNavigationSubtitle,
+                        value: settings.gesturalNavigation,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleGesturalNavigation(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.gesturalNavigation,
+                              v,
+                            ),
+                          );
+                        },
+                        showHelpButton: true,
+                        onHelpTap: () => TutorialNavigator.push(
+                          context,
+                          TutorialRoute.gesturalNavigation,
+                        ),
+                      ),
+                      MsToggleTile(
+                        title: l10n.inertialNavigation,
+                        subtitle: isFullVerbosity
+                            ? l10n.inertialNavigationSubtitleFull
+                            : l10n.inertialNavigationSubtitle,
+                        value: settings.inertialNavigation,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleInertialNavigation(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.inertialNavigation,
+                              v,
+                            ),
+                          );
+                        },
+                        showHelpButton: true,
+                        onHelpTap: () => TutorialNavigator.push(
+                          context,
+                          TutorialRoute.inertialNavigation,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ── Accessibility ───────────────────────────────────────────
+                  MsSectionHeader(title: l10n.sectionAccessibility),
+                  MsSettingsCard(
+                    children: [
+                      _VisionProfileTile(
+                        label: l10n.visionProfileTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.visionProfileSubtitleFull
+                            : l10n.visionProfileSubtitle,
+                        profile: settings.visionProfile,
+                        l10n: l10n,
+                        visionConfig: visionConfig,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          notifier.setVisionProfile(v);
+                          final label = v == VisionProfile.lowVision
+                              ? l10n.visionLowVision
+                              : v == VisionProfile.partiallyBlind
+                              ? l10n.visionPartiallyBlind
+                              : l10n.visionFullyBlind;
+                          say(
+                            SettingsSpeech.changed(
+                              l10n,
+                              l10n.visionProfileTitle,
+                              label,
+                            ),
+                          );
+                        },
+                      ),
+                      // TTS toggle: spoken BEFORE turning off so user hears it.
+                      MsToggleTile(
+                        title: l10n.ttsTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.ttsSubtitleFull
+                            : l10n.ttsSubtitle,
+                        value: settings.ttsEnabled,
+                        onChanged: (v) {
+                          if (!v) {
+                            EarconService.instance.play(
+                              EarconEvent.actionDisabled,
+                            );
+                            // Announce disabling while TTS is still on, THEN turn off
+                            say(AppSpeech.ttsDisabling(l10n));
+                            Future.delayed(
+                              const Duration(milliseconds: 1200),
+                              () {
+                                notifier.toggleTts(false);
+                              },
+                            );
+                          } else {
+                            EarconService.instance.play(
+                              EarconEvent.actionEnabled,
+                            );
+                            notifier.toggleTts(true);
+                            say(AppSpeech.ttsEnabled(l10n));
+                          }
+                        },
+                      ),
+                      if (settings.ttsEnabled)
+                        _VerbosityTile(
+                          label: l10n.ttsVerbosityTitle,
+                          subtitle: isFullVerbosity
+                              ? l10n.ttsVerbositySubtitleFull
+                              : l10n.ttsVerbositySubtitle,
+                          verbosity: settings.ttsVerbosity,
+                          l10n: l10n,
+                          visionConfig: visionConfig,
+                          onChanged: (v) {
+                            EarconService.instance.play(
+                              EarconEvent.actionConfirmed,
+                            );
+                            notifier.setTtsVerbosity(v);
+                            final label = v == TtsVerbosity.minimal
+                                ? l10n.ttsVerbosityMinimal
+                                : v == TtsVerbosity.standard
+                                ? l10n.ttsVerbosityStandard
+                                : l10n.ttsVerbosityFull;
+                            say(
+                              SettingsSpeech.changed(
+                                l10n,
+                                l10n.ttsVerbosityTitle,
+                                label,
+                              ),
+                            );
+                          },
+                        ),
+                      MsToggleTile(
+                        title: l10n.hapticTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.hapticSubtitleFull
+                            : l10n.hapticSubtitle,
+                        value: settings.hapticFeedback,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleHapticFeedback(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, l10n.hapticTitle, v),
+                          );
+                        },
+                      ),
+                      if (settings.hapticFeedback)
+                        _HapticIntensityTile(
+                          label: l10n.hapticIntensityTitle,
+                          subtitle: isFullVerbosity
+                              ? l10n.hapticIntensitySubtitleFull
+                              : l10n.hapticIntensitySubtitle,
+                          intensity: settings.hapticIntensity,
+                          l10n: l10n,
+                          visionConfig: visionConfig,
+                          onChanged: (v) {
+                            EarconService.instance.play(
+                              EarconEvent.actionConfirmed,
+                            );
+                            notifier.setHapticIntensity(v);
+                            final label = v == HapticIntensity.subtle
+                                ? l10n.hapticIntensitySubtle
+                                : v == HapticIntensity.medium
+                                ? l10n.hapticIntensityMedium
+                                : l10n.hapticIntensityStrong;
+                            say(
+                              SettingsSpeech.changed(
+                                l10n,
+                                l10n.hapticIntensityTitle,
+                                label,
+                              ),
+                            );
+                          },
+                        ),
+                      MsToggleTile(
+                        title: l10n.earconTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.earconSubtitleFull
+                            : l10n.earconSubtitle,
+                        value: settings.earconEnabled,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleEarcon(v);
+                          EarconService.instance.setEnabled(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, l10n.earconTitle, v),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // ── Help & Support ─────────────────────────────────────────
+                  MsSectionHeader(title: l10n.sectionHelpSupport),
+                  MsSettingsCard(
+                    children: [
+                      MsActionTile(
+                        title: l10n.checkForUpdates,
+                        subtitle: l10n.checkForUpdatesSubtitle,
+                        icon: Icons.refresh_rounded,
+                        onTap: () {
+                          /* TODO */
+                        },
+                      ),
+                      MsActionTile(
+                        title: l10n.playOnboardingSetup,
+                        subtitle: l10n.playOnboardingSubtitle,
+                        icon: Icons.play_arrow_rounded,
+                        onTap: () {
+                          // Pop settings first so the slide transition is clean,
+                          // then reset the flag: _AppRoot rebuilds to onboarding.
+                          EarconService.instance.play(EarconEvent.navBack);
+                          Navigator.of(context).pop();
+                          ref.read(onboardingCompleteProvider.notifier).state =
+                              false;
+                        },
+                      ),
+                      MsActionTile(
+                        title: l10n.appInformation,
+                        subtitle: l10n.appInformationSubtitle,
+                        icon: Icons.info_outline_rounded,
+                        onTap: () {
+                          /* TODO */
+                        },
+                      ),
+                      MsActionTile(
+                        title: l10n.leaveAFeedback,
+                        subtitle: l10n.leaveAFeedbackSubtitle,
+                        icon: Icons.campaign_outlined,
+                        onTap: () {
+                          /* TODO */
+                        },
+                      ),
+                      MsActionTile(
+                        title: l10n.termsOfServices,
+                        subtitle: l10n.termsOfServicesSubtitle,
+                        icon: Icons.description_outlined,
+                        onTap: () {
+                          /* TODO */
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // ── Reset Settings ─────────────────────────────────────────
+                  const SizedBox(height: AppSpacing.lg),
+                  _ResetSettingsTile(l10n: l10n),
+
+                  const SizedBox(height: AppSpacing.xxxl),
+                ],
+              ),
             ),
-
-            // ── Help & Support ─────────────────────────────────────────
-            MsSectionHeader(title: l10n.sectionHelpSupport),
-            MsSettingsCard(
-              children: [
-                MsActionTile(
-                  title: l10n.checkForUpdates,
-                  subtitle: l10n.checkForUpdatesSubtitle,
-                  icon: Icons.refresh_rounded,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                MsActionTile(
-                  title: l10n.playOnboardingSetup,
-                  subtitle: l10n.playOnboardingSubtitle,
-                  icon: Icons.play_arrow_rounded,
-                  onTap: () {
-                    // Pop settings first so the slide transition is clean,
-                    // then reset the flag: _AppRoot rebuilds to onboarding.
-                    EarconService.instance.play(EarconEvent.navBack);
-                    Navigator.of(context).pop();
-                    ref.read(onboardingCompleteProvider.notifier).state = false;
-                  },
-                ),
-                MsActionTile(
-                  title: l10n.appInformation,
-                  subtitle: l10n.appInformationSubtitle,
-                  icon: Icons.info_outline_rounded,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                MsActionTile(
-                  title: l10n.leaveAFeedback,
-                  subtitle: l10n.leaveAFeedbackSubtitle,
-                  icon: Icons.campaign_outlined,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-                MsActionTile(
-                  title: l10n.termsOfServices,
-                  subtitle: l10n.termsOfServicesSubtitle,
-                  icon: Icons.description_outlined,
-                  onTap: () {
-                    /* TODO */
-                  },
-                ),
-              ],
-            ),
-
-            // ── Reset Settings ─────────────────────────────────────────
-            const SizedBox(height: AppSpacing.lg),
-            _ResetSettingsTile(l10n: l10n),
-
-            const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
       ),
     );
   }
 }
+
+
 
 class _ThemeTile extends StatelessWidget {
   const _ThemeTile({
@@ -915,8 +972,12 @@ class _HapticIntensityTile extends StatelessWidget {
 }
 
 class _SwipeBackWrapper extends StatelessWidget {
-  const _SwipeBackWrapper({required this.child});
+  const _SwipeBackWrapper({
+    required this.child,
+    required this.isGesturalNavigationEnabled,
+  });
   final Widget child;
+  final bool isGesturalNavigationEnabled;
 
   static const double _minVelocity = 300.0;
   static const double _maxCrossRatio = 0.55;
@@ -925,6 +986,7 @@ class _SwipeBackWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanEnd: (details) {
+        if (!isGesturalNavigationEnabled) return;
         final v = details.velocity.pixelsPerSecond;
         final ax = v.dx.abs();
         final ay = v.dy.abs();

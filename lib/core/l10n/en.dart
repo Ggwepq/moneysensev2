@@ -10,6 +10,8 @@ abstract final class EnStrings {
 
   // ── Settings screen ───────────────────────────────────────────────────────
   static const String settings = 'Settings';
+  static const String simpleMode = 'Simple Mode';
+  static const String advancedMode = 'Advanced Mode';
 
   // Section headers
   static const String sectionGeneral = 'General';
