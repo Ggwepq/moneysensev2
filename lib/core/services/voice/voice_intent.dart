@@ -25,10 +25,20 @@ class ToggleFlashlightIntent extends VoiceIntent {
   final bool turnOn;
 }
 
-/// Indicates switching the camera
+/// Indicates a semantic change of camera direction
 class ChangeCameraIntent extends VoiceIntent {
   const ChangeCameraIntent({required this.toFront});
   final bool toFront;
+}
+
+/// Indicates the start of an active listening session triggered by a wake word
+class WakeIntent extends VoiceIntent {
+  const WakeIntent();
+}
+
+/// Indicates the app should close
+class ExitAppIntent extends VoiceIntent {
+  const ExitAppIntent();
 }
 
 /// General navigation targets

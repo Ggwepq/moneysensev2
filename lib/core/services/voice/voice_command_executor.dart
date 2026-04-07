@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'voice_intent.dart';
@@ -108,6 +109,18 @@ class VoiceCommandExecutor {
         } else if (intent.target == NavTarget.home) {
           say(NavSpeech.returnedHome(l10n));
         }
+        break;
+
+      case ExitAppIntent():
+        say(TtsMessage.ambient('Closing Money Sense', id: 'voice.exit'));
+        // Wait a tiny bit for the TTS queue to register
+        Future.delayed(const Duration(milliseconds: 500), () {
+          SystemNavigator.pop();
+        });
+        break;
+
+      case WakeIntent():
+        // Handled directly by the voice_command_service to transition state.
         break;
 
       case UnknownIntent():

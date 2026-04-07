@@ -12,6 +12,7 @@ import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/settings/presentation/screens/simple_settings_screen.dart';
 
+
 import '../features/settings/domain/entities/app_settings.dart';
 import '../core/services/voice/voice_command_service.dart';
 import '../core/services/voice/voice_command_overlay.dart';

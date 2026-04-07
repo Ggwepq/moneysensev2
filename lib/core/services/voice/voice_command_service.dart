@@ -162,6 +162,15 @@ class VoiceCommandService {
 
     // If it's a known intent, execute immediately even if it's a partial result!
     if (intent is! UnknownIntent) {
+      if (intent is WakeIntent) {
+        if (_isPassiveMode) {
+          stopListening().then((_) {
+             startActiveListening();
+          });
+        }
+        return;
+      }
+
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
 

@@ -9,10 +9,24 @@ class VoiceIntentParser {
     // ── Pre-process ──────────────────────────────────────────────────────────
     // Remove common wake words or polite fillers to extract the bare command.
     final sanitized = lowerStr
-        .replaceAll(RegExp(r'(hey\s+moneysense|hoy\s+moneysense|moneysense|please)'), '')
+        .replaceAll(
+          RegExp(r'(hey\s+moneysense|hoy\s+moneysense|moneysense|please)'),
+          '',
+        )
         .trim();
 
-    if (sanitized.isEmpty) return UnknownIntent(text);
+    if (sanitized.isEmpty) {
+      if (_matches(lowerStr, [
+        'hey moneysense',
+        'hoy moneysense',
+        'moneysense',
+        'hey money sense',
+        'hey maniscense',
+      ])) {
+        return const WakeIntent();
+      }
+      return UnknownIntent(text);
+    }
 
     // ── Scanning ─────────────────────────────────────────────────────────────
     if (_matches(sanitized, [
@@ -21,7 +35,7 @@ class VoiceIntentParser {
       'stop camera',
       'tigil',
       'hinto',
-      'stop'
+      'stop',
     ])) {
       return const PauseScanIntent();
     }
@@ -33,16 +47,29 @@ class VoiceIntentParser {
       'read money',
       'basahin',
       'mag scan',
-      'scan pera'
+      'scan pera',
     ])) {
       return const ScanIntent();
     }
 
     // ── Navigation ───────────────────────────────────────────────────────────
-    if (_matches(sanitized, ['settings', 'open settings', 'go to settings', 'buksan ang settings', 'menu'])) {
+    if (_matches(sanitized, [
+      'settings',
+      'open settings',
+      'go to settings',
+      'buksan ang settings',
+      'menu',
+    ])) {
       return const NavigateIntent(NavTarget.settings);
     }
-    if (_matches(sanitized, ['home', 'go home', 'scanner', 'open scanner', 'bumalik sa home', 'uwi'])) {
+    if (_matches(sanitized, [
+      'home',
+      'go home',
+      'scanner',
+      'open scanner',
+      'bumalik sa home',
+      'uwi',
+    ])) {
       return const NavigateIntent(NavTarget.home);
     }
     if (_matches(sanitized, ['tutorial', 'help', 'tulong', 'open tutorial'])) {
@@ -54,7 +81,7 @@ class VoiceIntentParser {
       'front camera',
       'use front camera',
       'harap na camera',
-      'selfie camera'
+      'selfie camera',
     ])) {
       return const ChangeCameraIntent(toFront: true);
     }
@@ -62,9 +89,21 @@ class VoiceIntentParser {
       'back camera',
       'use back camera',
       'likod na camera',
-      'main camera'
+      'main camera',
     ])) {
       return const ChangeCameraIntent(toFront: false);
+    }
+
+    // ── System ───────────────────────────────────────────────────────────────
+    if (_matches(sanitized, [
+      'close app',
+      'exit',
+      'quit',
+      'sara ang app',
+      'isara',
+      'close moneysense',
+    ])) {
+      return const ExitAppIntent();
     }
     if (_matches(sanitized, [
       'turn on flash',
