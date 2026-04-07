@@ -1,6 +1,7 @@
-import 'package:camera/camera.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/earcon_service.dart';
@@ -8,7 +9,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
-import '../../../scanner/data/datasources/camera_service.dart';
+
 import '../../../settings/domain/entities/app_settings.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -116,24 +117,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _requestPerm() async {
     setState(() => _perm = _PermStatus.requesting);
-    try {
-      final cameras = ref.read(availableCamerasProvider);
-      if (cameras.isEmpty) {
-        if (mounted) setState(() => _perm = _PermStatus.denied);
-        return;
+    
+    final statuses = await [
+      Permission.camera,
+      Permission.microphone,
+    ].request();
+
+    final cameraGranted = statuses[Permission.camera] == PermissionStatus.granted;
+    final micGranted = statuses[Permission.microphone] == PermissionStatus.granted;
+
+    if (mounted) {
+      if (cameraGranted && micGranted) {
+        setState(() => _perm = _PermStatus.granted);
+      } else {
+        setState(() => _perm = _PermStatus.denied);
       }
-      final ctrl = CameraController(cameras.first, ResolutionPreset.low);
-      await ctrl.initialize();
-      await ctrl.dispose();
-      if (mounted) setState(() => _perm = _PermStatus.granted);
-    } on CameraException catch (e) {
-      if (!mounted) return;
-      final denied = e.code == 'CameraAccessDenied' ||
-          e.code == 'cameraPermission' ||
-          e.code == 'CAMERA_ACCESS_DENIED';
-      setState(() => _perm = denied ? _PermStatus.denied : _PermStatus.granted);
-    } catch (_) {
-      if (mounted) setState(() => _perm = _PermStatus.denied);
     }
   }
 
@@ -640,9 +638,9 @@ class _PermPage extends StatelessWidget {
           style: Theme.of(context).textTheme.displayLarge),
       const SizedBox(height: AppSpacing.base),
       Text(
-        denied ? l10n.onboardingPermissionDenied
-            : granted ? l10n.onboardingPermissionGranted
-            : l10n.onboardingPermissionSubtitle,
+        denied ? 'Please enable camera and mic permissions in settings.'
+            : granted ? 'Permissions granted. The app is ready to use!'
+            : 'MoneySense needs access to the Camera and Microphone to scan bills and hear voice commands.',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
       ),
       const SizedBox(height: AppSpacing.xxxl),
@@ -658,7 +656,7 @@ class _PermPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
               ),
             ),
-            onPressed: status == _PermStatus.requesting ? null : onRequest,
+            onPressed: status == _PermStatus.requesting ? null : (denied ? openAppSettings : onRequest),
             icon: status == _PermStatus.requesting
                 ? const SizedBox(width: 18, height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

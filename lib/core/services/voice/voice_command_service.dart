@@ -14,6 +14,9 @@ enum VoiceStatus { idle, activeListening, passiveListening, processing, error }
 /// Exposes the current status of the voice command service.
 final voiceCommandStatusProvider = StateProvider<VoiceStatus>((ref) => VoiceStatus.idle);
 
+/// Exposes the interim parsed text from the voice listener to show it live in the UI.
+final voiceCommandTextProvider = StateProvider<String>((ref) => '');
+
 /// The primary service that manages microphone access, recognition loops, and dispatches to the executor.
 final voiceCommandServiceProvider = Provider<VoiceCommandService>((ref) {
   return VoiceCommandService(ref);
@@ -57,6 +60,7 @@ class VoiceCommandService {
     _isPassiveMode = false;
     _isListeningSessionActive = true;
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.activeListening;
+    ref.read(voiceCommandTextProvider.notifier).state = '';
 
     EarconService.instance.play(EarconEvent.actionEnabled); // Chime to indicate active listening
 
@@ -64,7 +68,7 @@ class VoiceCommandService {
       onResult: _onResult,
       listenFor: const Duration(seconds: 10),
       cancelOnError: true,
-      partialResults: false, // We only care about the final sentence
+      partialResults: true, // Show live feedback
     );
   }
 
@@ -92,7 +96,7 @@ class VoiceCommandService {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3), // Stops listening if silence for 3s
         cancelOnError: false,
-        partialResults: false, 
+        partialResults: true, 
       );
     } catch (e) {
       // Ignore start errors and try again later
@@ -140,10 +144,8 @@ class VoiceCommandService {
   }
 
   void _onResult(SpeechRecognitionResult result) {
-    if (!result.finalResult) return; // Only process complete sentences
-
     final recognizedText = result.recognizedWords.toLowerCase();
-    
+
     // In passive mode, we require the wake word "moneysense" to exist in the sentence
     if (_isPassiveMode) {
       if (!recognizedText.contains('moneysense')) {
@@ -151,6 +153,11 @@ class VoiceCommandService {
         return; 
       }
     }
+
+    // Broadcast partial string to UI
+    ref.read(voiceCommandTextProvider.notifier).state = recognizedText;
+
+    if (!result.finalResult) return; 
 
     // Process the text
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;

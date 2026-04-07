@@ -11,7 +11,11 @@ import '../features/scanner/presentation/providers/scanner_provider.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/settings/presentation/screens/simple_settings_screen.dart';
+
+import '../features/settings/domain/entities/app_settings.dart';
 import '../core/services/voice/voice_command_service.dart';
+import '../core/services/voice/voice_command_overlay.dart';
+import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
 import '../features/tutorial/domain/tutorial_route.dart';
 import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -129,6 +133,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Widget build(BuildContext context) {
     final cameraOpen = ref.watch(cameraOpenProvider);
     final scannerState = ref.watch(scannerStateProvider);
+    final isFullyBlind = ref.watch(appSettingsProvider).visionProfile == VisionProfile.fullyBlind;
 
     return Listener(
       onPointerDown: (e) {
@@ -154,13 +159,20 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         onTiltLeft:  _pushTutorial,
         onTiltRight: _pushSettings,
         child: Scaffold(
-          body: ScannerScreen(
-            onNavigate: (index) {
-              if (index == 0) _pushSettings();
-              if (index == 2) _pushTutorial();
-            },
+          body: Stack(
+            children: [
+              ScannerScreen(
+                onNavigate: (index) {
+                  if (index == 0) _pushSettings();
+                  if (index == 2) _pushTutorial();
+                },
+              ),
+              if (isFullyBlind)
+                const BlindVoiceUi(),
+              const VoiceCommandOverlay(),
+            ],
           ),
-          bottomNavigationBar: scannerState == ScannerState.result 
+          bottomNavigationBar: isFullyBlind || scannerState == ScannerState.result 
             ? null 
             : MsBottomNav(
             currentIndex: 1,
