@@ -566,7 +566,7 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return;
         if (ay / ax > _maxCrossRatio) return;
-        if (v.dx > 0) {
+        if (v.dx < 0) {
           EarconService.instance.play(EarconEvent.navBack);
           Navigator.of(context).maybePop();
         }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/app_localizations.dart';
@@ -141,11 +142,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
 
     // Listen for setting changes to start/stop the engine
-    ref.listen(appSettingsProvider.select((s) => s.voiceNavigation), (previous, next) {
-      if (next != previous) { // only if changed
-        if (next) {
+    ref.listen(appSettingsProvider, (previous, next) {
+      final voiceNavChanged = previous?.voiceNavigation != next.voiceNavigation;
+      final profileChanged = previous?.visionProfile != next.visionProfile;
+
+      if (voiceNavChanged || profileChanged) {
+        if (next.voiceNavigation) {
+          // Profile changed away from Blind or just enabled - restart passive listening
           ref.read(voiceCommandServiceProvider).startPassiveListening();
-        } else {
+        } else if (!next.voiceNavigation) {
           ref.read(voiceCommandServiceProvider).stopListening();
         }
       }
@@ -178,11 +183,21 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         child: Scaffold(
           body: Stack(
             children: [
-              ScannerScreen(
-                onNavigate: (index) {
-                  if (index == 0) _pushSettings();
-                  if (index == 2) _pushTutorial();
+              // Main Camera / Scanner area - also acts as a giant voice trigger
+              GestureDetector(
+                onTap: () {
+                  if (settings.voiceNavigation && !isFullyBlind) {
+                    HapticFeedback.lightImpact();
+                    ref.read(voiceCommandServiceProvider).startActiveListening();
+                  }
                 },
+                behavior: HitTestBehavior.opaque,
+                child: ScannerScreen(
+                  onNavigate: (index) {
+                    if (index == 0) _pushSettings();
+                    if (index == 2) _pushTutorial();
+                  },
+                ),
               ),
               if (isFullyBlind)
                 const BlindVoiceUi(),

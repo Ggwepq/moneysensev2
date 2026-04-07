@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/voice/voice_command_service.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/domain/entities/app_settings.dart';
 
@@ -15,6 +17,10 @@ class BlindVoiceUi extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(voiceCommandStatusProvider);
+    final text = ref.watch(voiceCommandTextProvider);
+    final settings = ref.watch(appSettingsProvider);
+    final l10n = AppLocalizations.of(settings.isTagalog);
+    
     final cfg = VisionConfig.from(VisionProfile.fullyBlind);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
@@ -78,11 +84,13 @@ class BlindVoiceUi extends ConsumerWidget {
                     const SizedBox(height: 60),
 
                     Text(
-                      isListening ? 'Listening...' : 'Tap anywhere to speak',
+                      isListening 
+                          ? (status == VoiceStatus.processing ? l10n.voiceDetectedLabel : (text.isEmpty ? l10n.voiceListeningLabel : text))
+                          : (status == VoiceStatus.passiveListening ? l10n.voiceStatusStandingBy : l10n.blindTapToSpeak),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black87,
-                        fontSize: 28,
+                        fontSize: 24,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -91,7 +99,7 @@ class BlindVoiceUi extends ConsumerWidget {
                     const SizedBox(height: 16),
 
                     Text(
-                      'Or say "Hey MoneySense"',
+                      l10n.voiceTryItHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? Colors.white60 : Colors.black54,

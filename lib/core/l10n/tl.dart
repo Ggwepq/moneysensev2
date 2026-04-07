@@ -639,4 +639,6 @@ abstract final class TlStrings {
   static const String voiceListeningLabel = 'Nakikinig...';
   static const String voiceWakeWordDetectedLabel = 'Wake-word ay naki-detect!';
   static const String voiceTryItHint = 'Subukang sabihin ang "Hey MoneySense"';
+  static const String voiceStatusStandingBy = 'Naka-standby... sabihin ang "Hey MoneySense"';
+  static const String blindTapToSpeak = 'I-tap kahit saan para magsalita';
 }

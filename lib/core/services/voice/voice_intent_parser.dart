@@ -6,23 +6,20 @@ class VoiceIntentParser {
   static VoiceIntent parse(String text) {
     final lowerStr = text.toLowerCase().trim();
 
-    // ── Pre-process ──────────────────────────────────────────────────────────
+    // Consistent, flexible wake-word regex shared with the service
+    final wakeWordRegex = RegExp(
+      r'(hey|hoy|hay|hi|hello|ok|paki|yo)?\s*(money|monie|moni|monee|mane|mani|many|mona|mone|monay)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence)',
+      caseSensitive: false,
+    );
+
     // Remove common wake words or polite fillers to extract the bare command.
     final sanitized = lowerStr
-        .replaceAll(
-          RegExp(r'(hey\s+moneysense|hoy\s+moneysense|moneysense|please)'),
-          '',
-        )
+        .replaceAll(wakeWordRegex, '')
+        .replaceAll('please', '')
         .trim();
 
     if (sanitized.isEmpty) {
-      if (_matches(lowerStr, [
-        'hey moneysense',
-        'hoy moneysense',
-        'moneysense',
-        'hey money sense',
-        'hey maniscense',
-      ])) {
+      if (wakeWordRegex.hasMatch(lowerStr)) {
         return const WakeIntent();
       }
       return UnknownIntent(text);
@@ -33,7 +30,7 @@ class VoiceIntentParser {
       'stop scan',
       'pause scan',
       'stop camera',
-      'tigil',
+      'patayin ang camera',
       'hinto',
       'stop',
     ])) {
@@ -48,6 +45,11 @@ class VoiceIntentParser {
       'basahin',
       'mag scan',
       'scan pera',
+      'open camera',
+      'start camera',
+      'buksan ang camera',
+      'ibukas ang camera',
+      'basahin ang pera',
     ])) {
       return const ScanIntent();
     }

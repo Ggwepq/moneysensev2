@@ -78,7 +78,7 @@ class VoiceCommandService {
     await _initIfNeeded();
     if (!_isInit) return;
 
-    if (_isListeningSessionActive) return; // Already going
+    if (_isPassiveMode && _isListeningSessionActive && _speech.isListening) return; 
 
     _isPassiveMode = true;
     _isListeningSessionActive = true;
@@ -147,9 +147,14 @@ class VoiceCommandService {
   void _onResult(SpeechRecognitionResult result) {
     final recognizedText = result.recognizedWords.toLowerCase();
 
-    // In passive mode, we require the wake word "moneysense" to exist in the sentence
+    // In passive mode, we require a wake word match. 
+    // We use a regex to capture variations like "money sense", "manisense", etc.
     if (_isPassiveMode) {
-      if (!recognizedText.contains('moneysense')) {
+      final wakeWordRegex = RegExp(
+        r'(hey|hoy|hay|hi|hello|ok|paki|yo)?\s*(money|monie|moni|monee|mane|mani|many|mona|mone|monay)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence)',
+        caseSensitive: false,
+      );
+      if (!wakeWordRegex.hasMatch(recognizedText)) {
         // Did not mention the wake word, ignore and let auto-restart loop continue
         return; 
       }
@@ -160,17 +165,25 @@ class VoiceCommandService {
 
     final intent = VoiceIntentParser.parse(recognizedText);
 
-    // If it's a known intent, execute immediately even if it's a partial result!
+    // If it's a known intent, execute immediately!
     if (intent is! UnknownIntent) {
       if (intent is WakeIntent) {
         if (_isPassiveMode) {
-          stopListening().then((_) {
-             startActiveListening();
+          // Fast transition state for UI feedback
+          _isPassiveMode = false;
+          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.activeListening;
+          ref.read(voiceCommandTextProvider.notifier).state = '';
+
+          // Stop the current passive listen and start the definitive active one
+          _isListeningSessionActive = false; // Prepare for restart
+          _speech.stop().then((_) {
+            startActiveListening();
           });
         }
         return;
       }
 
+      // If we reach here, it's a REAL command (All-in-one or follow-up)
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
 
@@ -178,11 +191,12 @@ class VoiceCommandService {
          EarconService.instance.play(EarconEvent.actionConfirmed);
          stopListening();
       } else {
+         // All-in-one command from passive mode
+         EarconService.instance.play(EarconEvent.actionConfirmed);
          ref.read(voiceCommandTextProvider.notifier).state = '';
-         // Let the ongoing speech pass. We will restart when it naturally finishes.
-         // Or we can stop and restart:
+         
          stopListening().then((_) {
-           Future.delayed(const Duration(milliseconds: 200), _startContinuousLoop);
+           Future.delayed(const Duration(milliseconds: 300), _startContinuousLoop);
          });
       }
       return; 

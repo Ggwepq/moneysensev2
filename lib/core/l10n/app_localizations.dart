@@ -852,6 +852,10 @@ class AppLocalizations {
       : EnStrings.voiceWakeWordDetectedLabel;
   String get voiceTryItHint =>
       isTagalog ? TlStrings.voiceTryItHint : EnStrings.voiceTryItHint;
+  String get voiceStatusStandingBy =>
+      isTagalog ? TlStrings.voiceStatusStandingBy : EnStrings.voiceStatusStandingBy;
+  String get blindTapToSpeak =>
+      isTagalog ? TlStrings.blindTapToSpeak : EnStrings.blindTapToSpeak;
 
   // Scanner status labels
   String get scannerStatusIdle =>

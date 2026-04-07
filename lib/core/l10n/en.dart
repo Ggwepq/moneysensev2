@@ -638,4 +638,6 @@ abstract final class EnStrings {
   static const String voiceListeningLabel = 'Listening...';
   static const String voiceWakeWordDetectedLabel = 'Wake-word detected!';
   static const String voiceTryItHint = 'Try saying "Hey MoneySense"';
+  static const String voiceStatusStandingBy = 'Standing by for "Hey MoneySense"...';
+  static const String blindTapToSpeak = 'Tap anywhere to speak';
 }
