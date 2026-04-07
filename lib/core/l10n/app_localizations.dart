@@ -473,6 +473,17 @@ class AppLocalizations {
   String get onboardingNavGesturalDesc => isTagalog
       ? TlStrings.onboardingNavGesturalDesc
       : EnStrings.onboardingNavGesturalDesc;
+  String get onboardingNavVoice => isTagalog
+      ? TlStrings.onboardingNavVoice
+      : EnStrings.onboardingNavVoice;
+  String get onboardingNavVoiceDesc => isTagalog
+      ? TlStrings.onboardingNavVoiceDesc
+      : EnStrings.onboardingNavVoiceDesc;
+  String get voiceNavigation =>
+      isTagalog ? TlStrings.voiceNavigation : EnStrings.voiceNavigation;
+  String get voiceNavigationDesc => isTagalog 
+      ? TlStrings.voiceNavigationDesc
+      : EnStrings.voiceNavigationDesc;
   String get onboardingNavInertial => isTagalog
       ? TlStrings.onboardingNavInertial
       : EnStrings.onboardingNavInertial;
@@ -804,6 +815,44 @@ class AppLocalizations {
   String resultGoBackHintSemantic(String s) => isTagalog
       ? TlStrings.resultGoBackHintSemantic(s)
       : EnStrings.resultGoBackHintSemantic(s);
+
+  // ── Voice Tutorial ──
+  String get tutorialCardVoiceTitle => isTagalog
+      ? TlStrings.tutorialCardVoiceTitle
+      : EnStrings.tutorialCardVoiceTitle;
+  String get tutorialCardVoiceDesc => isTagalog
+      ? TlStrings.tutorialCardVoiceDesc
+      : EnStrings.tutorialCardVoiceDesc;
+  String get voiceTutorialBadge =>
+      isTagalog ? TlStrings.voiceTutorialBadge : EnStrings.voiceTutorialBadge;
+  String get voiceTutorialDescription => isTagalog
+      ? TlStrings.voiceTutorialDescription
+      : EnStrings.voiceTutorialDescription;
+  String get voiceTutorialStep1 =>
+      isTagalog ? TlStrings.voiceTutorialStep1 : EnStrings.voiceTutorialStep1;
+  String get voiceTutorialStep2 =>
+      isTagalog ? TlStrings.voiceTutorialStep2 : EnStrings.voiceTutorialStep2;
+  String get voiceTutorialStep3 =>
+      isTagalog ? TlStrings.voiceTutorialStep3 : EnStrings.voiceTutorialStep3;
+  String get voiceTutorialStep4 =>
+      isTagalog ? TlStrings.voiceTutorialStep4 : EnStrings.voiceTutorialStep4;
+  String get ttsVoiceGuide =>
+      isTagalog ? TlStrings.ttsVoiceGuide : EnStrings.ttsVoiceGuide;
+  String get voiceHeroSemantic =>
+      isTagalog ? TlStrings.voiceHeroSemantic : EnStrings.voiceHeroSemantic;
+  String get voicePlaygroundSemantic => isTagalog
+      ? TlStrings.voicePlaygroundSemantic
+      : EnStrings.voicePlaygroundSemantic;
+  String get voiceDetectedLabel =>
+      isTagalog ? TlStrings.voiceDetectedLabel : EnStrings.voiceDetectedLabel;
+  String get voiceListeningLabel =>
+      isTagalog ? TlStrings.voiceListeningLabel : EnStrings.voiceListeningLabel;
+  String get voiceWakeWordDetectedLabel => isTagalog
+      ? TlStrings.voiceWakeWordDetectedLabel
+      : EnStrings.voiceWakeWordDetectedLabel;
+  String get voiceTryItHint =>
+      isTagalog ? TlStrings.voiceTryItHint : EnStrings.voiceTryItHint;
+
   // Scanner status labels
   String get scannerStatusIdle =>
       isTagalog ? TlStrings.scannerStatusIdle : EnStrings.scannerStatusIdle;

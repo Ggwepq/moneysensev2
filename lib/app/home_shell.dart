@@ -11,6 +11,12 @@ import '../features/scanner/presentation/providers/scanner_provider.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/settings/presentation/screens/simple_settings_screen.dart';
+
+
+import '../features/settings/domain/entities/app_settings.dart';
+import '../core/services/voice/voice_command_service.dart';
+import '../core/services/voice/voice_command_overlay.dart';
+import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
 import '../features/tutorial/domain/tutorial_route.dart';
 import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -35,6 +41,9 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
 
+  int _pointerCount = 0;
+  DateTime _lastTap = DateTime.now();
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +53,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         if (mounted) TutorialNavigator.push(context, TutorialRoute.appNavigation);
       });
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final settings = ref.read(appSettingsProvider);
+        if (settings.voiceNavigation) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        }
+      }
+    });
   }
 
   void _pushSettings() {
@@ -117,35 +135,79 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(appSettingsProvider);
     final cameraOpen = ref.watch(cameraOpenProvider);
     final scannerState = ref.watch(scannerStateProvider);
+    final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
 
-    return InertialDetectorWidget(
-      onTiltLeft:  _pushTutorial,
-      onTiltRight: _pushSettings,
-      child: Scaffold(
-        body: ScannerScreen(
-          onNavigate: (index) {
-            if (index == 0) _pushSettings();
-            if (index == 2) _pushTutorial();
-          },
-        ),
-        bottomNavigationBar: scannerState == ScannerState.result 
-          ? null 
-          : MsBottomNav(
-          currentIndex: 1,
-          isCameraOpen: cameraOpen,
-          onTap: (index) {
-            if (index == 0) {
-              _pushSettings();
-            } else if (index == 1) {
-              _toggleCamera();
-            } else if (index == 2) {
-              _pushTutorial();
-            }
-          },
+    // Listen for setting changes to start/stop the engine
+    ref.listen(appSettingsProvider.select((s) => s.voiceNavigation), (previous, next) {
+      if (next != previous) { // only if changed
+        if (next) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        } else {
+          ref.read(voiceCommandServiceProvider).stopListening();
+        }
+      }
+    });
+
+    return Listener(
+      onPointerDown: (e) {
+        if (!settings.voiceNavigation) return;
+        _pointerCount++;
+        if (_pointerCount == 2) {
+          final now = DateTime.now();
+          if (now.difference(_lastTap).inMilliseconds < 500) {
+            // Two-finger double-tap detected!
+            ref.read(voiceCommandServiceProvider).startActiveListening();
+          }
+          _lastTap = now;
+        }
+      },
+      onPointerUp: (e) {
+        _pointerCount--;
+        if (_pointerCount < 0) _pointerCount = 0;
+      },
+      onPointerCancel: (e) {
+        _pointerCount--;
+        if (_pointerCount < 0) _pointerCount = 0;
+      },
+      child: InertialDetectorWidget(
+        onTiltLeft:  _pushTutorial,
+        onTiltRight: _pushSettings,
+        child: Scaffold(
+          body: Stack(
+            children: [
+              ScannerScreen(
+                onNavigate: (index) {
+                  if (index == 0) _pushSettings();
+                  if (index == 2) _pushTutorial();
+                },
+              ),
+              if (isFullyBlind)
+                const BlindVoiceUi(),
+              if (settings.voiceNavigation)
+                const VoiceCommandOverlay(),
+            ],
+          ),
+          bottomNavigationBar: isFullyBlind || scannerState == ScannerState.result 
+            ? null 
+            : MsBottomNav(
+            currentIndex: 1,
+            isCameraOpen: cameraOpen,
+            onTap: (index) {
+              if (index == 0) {
+                _pushSettings();
+              } else if (index == 1) {
+                _toggleCamera();
+              } else if (index == 2) {
+                _pushTutorial();
+              }
+            },
+          ),
         ),
       ),
     );
   }
 }
+

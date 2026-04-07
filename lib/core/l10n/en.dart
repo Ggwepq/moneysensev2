@@ -314,6 +314,12 @@ abstract final class EnStrings {
   static const String onboardingNavInertial = 'Inertial';
   static const String onboardingNavInertialDesc =
       'Tilt your phone left or right to navigate.';
+  static const String onboardingNavVoice = 'Voice Commands';
+  static const String onboardingNavVoiceDesc =
+      'Use your voice to directly navigate the app.';
+
+  static const String voiceNavigation = 'Voice Navigation';
+  static const String voiceNavigationDesc = 'Use voice commands to control the app.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Camera access';
@@ -607,4 +613,29 @@ abstract final class EnStrings {
   static const String scannerStatusProcessing = 'Identifying…';
   static const String scannerStatusResult = 'Result ready';
   static const String scannerTapToOpen = 'Tap to open camera';
+
+  // ── Voice Tutorial ──
+  static const String tutorialCardVoiceTitle = 'Voice Navigation';
+  static const String tutorialCardVoiceDesc =
+      'Control the app using your voice and the "Hey MoneySense" wake-word.';
+  static const String voiceTutorialBadge = 'Navigation';
+  static const String voiceTutorialDescription =
+      'Navigate between screens and control the camera hands-free. Just say "Hey MoneySense" followed by a command.';
+  static const String voiceTutorialStep1 =
+      'Enable "Voice Navigation" in Settings.';
+  static const String voiceTutorialStep2 =
+      'Say "Hey MoneySense" to wake the app.';
+  static const String voiceTutorialStep3 = 'Wait for the beep or visual cue.';
+  static const String voiceTutorialStep4 =
+      'Say a command like "Go to Settings" or "Turn on Flash".';
+  static const String ttsVoiceGuide =
+      'Voice Navigation Tutorial. This feature lets you control the app with your voice. Say "Hey MoneySense" then a command. Commands include opening Settings, Tutorial, or toggling the Flash. Scroll down to try the live voice demo.';
+  static const String voiceHeroSemantic =
+      'Animated microphone graphic with sound waves expanding. When you speak, the waves grow and change color to show activity.';
+  static const String voicePlaygroundSemantic =
+      'Voice command practice area. Try saying "Hey MoneySense" then a command to see it recognized here.';
+  static const String voiceDetectedLabel = '✓ Command Recognized!';
+  static const String voiceListeningLabel = 'Listening...';
+  static const String voiceWakeWordDetectedLabel = 'Wake-word detected!';
+  static const String voiceTryItHint = 'Try saying "Hey MoneySense"';
 }

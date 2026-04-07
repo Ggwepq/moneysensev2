@@ -9,4 +9,5 @@ enum TutorialRoute {
   gesturalNavigation,
   inertialNavigation,
   appNavigation,
+  voice,
 }

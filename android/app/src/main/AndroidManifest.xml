@@ -10,6 +10,9 @@
     <!-- Internet for check-for-updates -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Voice commands and Speech-to-Text -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- Declare that the camera feature is used but not required
          (allows sideloading on devices without a camera) -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />

@@ -238,6 +238,29 @@ class SettingsScreen extends ConsumerWidget {
                           TutorialRoute.shakeToGoBack,
                         ),
                       ),
+                      MsToggleTile(
+                        title: l10n.voiceNavigation,
+                        subtitle: settings.voiceNavigation
+                            ? l10n.voiceNavigationDesc
+                            : l10n.voiceNavigationDesc, // TODO: different subtitle if full verbosity?
+                        value: settings.voiceNavigation,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleVoiceNavigation(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, l10n.voiceNavigation, v),
+                          );
+                        },
+                        showHelpButton: true,
+                        onHelpTap: () => TutorialNavigator.push(
+                          context,
+                          TutorialRoute.voice, // Assuming TutorialRoute.voice will exist
+                        ),
+                      ),
                       MsTimerTile(
                         title: l10n.goBackTimerOnResult,
                         subtitle: isFullVerbosity

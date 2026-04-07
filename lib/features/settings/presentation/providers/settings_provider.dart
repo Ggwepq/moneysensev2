@@ -97,8 +97,11 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void toggleGesturalNavigation(bool value) =>
       _update(state.copyWith(gesturalNavigation: value));
 
-  void toggleInertialNavigation(bool value) =>
+    void toggleInertialNavigation(bool value) =>
       _update(state.copyWith(inertialNavigation: value));
+
+  void toggleVoiceNavigation(bool value) =>
+      _update(state.copyWith(voiceNavigation: value));
 
   // ── Accessibility ──────────────────────────────────────────────────────
 
