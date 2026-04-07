@@ -111,7 +111,7 @@ This separation exists because the user's intent must survive background and for
 
 ### Settings as a single value object
 
-All 13 user preferences live in one `AppSettings` object under `appSettingsProvider`. This means one subscription instead of 13, atomic updates via `copyWith`, and one serialization call to persist everything. Widgets that only care about one field use `.select()` to limit rebuilds.
+All 14 user preferences live in one `AppSettings` object under `appSettingsProvider`. This includes the new `voiceNavigation` flag. This means one subscription instead of 14, atomic updates via `copyWith`, and one serialization call to persist everything. Widgets that only care about one field use `.select()` to limit rebuilds.
 
 ### Named mutator methods
 
@@ -219,3 +219,28 @@ Each tutorial has a 260px hero zone for an animated illustration and a scrollabl
 | shared_preferences | Simple key-value persistence. Sufficient for the current settings model without the overhead of a local database |
 | go_router | Prepared for future deep-link and route-guard support. Route constants are already defined |
 | intl | Required by `flutter_localizations` for date and number formatting support |
+
+---
+
+## 14. Voice Command System
+
+The voice command system provides hands-free control of the application, activated either by a toggle in Settings or selected during Onboarding. It is designed to work globally, allowing users to navigate between screens, control camera hardware (flash/lens), and handle scanning operations using only their voice.
+
+### Wake-Word Detection
+The system uses the "Hey MoneySense" wake-word. It operates in two phases:
+1. **Passive Listening**: The engine listens specifically for the "hey moneysense" trigger.
+2. **Active Command Parsing**: Once triggered, the engine enters an active listening state, indicated by the `VoiceCommandOverlay`. It captures the user's utterance and passes it to the parsing pipeline.
+
+### The Parsing Pipeline
+The system follows a three-stage processing model:
+1. **STT (Speech-to-Text)**: Managed by `VoiceCommandService` using the `speech_to_text` package. It converts raw audio into text strings.
+2. **Intent Parser**: The `VoiceIntentParser` uses regular expressions and fuzzy matching to map text strings (e.g., "go to settings", "buksan ang settings") into a strongly-typed `VoiceIntent`.
+3. **Command Executor**: The `VoiceCommandExecutor` receives the `VoiceIntent` and dispatches the corresponding action by calling into Riverpod providers (e.g., stopping the scanner, navigating to a new route, or toggling the flashlight).
+
+### Visual Feedback
+While the app is "listening" for a command after a wake-word trigger, a `VoiceCommandOverlay` provides visual confirmation. This ensures the user knows the state of the system, even if the primary mode of interaction is auditory.
+
+### Architecture Integration
+- **Engine Control**: The voice engine logic is localized in `lib/core/services/voice/`.
+- **Global Lifecycle**: The engine is initialized in `HomeShell` and its active state is bound to the `voiceNavigation` field in `AppSettings`.
+- **Non-Blocking**: Voice navigation co-exists with standard touch, gestural, and inertial navigation, providing a true multi-modal accessibility experience.

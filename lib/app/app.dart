@@ -11,6 +11,7 @@ import '../features/settings/domain/entities/vision_config.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 import 'home_shell.dart';
 import 'startup_splash.dart';
+import '../core/services/voice/voice_command_executor.dart';
 
 class MoneySenseApp extends ConsumerWidget {
   const MoneySenseApp({super.key});
@@ -40,6 +41,7 @@ class MoneySenseApp extends ConsumerWidget {
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: settings.flutterThemeMode,
+            navigatorKey: VoiceCommandExecutor.navigatorKey,
             navigatorObservers: [routeObserver],
             home: _AppRoot(),
           ),

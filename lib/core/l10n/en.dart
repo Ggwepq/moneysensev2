@@ -10,6 +10,8 @@ abstract final class EnStrings {
 
   // ── Settings screen ───────────────────────────────────────────────────────
   static const String settings = 'Settings';
+  static const String simpleMode = 'Simple Mode';
+  static const String advancedMode = 'Advanced Mode';
 
   // Section headers
   static const String sectionGeneral = 'General';
@@ -312,6 +314,12 @@ abstract final class EnStrings {
   static const String onboardingNavInertial = 'Inertial';
   static const String onboardingNavInertialDesc =
       'Tilt your phone left or right to navigate.';
+  static const String onboardingNavVoice = 'Voice Commands';
+  static const String onboardingNavVoiceDesc =
+      'Use your voice to directly navigate the app.';
+
+  static const String voiceNavigation = 'Voice Navigation';
+  static const String voiceNavigationDesc = 'Use voice commands to control the app.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Camera access';
@@ -564,4 +572,70 @@ abstract final class EnStrings {
       'Plays brief tones when scanning starts, a result is found, or the '
       'scanner fails to identify. Silenced automatically when TalkBack is '
       'active. Independent of voice feedback.';
+
+  static const String resultUncertainLabel = 'UNCERTAIN';
+  static const String resultTypeCoin = 'coin';
+  static const String resultTypeBill = 'bill';
+
+  static const String confidenceVeryConfident = 'very confident';
+  static const String confidenceConfident = 'confident';
+  static const String confidenceUncertain = 'uncertain';
+
+  static const String resultConfidencePre = 'I am ';
+  static const String resultUncertainSuffix =
+      ' about the scanned bill. Please re-scan.';
+  static String resultConfidentSuffix(String denomination, String type) =>
+      ' that the scanned $type is $denomination pesos.';
+
+  static String resultGoBackHintPre(String seconds) =>
+      'Shake or wait $seconds seconds to ';
+  static const String resultGoBackLink = 'go back';
+
+  static const String resultDismissLabel =
+      'Dismiss result. Go back to scanner.';
+  static const String resultConfirmLabel =
+      'Accept result. Close result screen.';
+
+  static const String resultSemanticUncertain =
+      'Result: Uncertain. Could not identify the currency. Please re-scan.';
+  static String resultSemanticConfident(
+    String denomination,
+    String type,
+    String level,
+  ) => 'Result: $denomination pesos $type. Confidence: $level.';
+  static String resultGoBackHintSemantic(String seconds) =>
+      'Shake or wait $seconds seconds to go back.';
+
+  // ── Scanner screen status labels ───────────────────────────────────────────
+  static const String scannerStatusIdle = 'Camera is off';
+  static const String scannerStatusPreviewing = 'Point camera at currency';
+  static const String scannerStatusScanning = 'Scanning…';
+  static const String scannerStatusProcessing = 'Identifying…';
+  static const String scannerStatusResult = 'Result ready';
+  static const String scannerTapToOpen = 'Tap to open camera';
+
+  // ── Voice Tutorial ──
+  static const String tutorialCardVoiceTitle = 'Voice Navigation';
+  static const String tutorialCardVoiceDesc =
+      'Control the app using your voice and the "Hey MoneySense" wake-word.';
+  static const String voiceTutorialBadge = 'Navigation';
+  static const String voiceTutorialDescription =
+      'Navigate between screens and control the camera hands-free. Just say "Hey MoneySense" followed by a command.';
+  static const String voiceTutorialStep1 =
+      'Enable "Voice Navigation" in Settings.';
+  static const String voiceTutorialStep2 =
+      'Say "Hey MoneySense" to wake the app.';
+  static const String voiceTutorialStep3 = 'Wait for the beep or visual cue.';
+  static const String voiceTutorialStep4 =
+      'Say a command like "Go to Settings" or "Turn on Flash".';
+  static const String ttsVoiceGuide =
+      'Voice Navigation Tutorial. This feature lets you control the app with your voice. Say "Hey MoneySense" then a command. Commands include opening Settings, Tutorial, or toggling the Flash. Scroll down to try the live voice demo.';
+  static const String voiceHeroSemantic =
+      'Animated microphone graphic with sound waves expanding. When you speak, the waves grow and change color to show activity.';
+  static const String voicePlaygroundSemantic =
+      'Voice command practice area. Try saying "Hey MoneySense" then a command to see it recognized here.';
+  static const String voiceDetectedLabel = '✓ Command Recognized!';
+  static const String voiceListeningLabel = 'Listening...';
+  static const String voiceWakeWordDetectedLabel = 'Wake-word detected!';
+  static const String voiceTryItHint = 'Try saying "Hey MoneySense"';
 }

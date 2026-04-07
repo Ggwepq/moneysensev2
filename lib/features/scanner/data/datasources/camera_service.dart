@@ -44,13 +44,15 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
       description,
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
     _controller = controller;
     state = const AsyncValue.loading();
 
     try {
       await controller.initialize();
+      // Allow camera hardware pipelines to settle before dispatching torch command.
+      await Future.delayed(const Duration(milliseconds: 300));
       await _applyFlash(controller, useFlash);
       state = AsyncValue.data(controller);
     } catch (e, st) {
@@ -113,8 +115,9 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
 
   Future<void> _applyFlash(CameraController c, bool enabled) async {
     try {
+      if (!c.value.isInitialized) return;
       await c.setFlashMode(enabled ? FlashMode.torch : FlashMode.off);
-    } catch (_) {
+    } catch (e) {
       // Device / emulator doesn't support torch — ignore silently.
     }
   }

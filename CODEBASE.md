@@ -24,6 +24,7 @@ lib/
 │   │   ├── en.dart
 │   │   └── tl.dart
 │   ├── services/
+│   │   ├── earcon_service.dart
 │   │   ├── haptic_service.dart
 │   │   ├── inertial_detector_widget.dart
 │   │   ├── inertial_service.dart
@@ -32,7 +33,13 @@ lib/
 │   │   ├── shake_service.dart
 │   │   ├── speech_scripts.dart
 │   │   ├── tts_message.dart
-│   │   └── tts_service.dart
+│   │   ├── tts_service.dart
+│   │   └── voice/
+│   │       ├── voice_command_executor.dart
+│   │       ├── voice_command_overlay.dart
+│   │       ├── voice_command_service.dart
+│   │       ├── voice_intent.dart
+│   │       └── voice_intent_parser.dart
 │   └── theme/
 │       └── app_theme.dart
 ├── features/
@@ -48,6 +55,7 @@ lib/
 │   │       ├── providers/
 │   │       │   └── scanner_provider.dart
 │   │       ├── screens/
+│   │       │   ├── result_screen.dart
 │   │       │   └── scanner_screen.dart
 │   │       └── widgets/
 │   │           └── camera_viewfinder.dart
@@ -61,7 +69,9 @@ lib/
 │   │       ├── providers/
 │   │       │   └── settings_provider.dart
 │   │       └── screens/
-│   │           └── settings_screen.dart
+│   │           ├── settings_screen.dart
+│   │           ├── simple_settings_screen.dart
+│   │           └── vision_profile_picker_screen.dart
 │   └── tutorial/
 │       ├── domain/
 │       │   └── tutorial_route.dart
@@ -109,7 +119,7 @@ The root `ConsumerWidget` that owns the `MaterialApp`. Watches settings to switc
 
 ### `home_shell.dart`
 
-The persistent home `Scaffold`. Shows the scanner as the main body and the bottom navigation bar. Handles the three nav actions: open settings (left slide), toggle camera (center), open tutorial (right slide). When the user finishes onboarding and chooses "Show me around," this shell launches the app navigation tutorial.
+The persistent home `Scaffold`. Shows the scanner as the main body and the bottom navigation bar. Handles the three nav actions: open settings (left slide), toggle camera (center), open tutorial (right slide). It also manages the lifecycle of the `VoiceCommandEngine`, starting or stopping the voice listener based on the user's settings. When the user finishes onboarding and chooses "Show me around," this shell launches the app navigation tutorial.
 
 ### `routes/routes.dart`
 
@@ -161,9 +171,33 @@ The only place that builds `TtsMessage` objects from text. If something new need
 
 TTS messages specific to the scanner: results, idle hints, and error guidance. Split from `speech_scripts.dart` so scanner-related speech is easy to find and review alongside the scanner feature.
 
+### `services/earcon_service.dart`
+
+Plays non-speech audio cues (earcons) for app events, such as when a scan starts, a result is ready, or a button is pressed. It provides an immediate, low-latency audio channel that complements TTS.
+
 ### `services/haptic_service.dart`
 
 Controls all vibration feedback. Three intensity levels: subtle (HapticFeedback only), medium (single motor pulse), and strong (distinct multi-pulse patterns per event type). Device vibration capabilities are cached at startup so patterns fire immediately without any async delay.
+
+### `services/voice/voice_command_service.dart`
+
+Manages the Speech-to-Text hardware lifecycle. It handles permission requests, initializes the speech engine, and implements the wake-word detection logic ("Hey MoneySense"). When a wake-word is detected, it triggers the active listening state.
+
+### `services/voice/voice_intent_parser.dart`
+
+The logic layer that converts raw text from the STT service into structured `VoiceIntent` objects. It supports both English and Tagalog commands using regular expression matching and flexible phrasing.
+
+### `services/voice/voice_command_executor.dart`
+
+The action dispatcher for the voice system. It receives a `VoiceIntent` and executes the corresponding logic (e.g., navigating to a screen, toggling the flash, or providing a spoken status update) by interacting with Riverpod providers.
+
+### `services/voice/voice_command_overlay.dart`
+
+A visual feedback widget that appears at the top of the screen when the app is actively listening for a command. It provides a non-intrusive cue that the voice system is ready for input.
+
+### `services/voice/voice_intent.dart`
+
+Defines the `VoiceIntent` enum representing all supported voice actions (e.g., `openSettings`, `toggleFlash`, `scanNow`).
 
 ### `services/shake_service.dart`
 
@@ -193,7 +227,7 @@ Each folder here is a self-contained vertical slice. The three internal layers k
 
 ### `onboarding/presentation/screens/onboarding_screen.dart`
 
-A 6-page `PageView` shown on first launch. The user picks their vision profile, language, and navigation preferences, grants camera permission, and then chooses to take the app tour or go straight to scanning. All choices are held in local state until the final page and written to settings in one go. Accent colors update live as the profile is selected so contrast boosts are visible immediately.
+A 6-page `PageView` shown on first launch. The user picks their vision profile, language, and navigation preferences (Standard, Gestural, Inertial, or Voice), grants camera permission, and then chooses to take the app tour or go straight to scanning. All choices are held in local state until the final page and written to settings in one go. Accent colors update live as the profile is selected so contrast boosts are visible immediately.
 
 ### `scanner/data/datasources/camera_service.dart`
 
@@ -210,6 +244,10 @@ Riverpod providers for scanner state and detection results. `cameraOpenProvider`
 ### `scanner/presentation/screens/scanner_screen.dart`
 
 The main home screen. Manages camera lifecycle from both Android app lifecycle events and route changes using `RouteAware`. Suspends the camera when Settings or Tutorial is pushed on top, resumes when the user returns. Also handles the swipe gestures for navigation when gestural mode is on.
+
+### `scanner/presentation/screens/result_screen.dart`
+
+The display for scan results. It shows the detected denomination with high contrast and announces the result via TTS. It features an automatic go-back timer that returns the user to the scanner after a configurable delay.
 
 ### `scanner/presentation/widgets/camera_viewfinder.dart`
 
@@ -233,7 +271,15 @@ The Riverpod notifier for settings. Every change goes through a named method (e.
 
 ### `settings/presentation/screens/settings_screen.dart`
 
-The settings UI organized into sections: General, Scanning, Navigation, Accessibility, and Help and Support. Help buttons on relevant tiles open the corresponding interactive tutorial via `TutorialNavigator`.
+The advanced settings UI organized into sections: General, Scanning, Navigation, Accessibility, and Help and Support. Help buttons on relevant tiles open the corresponding interactive tutorial via `TutorialNavigator`.
+
+### `settings/presentation/screens/simple_settings_screen.dart`
+
+The primary settings interface for most users. It features an aesthetic, balanced grid of tiled options (e.g., Theme, Language, Camera, Voice Navigation) without section headers for a cleaner look. The "Advanced Menu" button is integrated into the scrollable list at the bottom.
+
+### `settings/presentation/screens/vision_profile_picker_screen.dart`
+
+A specialized selection screen that allows users to choose their vision profile (Low Vision, Partially Blind, Fully Blind) with live voice feedback for each option.
 
 ### `tutorial/domain/tutorial_route.dart`
 

@@ -108,4 +108,8 @@ abstract final class TutorialSpeech {
   /// Spoken when the haptic/denomination vibration tutorial opens.
   static TtsMessage hapticGuide(AppLocalizations l10n) =>
       TtsMessage.navigation(l10n.ttsHapticGuide, id: 'tutorial.haptic');
+
+  /// Spoken when the voice navigation tutorial opens.
+  static TtsMessage voiceGuide(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.ttsVoiceGuide, id: 'tutorial.voice');
 }

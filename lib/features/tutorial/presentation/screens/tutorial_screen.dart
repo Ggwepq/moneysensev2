@@ -35,6 +35,7 @@ class TutorialScreen extends ConsumerWidget {
     final blue       = cfg.accentBlue;
 
     return _SwipeBackWrapper(
+      isGesturalNavigationEnabled: settings.gesturalNavigation,
       child: Scaffold(
         backgroundColor: bg,
         appBar: AppBar(
@@ -145,6 +146,15 @@ class TutorialScreen extends ConsumerWidget {
               title: l10n.tutorialCardInertialTitle,
               description: l10n.tutorialCardInertialDesc,
               accentColor: blue,
+              isDark: isDark,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _TutorialCard(
+              route: TutorialRoute.voice,
+              icon: Icons.mic_rounded,
+              title: l10n.tutorialCardVoiceTitle,
+              description: l10n.tutorialCardVoiceDesc,
+              accentColor: yellow,
               isDark: isDark,
             ),
 
@@ -304,8 +314,12 @@ class _TutorialCard extends StatelessWidget {
 
 /// Swipe LEFT to pop: mirrors the left-swipe gesture that opened this screen.
 class _SwipeBackWrapper extends StatelessWidget {
-  const _SwipeBackWrapper({required this.child});
+  const _SwipeBackWrapper({
+    required this.child,
+    required this.isGesturalNavigationEnabled,
+  });
   final Widget child;
+  final bool isGesturalNavigationEnabled;
 
   static const double _minVelocity = 300.0;
   static const double _maxCrossRatio = 0.55;
@@ -314,6 +328,7 @@ class _SwipeBackWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanEnd: (details) {
+        if (!isGesturalNavigationEnabled) return;
         final v = details.velocity.pixelsPerSecond;
         final ax = v.dx.abs();
         final ay = v.dy.abs();

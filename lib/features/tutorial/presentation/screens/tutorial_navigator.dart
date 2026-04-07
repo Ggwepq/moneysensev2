@@ -6,6 +6,7 @@ import 'denomination_vibration_tutorial.dart';
 import 'gestural_navigation_tutorial.dart';
 import 'inertial_navigation_tutorial.dart';
 import 'shake_tutorial.dart';
+import 'voice_tutorial.dart';
 
 /// Single entry point for pushing any feature tutorial onto the navigator.
 abstract final class TutorialNavigator {
@@ -25,6 +26,8 @@ abstract final class TutorialNavigator {
         const InertialNavigationTutorial(),
       TutorialRoute.appNavigation =>
         const AppNavigationTutorial(),
+      TutorialRoute.voice =>
+        const VoiceTutorial(),
     };
   }
 
