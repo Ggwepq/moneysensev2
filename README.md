@@ -38,6 +38,7 @@ MoneySense uses your phone's camera to detect Philippine peso bills and coins in
 | Navigation | Inertial navigation (tilt) | Done |
 | Navigation | Shake to go back | Done |
 | Navigation | Auto go-back timer after a result | Done |
+| Navigation | Voice Commands (Hey MoneySense) | Done |
 | UX | 6-page onboarding flow | Done |
 | UX | Interactive feature tutorials | Done |
 | UX | Settings persistence across sessions | Done |
@@ -77,6 +78,7 @@ Each feature owns its own `data/`, `domain/`, and `presentation/` layers so chan
 | sensors_plus | Accelerometer for shake and tilt detection |
 | vibration | Motor vibration for denomination feedback patterns |
 | shared_preferences | Persistent settings storage |
+| speech_to_text | Voice command recognition and processing |
 | go_router | Named route constants (full integration pending) |
 | intl + flutter_localizations | Internationalisation support |
 | YOLOv8 | Real-time bill and coin detection model (pending) |
