@@ -49,10 +49,24 @@ class VoiceCommandExecutor {
         say(NavSpeech.returnedHome(l10n));
         break;
 
+      case PauseScanIntent():
+        final cameraOpen = ref.read(cameraOpenProvider);
+        if (cameraOpen) {
+          ref.read(cameraOpenProvider.notifier).state = false;
+          ref.read(scannerStateProvider.notifier).closeCamera();
+          ref.read(cameraControllerProvider.notifier).closeCamera();
+        }
+        say(TtsMessage.navigation('Scanner paused', id: 'voice.paused'));
+        break;
+
       case ToggleFlashlightIntent():
         final next = intent.turnOn;
         if (settings.useFlashlight != next) {
           settingsNotifier.toggleFlashlight(next);
+          // Directly update the hardware camera if it is open
+          if (ref.read(cameraOpenProvider)) {
+            ref.read(cameraControllerProvider.notifier).setFlash(next);
+          }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, next));
         break;
@@ -61,6 +75,14 @@ class VoiceCommandExecutor {
         final toFront = intent.toFront;
         if (settings.useFrontCamera != toFront) {
           settingsNotifier.toggleFrontCamera(toFront);
+          // Restart camera with new orientation if currently open
+          if (ref.read(cameraOpenProvider)) {
+             ref.read(cameraControllerProvider.notifier).closeCamera();
+             ref.read(cameraControllerProvider.notifier).openCamera(
+                useFrontCamera: toFront,
+                useFlash: settings.useFlashlight,
+             );
+          }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, toFront));
         break;

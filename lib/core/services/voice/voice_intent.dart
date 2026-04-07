@@ -14,6 +14,11 @@ class ScanIntent extends VoiceIntent {
   const ScanIntent();
 }
 
+/// Indicates pausing the scanner
+class PauseScanIntent extends VoiceIntent {
+  const PauseScanIntent();
+}
+
 /// Indicates a toggle of the flashlight
 class ToggleFlashlightIntent extends VoiceIntent {
   const ToggleFlashlightIntent(this.turnOn);

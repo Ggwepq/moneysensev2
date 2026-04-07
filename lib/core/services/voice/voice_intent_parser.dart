@@ -16,6 +16,17 @@ class VoiceIntentParser {
 
     // ── Scanning ─────────────────────────────────────────────────────────────
     if (_matches(sanitized, [
+      'stop scan',
+      'pause scan',
+      'stop camera',
+      'tigil',
+      'hinto',
+      'stop'
+    ])) {
+      return const PauseScanIntent();
+    }
+
+    if (_matches(sanitized, [
       'scan',
       'start scan',
       'begin scan',
@@ -59,9 +70,10 @@ class VoiceIntentParser {
       'turn on flash',
       'turn on flashlight',
       'flash on',
+      'light on',
+      'flashlight on',
       'buksan ang ilaw',
       'ilaw on',
-      'flashlight on'
     ])) {
       return const ToggleFlashlightIntent(true);
     }
@@ -69,9 +81,10 @@ class VoiceIntentParser {
       'turn off flash',
       'turn off flashlight',
       'flash off',
+      'light off',
+      'flashlight off',
       'patayin ang ilaw',
       'ilaw off',
-      'flashlight off'
     ])) {
       return const ToggleFlashlightIntent(false);
     }

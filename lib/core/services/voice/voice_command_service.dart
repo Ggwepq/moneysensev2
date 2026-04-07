@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 
 import 'voice_intent_parser.dart';
+import 'voice_intent.dart';
 import 'voice_command_executor.dart';
 import '../earcon_service.dart';
 
@@ -157,21 +158,38 @@ class VoiceCommandService {
     // Broadcast partial string to UI
     ref.read(voiceCommandTextProvider.notifier).state = recognizedText;
 
+    final intent = VoiceIntentParser.parse(recognizedText);
+
+    // If it's a known intent, execute immediately even if it's a partial result!
+    if (intent is! UnknownIntent) {
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
+      ref.read(voiceCommandExecutorProvider).execute(intent);
+
+      if (!_isPassiveMode) {
+         EarconService.instance.play(EarconEvent.actionConfirmed);
+         stopListening();
+      } else {
+         ref.read(voiceCommandTextProvider.notifier).state = '';
+         // Let the ongoing speech pass. We will restart when it naturally finishes.
+         // Or we can stop and restart:
+         stopListening().then((_) {
+           Future.delayed(const Duration(milliseconds: 200), _startContinuousLoop);
+         });
+      }
+      return; 
+    }
+
+    // Only process unknown intent if it's the final sentence.
     if (!result.finalResult) return; 
 
-    // Process the text
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
-
-    final intent = VoiceIntentParser.parse(recognizedText);
-    
-    // Execute intent
     ref.read(voiceCommandExecutorProvider).execute(intent);
 
-    // Active mode finishes after one command.
     if (!_isPassiveMode) {
-       EarconService.instance.play(EarconEvent.actionConfirmed);
+       EarconService.instance.play(EarconEvent.scanFail);
        stopListening();
     } else {
+       ref.read(voiceCommandTextProvider.notifier).state = '';
        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
     }
   }

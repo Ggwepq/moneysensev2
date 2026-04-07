@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/voice/voice_command_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/domain/entities/app_settings.dart';
@@ -23,13 +24,11 @@ class BlindVoiceUi extends ConsumerWidget {
 
     return Stack(
       children: [
-        // Frosted glass background over the active camera stream
+        // Dark background over the active camera stream (removed blur for performance)
         Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Container(
-              color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.65),
-            ),
+          child: Container(
+            color: (isDark ? AppColors.darkBackground : AppColors.lightBackground)
+                .withValues(alpha: 0.5),
           ),
         ),
 
@@ -93,6 +92,7 @@ class BlindVoiceUi extends ConsumerWidget {
 
                     Text(
                       'Or say "Hey MoneySense"',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? Colors.white60 : Colors.black54,
                         fontSize: 18,
