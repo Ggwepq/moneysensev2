@@ -56,7 +56,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(voiceCommandServiceProvider).startPassiveListening();
+        final settings = ref.read(appSettingsProvider);
+        if (settings.voiceNavigation) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        }
       }
     });
   }
@@ -132,12 +135,25 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(appSettingsProvider);
     final cameraOpen = ref.watch(cameraOpenProvider);
     final scannerState = ref.watch(scannerStateProvider);
-    final isFullyBlind = ref.watch(appSettingsProvider).visionProfile == VisionProfile.fullyBlind;
+    final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
+
+    // Listen for setting changes to start/stop the engine
+    ref.listen(appSettingsProvider.select((s) => s.voiceNavigation), (previous, next) {
+      if (next != previous) { // only if changed
+        if (next) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        } else {
+          ref.read(voiceCommandServiceProvider).stopListening();
+        }
+      }
+    });
 
     return Listener(
       onPointerDown: (e) {
+        if (!settings.voiceNavigation) return;
         _pointerCount++;
         if (_pointerCount == 2) {
           final now = DateTime.now();
@@ -170,7 +186,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               ),
               if (isFullyBlind)
                 const BlindVoiceUi(),
-              const VoiceCommandOverlay(),
+              if (settings.voiceNavigation)
+                const VoiceCommandOverlay(),
             ],
           ),
           bottomNavigationBar: isFullyBlind || scannerState == ScannerState.result 

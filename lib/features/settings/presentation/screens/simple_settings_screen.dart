@@ -76,9 +76,6 @@ class SimpleSettingsScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── General ───────────────────────────────────────
-                      _SectionLabel(label: l10n.sectionGeneral),
-                      const SizedBox(height: AppSpacing.sm),
                       _BigRow(
                         children: [
                           // Theme toggle: Light ↔ Dark (one box)
@@ -129,13 +126,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: AppSpacing.lg),
-
-                      // ── Scanning ──────────────────────────────────────
-                      _SectionLabel(label: l10n.sectionScanning),
                       const SizedBox(height: AppSpacing.sm),
-
                       _BigRow(
                         children: [
                           // Camera toggle: Back ↔ Front (one box)
@@ -187,13 +178,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: AppSpacing.lg),
-
-                      // ── Accessibility ─────────────────────────────────
-                      _SectionLabel(label: l10n.sectionAccessibility),
                       const SizedBox(height: AppSpacing.sm),
-
                       // Vision Profile — full width, opens picker
                       _ToggleCardWide(
                         icon: _visionIcon(settings.visionProfile),
@@ -229,93 +214,110 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           }
                         },
                       ),
-
-                      const SizedBox(height: AppSpacing.lg),
-
-                      // ── Navigation ────────────────────────────────────
-                      _SectionLabel(label: l10n.sectionNavigation),
                       const SizedBox(height: AppSpacing.sm),
-
-                      // Gestural navigation toggle — full width
-                      _ToggleCardWide(
-                        icon: Icons.swipe_rounded,
-                        label: l10n.gesturalNavigation,
-                        isActive: settings.gesturalNavigation,
-                        onTap: () {
-                          final next = !settings.gesturalNavigation;
-                          EarconService.instance.play(
-                            next
-                                ? EarconEvent.actionEnabled
-                                : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleGesturalNavigation(next);
-                          say(
-                            SettingsSpeech.toggled(
-                              l10n,
-                              l10n.gesturalNavigation,
-                              next,
+                      _BigRow(
+                        children: [
+                          // Gestural navigation toggle
+                          _ToggleCard(
+                            icon: Icons.swipe_rounded,
+                            label: l10n.gesturalNavigation,
+                            isActive: settings.gesturalNavigation,
+                            onTap: () {
+                              final next = !settings.gesturalNavigation;
+                              EarconService.instance.play(
+                                next
+                                    ? EarconEvent.actionEnabled
+                                    : EarconEvent.actionDisabled,
+                              );
+                              notifier.toggleGesturalNavigation(next);
+                              say(
+                                SettingsSpeech.toggled(
+                                  l10n,
+                                  l10n.gesturalNavigation,
+                                  next,
+                                ),
+                              );
+                            },
+                          ),
+                          // Voice feature toggle
+                          _ToggleCard(
+                            icon: Icons.mic_rounded,
+                            label: l10n.voiceNavigation,
+                            isActive: settings.voiceNavigation,
+                            onTap: () {
+                              final next = !settings.voiceNavigation;
+                              EarconService.instance.play(
+                                next
+                                    ? EarconEvent.actionEnabled
+                                    : EarconEvent.actionDisabled,
+                              );
+                              notifier.toggleVoiceNavigation(next);
+                              say(
+                                SettingsSpeech.toggled(
+                                  l10n,
+                                  l10n.voiceNavigation,
+                                  next,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // ── Advanced Mode button (scrollable) ─────────────────
+                      Semantics(
+                        label: 'Advanced Mode. Go back to the full settings page.',
+                        button: true,
+                        excludeSemantics: true,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 64,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFD600),
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.tileRadius,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ── Advanced Mode button pinned at bottom ─────────────────
-              const SizedBox(height: AppSpacing.sm),
-              Semantics(
-                label: 'Advanced Mode. Go back to the full settings page.',
-                button: true,
-                excludeSemantics: true,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 64,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD600),
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.tileRadius,
+                            onPressed: () {
+                              EarconService.instance.play(EarconEvent.actionConfirmed);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const SettingsScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.settings_rounded,
+                              size: 22,
+                              color: Colors.black,
+                            ),
+                            label: Text(
+                              l10n.advancedMode,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    onPressed: () {
-                      EarconService.instance.play(EarconEvent.actionConfirmed);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.settings_rounded,
-                      size: 22,
-                      color: Colors.black,
-                    ),
-                    label: Text(
-                      l10n.advancedMode,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-            ],
-          ),
-        ),
-        ),
-      ),
-    );
+                      const SizedBox(height: AppSpacing.md),
+                    ], // End of inner Column children
+                  ), // End of inner Column
+                ), // End of SingleChildScrollView
+              ), // End of Expanded
+            ], // End of outer Column children
+          ), // End of outer Column
+        ), // End of Padding
+      ), // End of SafeArea
+      ), // End of Scaffold
+    ); // End of _SwipeBackWrapper
   }
 
   // ── Language change helper ────────────────────────────────────────────────
@@ -364,25 +366,6 @@ class SimpleSettingsScreen extends ConsumerWidget {
     VisionProfile.partiallyBlind => l10n.visionPartiallyBlind,
     VisionProfile.fullyBlind => l10n.visionFullyBlind,
   };
-}
-
-// ── Section label ─────────────────────────────────────────────────────────────
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.1,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-      ),
-    );
-  }
 }
 
 // ── Two cards side by side ────────────────────────────────────────────────────

@@ -18,7 +18,7 @@ import '../../../settings/presentation/providers/settings_provider.dart';
 // profile, language, and navigation preferences before entering the app.
 // Accent colors update live as the profile is selected on page 1.
 
-enum _NavStyle { standard, gestural, inertial }
+enum _NavStyle { standard, gestural, inertial, voice }
 enum _PermStatus { unknown, requesting, granted, denied }
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -98,12 +98,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case _NavStyle.standard:
         n.toggleGesturalNavigation(false);
         n.toggleInertialNavigation(false);
+        n.toggleVoiceNavigation(false);
       case _NavStyle.gestural:
         n.toggleGesturalNavigation(true);
         n.toggleInertialNavigation(false);
+        n.toggleVoiceNavigation(false);
       case _NavStyle.inertial:
         n.toggleGesturalNavigation(false);
         n.toggleInertialNavigation(true);
+        n.toggleVoiceNavigation(false);
+      case _NavStyle.voice:
+        // Voice mode also leaves standard touch enabled
+        n.toggleGesturalNavigation(false);
+        n.toggleInertialNavigation(false);
+        n.toggleVoiceNavigation(true);
     }
     final cfg = VisionConfig.from(_profile);
     if (cfg.preferAudioPrimary) {
@@ -589,6 +597,13 @@ class _NavPage extends StatelessWidget {
           label: l10n.onboardingNavInertial,
           description: l10n.onboardingNavInertialDesc,
           icon: Icons.screen_rotation_rounded, cfg: cfg, isDark: isDark,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _OptionCard(
+          value: _NavStyle.voice, selected: selected, onSelect: onSelect,
+          label: l10n.onboardingNavVoice,
+          description: l10n.onboardingNavVoiceDesc,
+          icon: Icons.mic_rounded, cfg: cfg, isDark: isDark,
         ),
       ]);
 }

@@ -54,6 +54,7 @@ class AppSettings {
   final int goBackTimerSeconds;
   final bool gesturalNavigation;
   final bool inertialNavigation;
+  final bool voiceNavigation;
 
   // ── Accessibility ─────────────────────────────────────────────────────
   final VisionProfile visionProfile;
@@ -77,6 +78,7 @@ class AppSettings {
     this.goBackTimerSeconds = 20,
     this.gesturalNavigation = true,
     this.inertialNavigation = true,
+    this.voiceNavigation = false,
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
     this.ttsVerbosity = TtsVerbosity.standard,
@@ -96,6 +98,7 @@ class AppSettings {
     int? goBackTimerSeconds,
     bool? gesturalNavigation,
     bool? inertialNavigation,
+    bool? voiceNavigation,
     VisionProfile? visionProfile,
     bool? ttsEnabled,
     TtsVerbosity? ttsVerbosity,
@@ -115,6 +118,7 @@ class AppSettings {
       goBackTimerSeconds: goBackTimerSeconds ?? this.goBackTimerSeconds,
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
       inertialNavigation: inertialNavigation ?? this.inertialNavigation,
+      voiceNavigation: voiceNavigation ?? this.voiceNavigation,
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,

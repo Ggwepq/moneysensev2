@@ -17,6 +17,7 @@ abstract final class SettingsKeys {
   static const lastTimerSeconds    = 'settings.lastTimerSeconds';
   static const gesturalNavigation  = 'settings.gesturalNavigation';
   static const inertialNavigation  = 'settings.inertialNavigation';
+  static const voiceNavigation     = 'settings.voiceNavigation';
   static const visionProfile       = 'settings.visionProfile';
   static const ttsEnabled          = 'settings.ttsEnabled';
   static const ttsVerbosity        = 'settings.ttsVerbosity';
@@ -82,6 +83,9 @@ class SettingsStorage {
       inertialNavigation:
           _prefs.getBool(SettingsKeys.inertialNavigation) ??
               defaults.inertialNavigation,
+      voiceNavigation:
+          _prefs.getBool(SettingsKeys.voiceNavigation) ??
+              defaults.voiceNavigation,
       visionProfile: _readEnum(
         SettingsKeys.visionProfile,
         VisionProfile.values,
@@ -124,6 +128,7 @@ class SettingsStorage {
     _prefs.setInt   (SettingsKeys.goBackTimerSeconds,  s.goBackTimerSeconds);
     _prefs.setBool  (SettingsKeys.gesturalNavigation,  s.gesturalNavigation);
     _prefs.setBool  (SettingsKeys.inertialNavigation,  s.inertialNavigation);
+    _prefs.setBool  (SettingsKeys.voiceNavigation,     s.voiceNavigation);
     _prefs.setString(SettingsKeys.visionProfile,       s.visionProfile.name);
     _prefs.setBool  (SettingsKeys.ttsEnabled,          s.ttsEnabled);
     _prefs.setString(SettingsKeys.ttsVerbosity,        s.ttsVerbosity.name);
