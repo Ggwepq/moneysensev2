@@ -8,6 +8,9 @@ import 'voice_intent_parser.dart';
 import 'voice_intent.dart';
 import 'voice_command_executor.dart';
 import '../earcon_service.dart';
+import '../tts_service.dart';
+import '../../l10n/app_localizations.dart';
+import '../../../features/settings/presentation/providers/settings_provider.dart';
 
 /// Represents the status of the Voice Command Engine.
 enum VoiceStatus { idle, activeListening, passiveListening, processing, error }
@@ -17,6 +20,12 @@ final voiceCommandStatusProvider = StateProvider<VoiceStatus>((ref) => VoiceStat
 
 /// Exposes the interim parsed text from the voice listener to show it live in the UI.
 final voiceCommandTextProvider = StateProvider<String>((ref) => '');
+
+/// If true, detected commands will be shown but NOT executed.
+final voiceTestModeProvider = StateProvider<bool>((ref) => false);
+
+/// Shows the name of the last successfully parsed intent.
+final lastDetectedIntentProvider = StateProvider<String?>((ref) => null);
 
 /// The primary service that manages microphone access, recognition loops, and dispatches to the executor.
 final voiceCommandServiceProvider = Provider<VoiceCommandService>((ref) {
@@ -36,72 +45,118 @@ class VoiceCommandService {
   /// Track current recognition state manually to handle auto-restart logic for passive mode
   bool _isListeningSessionActive = false;
 
+  /// Lock to prevent concurrent hardware operations (stop vs start)
+  bool _isHardwareBusy = false;
+
   Future<void> _initIfNeeded() async {
     if (_isInit) return;
-    _isInit = await _speech.initialize(
-      onError: _onError,
-      onStatus: _onStatus,
-      debugLogging: true,
-    );
+    try {
+      _isInit = await _speech.initialize(
+        onError: _onError,
+        onStatus: _onStatus,
+        debugLogging: false,
+      );
+    } catch (e) {
+      _isInit = false;
+    }
+  }
+
+  /// Safe wrapper to ensure we don't spam start/stop on the hardware
+  Future<bool> _runHardwareAction(Future<bool> Function() action) async {
+    if (_isHardwareBusy) return false;
+    _isHardwareBusy = true;
+    try {
+      return await action();
+    } finally {
+      // Small settling time to let the native platform breath
+      await Future.delayed(const Duration(milliseconds: 200));
+      _isHardwareBusy = false;
+    }
   }
 
   /// Triggers a one-time active listening session (e.g. from a double-tap).
   Future<void> startActiveListening() async {
+    if (_isHardwareBusy) return;
+    
     await _initIfNeeded();
     if (!_isInit) {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       return;
     }
 
-    // Stop passive if running
-    if (_isListeningSessionActive) {
+    // Stop passive if running and wait for it to clear
+    if (_isPassiveMode || _isListeningSessionActive || _speech.isListening) {
       await stopListening();
+      // Mandatory wait for unbind
+      await Future.delayed(const Duration(milliseconds: 250));
     }
 
-    _isPassiveMode = false;
-    _isListeningSessionActive = true;
-    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.activeListening;
-    ref.read(voiceCommandTextProvider.notifier).state = '';
+    await _runHardwareAction(() async {
+      _isPassiveMode = false;
+      _isListeningSessionActive = true;
+      ref.read(voiceCommandTextProvider.notifier).state = '';
+      ref.read(lastDetectedIntentProvider.notifier).state = null;
 
-    EarconService.instance.play(EarconEvent.actionEnabled); // Chime to indicate active listening
+      EarconService.instance.play(EarconEvent.actionEnabled);
 
-    await _speech.listen(
-      onResult: _onResult,
-      listenFor: const Duration(seconds: 10),
-      cancelOnError: true,
-      partialResults: true, // Show live feedback
-    );
+      final started = await _speech.listen(
+        onResult: _onResult,
+        listenFor: const Duration(seconds: 10),
+        cancelOnError: true,
+        partialResults: true, 
+      );
+
+      if (started) {
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.activeListening;
+      } else {
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+      }
+      return started;
+    });
   }
 
   /// Triggers a continuous passive listening session.
   Future<void> startPassiveListening() async {
+    if (_isHardwareBusy) return;
+    
     await _initIfNeeded();
     if (!_isInit) return;
 
-    if (_isListeningSessionActive) return; // Already going
+    if (_isPassiveMode && _isListeningSessionActive && _speech.isListening) return; 
 
     _isPassiveMode = true;
     _isListeningSessionActive = true;
-    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
-
+    
     _startContinuousLoop();
   }
 
   void _startContinuousLoop() async {
     if (!_isPassiveMode || !_isListeningSessionActive) return;
-    if (_speech.isListening) return;
+    if (_speech.isListening || _isHardwareBusy) return;
 
-    try {
-      await _speech.listen(
-        onResult: _onResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3), // Stops listening if silence for 3s
-        cancelOnError: false,
-        partialResults: true, 
-      );
-    } catch (e) {
-      // Ignore start errors and try again later
-    }
+    await _runHardwareAction(() async {
+      try {
+        final started = await _speech.listen(
+          onResult: _onResult,
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 5),
+          cancelOnError: false,
+          partialResults: true, 
+        );
+        
+        if (started) {
+          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
+        } else {
+          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+          Future.delayed(const Duration(seconds: 3), _startContinuousLoop);
+        }
+        return started;
+      } catch (e) {
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+        Future.delayed(const Duration(seconds: 5), _startContinuousLoop);
+        return false;
+      }
+    });
   }
 
   /// Immediately stops both active and passive listening.
@@ -111,86 +166,113 @@ class VoiceCommandService {
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
     
     if (_speech.isListening) {
-      await _speech.stop();
+      // Use cancel() instead of stop() for faster turnaround during transitions
+      await _speech.cancel();
+      // Allow settling
+      await Future.delayed(const Duration(milliseconds: 200));
     }
   }
 
   void _onStatus(String status) {
+    // If hardware says it's done/notListening but we're supposed to be passive, restart.
     if (status == 'done' || status == 'notListening') {
-      // If we are in active mode, a 'done' means the explicit command session ended.
-      if (!_isPassiveMode) {
+      if (_isPassiveMode && _isListeningSessionActive) {
+        // Clear status but restart quickly
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+        Future.delayed(const Duration(milliseconds: 300), _startContinuousLoop);
+      } else if (!_isPassiveMode) {
         _isListeningSessionActive = false;
-        if (ref.read(voiceCommandStatusProvider) == VoiceStatus.activeListening) {
-          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-          EarconService.instance.play(EarconEvent.actionDisabled); // Mic off chime
-        }
-      } 
-      // If passive mode, we instantly restart it to keep continuous listening alive
-      else if (_isPassiveMode && _isListeningSessionActive) {
-        Future.delayed(const Duration(milliseconds: 100), _startContinuousLoop);
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+        EarconService.instance.play(EarconEvent.actionDisabled);
       }
     }
   }
 
   void _onError(SpeechRecognitionError error) {
-    // If active listening, we stop and optionally fail.
     if (!_isPassiveMode) {
       _isListeningSessionActive = false;
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       EarconService.instance.play(EarconEvent.scanFail);
     } else {
-      // Passive listening automatically restarts on error 
-      Future.delayed(const Duration(milliseconds: 500), _startContinuousLoop);
+      // Passive listening recovery
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+      Future.delayed(const Duration(seconds: 1), _startContinuousLoop);
     }
   }
 
   void _onResult(SpeechRecognitionResult result) {
     final recognizedText = result.recognizedWords.toLowerCase();
 
-    // In passive mode, we require the wake word "moneysense" to exist in the sentence
-    if (_isPassiveMode) {
-      if (!recognizedText.contains('moneysense')) {
-        // Did not mention the wake word, ignore and let auto-restart loop continue
-        return; 
-      }
-    }
-
-    // Broadcast partial string to UI
+    // Requirement 2: Always update the text provider so the UI (Blind Mode) doesn't feel static
     ref.read(voiceCommandTextProvider.notifier).state = recognizedText;
+
+    if (_isPassiveMode) {
+      final wakeWordRegex = RegExp(
+        r'(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ams|ms|miss|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?',
+        caseSensitive: false,
+      );
+      if (!wakeWordRegex.hasMatch(recognizedText)) return; 
+    }
 
     final intent = VoiceIntentParser.parse(recognizedText);
 
-    // If it's a known intent, execute immediately even if it's a partial result!
     if (intent is! UnknownIntent) {
+      // WAKE WORD ONLY logic
       if (intent is WakeIntent) {
         if (_isPassiveMode) {
-          stopListening().then((_) {
-             startActiveListening();
+          // Requirement 1: If user just said "Hey MS", ask "What shall I do?"
+          final settings = ref.read(appSettingsProvider);
+          final l10n = AppLocalizations.of(settings.isTagalog);
+          
+          ref.read(ttsServiceProvider).enqueue(
+            TtsMessage.result(l10n.voicePromptWhatShallIDo, id: 'voice.prompt'),
+            enabled: settings.ttsEnabled,
+            currentVerbosity: settings.ttsVerbosity,
+          );
+          
+          // Small delay to let TTS start before the active listening earcon happens
+          Future.delayed(const Duration(milliseconds: 100), () {
+            startActiveListening();
           });
         }
         return;
       }
 
+      // COMMAND DETECTED (could be "Hey MS scan" or just "scan" in active mode)
+      ref.read(lastDetectedIntentProvider.notifier).state = intent.toString().split('(').first;
+
+      if (ref.read(voiceTestModeProvider)) {
+        if (result.finalResult) {
+          EarconService.instance.play(EarconEvent.actionConfirmed);
+          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
+          Future.delayed(const Duration(seconds: 2), () {
+            ref.read(voiceCommandStatusProvider.notifier).state = _isPassiveMode ? VoiceStatus.passiveListening : VoiceStatus.idle;
+          });
+        }
+        return;
+      }
+
+      // EXECUTE
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
+      EarconService.instance.play(EarconEvent.actionConfirmed);
 
       if (!_isPassiveMode) {
-         EarconService.instance.play(EarconEvent.actionConfirmed);
          stopListening();
       } else {
+         // Passive 'All-in-one' command execution.
+         // Stop and restart loop to clear recognition bufffer.
          ref.read(voiceCommandTextProvider.notifier).state = '';
-         // Let the ongoing speech pass. We will restart when it naturally finishes.
-         // Or we can stop and restart:
          stopListening().then((_) {
-           Future.delayed(const Duration(milliseconds: 200), _startContinuousLoop);
+           Future.delayed(const Duration(milliseconds: 500), _startContinuousLoop);
          });
       }
       return; 
     }
 
-    // Only process unknown intent if it's the final sentence.
     if (!result.finalResult) return; 
 
+    // Handle Unknown final results
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
     ref.read(voiceCommandExecutorProvider).execute(intent);
 

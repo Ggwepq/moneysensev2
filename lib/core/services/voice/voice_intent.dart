@@ -41,8 +41,22 @@ class ExitAppIntent extends VoiceIntent {
   const ExitAppIntent();
 }
 
+/// Indicates a command to stop current speech immediately
+class StopSpeakingIntent extends VoiceIntent {
+  const StopSpeakingIntent();
+}
+
+/// Detailed targets for contextual help
+enum HelpTarget { general, inertial, gestural, voice, scanning }
+
+/// Indicates a request for help or available commands
+class HelpIntent extends VoiceIntent {
+  const HelpIntent([this.target = HelpTarget.general]);
+  final HelpTarget target;
+}
+
 /// General navigation targets
-enum NavTarget { settings, home, tutorial }
+enum NavTarget { settings, home, tutorial, commandList }
 
 class NavigateIntent extends VoiceIntent {
   const NavigateIntent(this.target);

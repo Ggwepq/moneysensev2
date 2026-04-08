@@ -617,25 +617,47 @@ abstract final class EnStrings {
   // ── Voice Tutorial ──
   static const String tutorialCardVoiceTitle = 'Voice Navigation';
   static const String tutorialCardVoiceDesc =
-      'Control the app using your voice and the "Hey MoneySense" wake-word.';
+      'Control the app using your voice and the "Hey MS" wake-word.';
   static const String voiceTutorialBadge = 'Navigation';
   static const String voiceTutorialDescription =
-      'Navigate between screens and control the camera hands-free. Just say "Hey MoneySense" followed by a command.';
+      'Control MoneySense hands-free or with simple taps. Voice commands work in all modes once enabled.';
   static const String voiceTutorialStep1 =
-      'Enable "Voice Navigation" in Settings.';
+      'Say "Hey MS" then a command like "Open Settings" or "Start Scan".';
   static const String voiceTutorialStep2 =
-      'Say "Hey MoneySense" to wake the app.';
-  static const String voiceTutorialStep3 = 'Wait for the beep or visual cue.';
+      'In Standard mode, tap the center of the camera screen to start listening manually.';
+  static const String voiceTutorialStep3 =
+      'In Fully Blind mode, tap anywhere on the screen to talk to MoneySense.';
   static const String voiceTutorialStep4 =
-      'Say a command like "Go to Settings" or "Turn on Flash".';
+      'To hear "What shall I do?", use the wake word ("Hey MS") without a command. Tapping skip this prompt.';
   static const String ttsVoiceGuide =
-      'Voice Navigation Tutorial. This feature lets you control the app with your voice. Say "Hey MoneySense" then a command. Commands include opening Settings, Tutorial, or toggling the Flash. Scroll down to try the live voice demo.';
+      'Voice Navigation Tutorial. You can control the app by saying "Hey MS" followed by a command. If you just say "Hey MS", I will ask what you want to do. You can also tap the screen to speak immediately. In Fully Blind mode, tap anywhere on the screen. In Standard mode, tap the middle of the camera view. Note that manually tapping will skip the "What shall I do" prompt for faster navigation.';
   static const String voiceHeroSemantic =
       'Animated microphone graphic with sound waves expanding. When you speak, the waves grow and change color to show activity.';
   static const String voicePlaygroundSemantic =
-      'Voice command practice area. Try saying "Hey MoneySense" then a command to see it recognized here.';
+      'Voice command practice area. Try saying "Hey MS" then a command to see it recognized here.';
   static const String voiceDetectedLabel = '✓ Command Recognized!';
   static const String voiceListeningLabel = 'Listening...';
   static const String voiceWakeWordDetectedLabel = 'Wake-word detected!';
-  static const String voiceTryItHint = 'Try saying "Hey MoneySense"';
+  static const String voiceTryItHint = 'Try saying "Hey MS"';
+  static const String voiceHelpCommandList =
+      'Available commands: Open settings, start scan, turn on flash, or open tutorial. Use "Hey MS" then the command.';
+  static const String voiceStatusStandingBy = 'Standing by for "Hey MS"...';
+  static const String voicePromptWhatShallIDo = 'What shall I do?';
+  
+  // Categorized Commands
+  static const String voiceCommandCatNav = 'NAVIGATION';
+  static const String voiceCommandCatScan = 'SCANNER';
+  static const String voiceCommandCatHelp = 'HELP';
+  
+  static const String voiceCmdOpenSettings = 'Open Settings';
+  static const String voiceCmdGoHome = 'Go to Home / Scanner';
+  static const String voiceCmdOpenTutorial = 'Open Tutorials';
+  static const String voiceCmdCommandList = 'Show Command List';
+  static const String voiceCmdFlashOn = 'Turn on Flashlight';
+  static const String voiceCmdFlashOff = 'Turn off Flashlight';
+  static const String voiceCmdFrontCam = 'Switch to Front Camera';
+  static const String voiceCmdBackCam = 'Switch to Rear Camera';
+  static const String voiceCmdHelp = 'Ask for Help';
+  static const String voiceCmdExit = 'Exit Application';
+  static const String blindTapToSpeak = 'Tap anywhere to speak';
 }
