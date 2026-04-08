@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../settings/domain/entities/vision_config.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../../core/services/earcon_service.dart';
 
 /// Shared scaffold for all feature tutorials.

@@ -24,7 +24,7 @@ class VoiceCommandExecutor {
   /// Global navigator key to perform routing outside of widgets
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  void execute(VoiceIntent intent) {
+  bool execute(VoiceIntent intent) {
     final settings = ref.read(appSettingsProvider);
     final settingsNotifier = ref.read(appSettingsProvider.notifier);
     final l10n = AppLocalizations.of(settings.isTagalog);
@@ -50,7 +50,7 @@ class VoiceCommandExecutor {
           );
         }
         say(NavSpeech.returnedHome(l10n));
-        break;
+        return true;
 
       case PauseScanIntent():
         final cameraOpen = ref.read(cameraOpenProvider);
@@ -60,19 +60,22 @@ class VoiceCommandExecutor {
           ref.read(cameraControllerProvider.notifier).closeCamera();
         }
         say(TtsMessage.navigation('Scanner paused', id: 'voice.paused'));
-        break;
+        return true;
 
       case ToggleFlashlightIntent():
         final next = intent.turnOn;
+        if (next && settings.useFrontCamera) {
+          say(TtsMessage.ambient(l10n.voiceFlashFrontError, id: 'voice.error.flash_front'));
+          return false;
+        }
         if (settings.useFlashlight != next) {
           settingsNotifier.toggleFlashlight(next);
-          // Directly update the hardware camera if it is open
           if (ref.read(cameraOpenProvider)) {
             ref.read(cameraControllerProvider.notifier).setFlash(next);
           }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, next));
-        break;
+        return true;
 
       case ChangeCameraIntent():
         final toFront = intent.toFront;
@@ -88,11 +91,11 @@ class VoiceCommandExecutor {
           }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, toFront));
-        break;
+        return true;
 
       case NavigateIntent():
         final context = navigatorKey.currentContext;
-        if (context == null) return;
+        if (context == null) return false;
         
         Navigator.of(context).popUntil((route) => route.isFirst);
 
@@ -117,14 +120,14 @@ class VoiceCommandExecutor {
         } else if (intent.target == NavTarget.home) {
           say(NavSpeech.returnedHome(l10n));
         }
-        break;
+        return true;
 
       case ExitAppIntent():
         say(TtsMessage.ambient('Closing Money Sense', id: 'voice.exit'));
         Future.delayed(const Duration(milliseconds: 500), () {
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         });
-        break;
+        return true;
 
       case HelpIntent():
         final context = navigatorKey.currentContext;
@@ -163,19 +166,25 @@ class VoiceCommandExecutor {
             });
           }
         }
-        break;
+        return true;
 
       case StopSpeakingIntent():
         ref.read(ttsServiceProvider).stop();
-        break;
+        return true;
 
       case WakeIntent():
         // Handled directly by the voice_command_service to transition state.
-        break;
+        return true;
 
       case UnknownIntent():
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
-        break;
+        return false;
+
+      case StartVoiceSetupIntent():
+      case SelectionIntent():
+      case SelectionConfirmationIntent():
+        // These are handled contextually by the Onboarding screen
+        return true;
     }
   }
 }

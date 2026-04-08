@@ -25,6 +25,60 @@ class VoiceIntentParser {
       return UnknownIntent(text);
     }
 
+    // -- 0. Onboarding & Setup Commands --
+    if (_matches(sanitized, [
+      'start setup',
+      'begin setup',
+      'voice setup',
+      'setup with voice',
+      'simulan ang setup',
+      'setup sa boses',
+      'simulan ang pag-setup',
+    ])) {
+      return const StartVoiceSetupIntent();
+    }
+
+    // Confirmation (Yes / No)
+    if (_matches(sanitized, ['yes', 'proceed', 'agree', 'oo', 'sige', 'itutuloy'])) {
+      return const SelectionConfirmationIntent(true);
+    }
+    if (_matches(sanitized, ['no', 'cancel', 'stop setup', 'hindi', 'ayaw', 'itigil'])) {
+      return const SelectionConfirmationIntent(false);
+    }
+
+    // Vision Profiles
+    if (_matches(sanitized, ['low vision', 'malabo ang mata', 'malabo mata'])) {
+      return const SelectionIntent('lowVision');
+    }
+    if (_matches(sanitized, ['partially blind', 'bahagyang bulag'])) {
+      return const SelectionIntent('partiallyBlind');
+    }
+    if (_matches(sanitized, ['fully blind', 'total blindness', 'bulag talaga', 'bulag'])) {
+      return const SelectionIntent('fullyBlind');
+    }
+
+    // Languages
+    if (_matches(sanitized, ['english', 'ingles'])) {
+      return const SelectionIntent('english');
+    }
+    if (_matches(sanitized, ['tagalog', 'filipino'])) {
+      return const SelectionIntent('tagalog');
+    }
+
+    // Navigation Styles
+    if (_matches(sanitized, ['standard', 'buttons', 'bottom bar', 'karaniwan', 'normal'])) {
+      return const SelectionIntent('standard');
+    }
+    if (_matches(sanitized, ['gestural', 'swipe', 'gestures', 'pagswipe', 'pag-swipe'])) {
+      return const SelectionIntent('gestural');
+    }
+    if (_matches(sanitized, ['inertial', 'tilt', 'tilting', 'pag-tilt', 'pagtilt'])) {
+      return const SelectionIntent('inertial');
+    }
+    if (_matches(sanitized, ['voice', 'commands', 'paggamit ng boses', 'pagsasalita'])) {
+      return const SelectionIntent('voice');
+    }
+
     // -- 1. High Priority System Commands (Specific phrases) --
     if (_matches(sanitized, [
       'stop speaking',
@@ -245,8 +299,9 @@ class VoiceIntentParser {
 
   /// Helper to check if [text] exactly matches or contains one of the [keywords]
   static bool _matches(String text, List<String> keywords) {
+    final t = text.toLowerCase().trim();
     for (final kw in keywords) {
-      if (text.contains(kw)) return true;
+      if (t.contains(kw.toLowerCase())) return true;
     }
     return false;
   }

@@ -23,7 +23,10 @@ class TtsService {
 
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
-  bool _isSpeaking = false;
+  
+  final ValueNotifier<bool> isSpeakingNotifier = ValueNotifier<bool>(false);
+  bool get _isSpeaking => isSpeakingNotifier.value;
+  set _isSpeaking(bool val) => isSpeakingNotifier.value = val;
 
   // ── Priority queue ─────────────────────────────────────────────────────────
   // Stored as a list sorted by priority descending.

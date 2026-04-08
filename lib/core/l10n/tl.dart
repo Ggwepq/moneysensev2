@@ -304,27 +304,12 @@ abstract final class TlStrings {
   static const String visionLowVision = 'Mababang Paningin';
   static const String visionPartiallyBlind = 'Bahagyang Bulag';
   static const String visionFullyBlind = 'Ganap na Bulag';
+  static const String onboardingVisionOptions = 'Mangyaring sabihin: Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag.';
 
-  // Onboarding: Navigation style
-  static const String onboardingNavTitle = 'Paano ka mag-navigate?';
-  static const String onboardingNavSubtitle =
-      'Piliin kung paano gusto mong lumipat sa pagitan ng mga screen. Maaari mong baguhin ito sa Settings.';
-  static const String onboardingNavNormal = 'Karaniwan';
-  static const String onboardingNavNormalDesc =
-      'Gamitin ang mga pindutan at bottom navigation bar.';
-  static const String onboardingNavGestural = 'Gestural';
-  static const String onboardingNavGesturalDesc =
-      'I-swipe pakaliwa o pakanan para buksan ang Settings at Tutorial.';
-  static const String onboardingNavInertial = 'Inertial';
-  static const String onboardingNavInertialDesc =
-      'Ikiling ang iyong telepono pakaliwa o pakanan para mag-navigate.';
+  static const String voiceNavigation = 'Nabigasyon sa Boses';
+  static const String voiceNavigationDesc = 'Gamitin ang mga voice command para makontrol ang app.';
+  static const String onboardingLanguageOptions = 'Mangyaring sabihin: English, o Tagalog.';
 
-  static const String onboardingNavVoice = 'Voice Commands';
-  static const String onboardingNavVoiceDesc =
-      'Gamitin ang iyong boses para direktang mag-navigate sa app.';
-
-  static const String voiceNavigation = 'Voice Navigation';
-  static const String voiceNavigationDesc = 'Gumamit ng voice commands para makontrol ang app.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Access sa Camera';
@@ -343,6 +328,14 @@ abstract final class TlStrings {
       'Handang gamitin ang MoneySense. Gusto mo bang mabigyan ng mabilis na gabay sa app?';
   static const String onboardingFinishTour = 'Ipakita sa akin';
   static const String onboardingFinishSkip = 'Magsimulang mag-scan';
+  static const String onboardingFinishOptions = 'Tapos na ang setup! Gusto mo ba ng mabilis na tour sa app bago tayo mag-scan? Sabihin ang Oo para simulan ang tour, o Hindi para mag-scan agad.';
+  static const String onboardingExitToScanner = 'Sige, pupunta na tayo sa scanner screen. Masayang pag-scan!';
+  static const String onboardingExitToTour = 'Magandang pili! Simulan na natin ang tour.';
+  static const String onboardingWelcomeConfirm = 'Magaling, magsimula na tayo. Ngayon ay pupunta sa pagpili ng vision profile.';
+  static const String onboardingConfirmVision = 'Na-set na ang vision profile. Pupunta na sa pagpili ng wika.';
+  static const String onboardingConfirmLanguage = 'Naibigay na ang wika. Susunod na ang pag-access sa camera.';
+  static const String onboardingConfirmPerm = 'Naibigay na ang mga pahintulot. Pupunta na sa huling hakbang.';
+  static const String onboardingConfirmPermAlready = 'Naibigay na dati ang mga pahintulot. Pupunta na sa huling hakbang.';
 
   // Tutorial: App Navigation card
   static const String tutorialCardAppNavTitle = 'Nabigasyon sa App';
@@ -355,19 +348,17 @@ abstract final class TlStrings {
   // ── TTS speech strings ────────────────────────────────────────────────────
 
   // App-level
-  static const String ttsSpeechEnabled = 'Naka-on na ang text to speech.';
-  static const String ttsSpeechDisabling = 'Papatayin ang text to speech.';
-
-  // Navigation
-  static const String ttsNavSettings = 'Mga Setting.';
-  static const String ttsNavTutorial = 'Tutorial.';
-  static const String ttsNavHome = 'Scanner.';
+  static const String ttsSpeechEnabled = 'Siyempre. Aktibo na ang voice feedback.';
+  static const String ttsSpeechDisabling = 'Naintindihan ko. Pinapatay ko na ang voice feedback.';
+  static const String ttsNavSettings = 'Binubuksan na ang iyong settings.';
+  static const String ttsNavTutorial = 'Binubuksan ko na ang gabay sa tutorial para sa iyo.';
+  static const String ttsNavHome = 'Babalik na tayo sa scanner screen.';
 
   // Language change
   static String ttsLangChanging(String langName) =>
-      'Binabago ang audio sa $langName.';
+      'Siyempre. Binabago ko na ang wika sa $langName. Maghintay lang ng sandali.';
   static String ttsLangChanged(String langName) =>
-      'Tapos na. Nagsasalita na ngayon sa $langName.';
+      'Tapos na. Ang wika ay naka-set na ngayon sa $langName.';
 
   // Short visible label shown next to the spinner during language change
   static const String ttsLangChangingLabel = 'Binabago ang wika…';
@@ -377,29 +368,29 @@ abstract final class TlStrings {
   static String ttsScanResultWithType(String denomination, String type) =>
       '$denomination na $type.';
   static String ttsScanResultLowConfidence(String denomination, String type) =>
-      '$denomination na $type. Hindi ganap na sigurado. Pakiverify.';
+      'Sa tingin ko ito ay $denomination na $type, pero hindi ako sigurado. Maaari mo bang i-check ulit?';
 
   // Scanner: camera state
-  static const String ttsCameraOpened = 'Handa na ang kamera.';
-  static const String ttsCameraClosed = 'Sarado ang kamera.';
-  static const String ttsPreviewFrozen = 'Na-freeze ang preview.';
-  static const String ttsPreviewResumed = 'Na-resume ang preview.';
-  static const String ttsFlashOn = 'Naka-on ang flashlight.';
-  static const String ttsFlashOff = 'Naka-off ang flashlight.';
+  static const String ttsCameraOpened = 'Handa na ang camera para sa iyo.';
+  static const String ttsCameraClosed = 'Sinarado ko na ang camera.';
+  static const String ttsPreviewFrozen = 'Naka-hinto na ang preview para masuri mo itong mabuti.';
+  static const String ttsPreviewResumed = 'Pinagpapatuloy na natin ang live preview.';
+  static const String ttsFlashOn = 'Binuksan ko na ang flashlight para sa iyo.';
+  static const String ttsFlashOff = 'Naka-off na ang flashlight.';
 
   // Scanner: ambient hints
   static const String ttsScannerIdle =
-      'Ilagay ang isang bill o barya nang patag sa harap ng kamera para i-scan.';
-  static const String ttsScanStarted = 'Nagsa-scan.';
-  static const String ttsProcessing = 'Pinoproseso.';
+      'I-angat ang barya o bill sa tapat ng camera, at sasabihin ko sa iyo kung magkano ito.';
+  static const String ttsScanStarted = 'Sinisimulan ko na ang pag-scan. Huwag munang igalaw ang phone.';
+  static const String ttsProcessing = 'Sandali lang, inaalam ko na kung anong pera ito...';
 
   // Scanner: errors
   static const String ttsCameraPermissionDenied =
-      'Hindi pinahintulutan ang kamera. Mangyaring payagan ang camera permission sa Settings.';
+      'Kailangan ko ng access sa camera para matulungan kang ma-identify ang pera. Mangyaring payagan ang permission sa iyong settings.';
   static const String ttsScanFailed =
-      'Hindi ma-identify ang pera. Subukan ulit sa mas maayos na ilaw.';
+      'Hindi ko ma-identify ang pera sa pagkakataong ito. Pakisubukan ulit sa ibang anggulo o mas maliwanag na lugar.';
   static const String ttsCameraError =
-      'Error sa kamera. Pakisara at buksan ulit ang scanner.';
+      'Nagkaroon ng error sa camera. Pakisara at buksan ulit ang scanner.';
 
   // ── Scanner Semantics labels ───────────────────────────────────────────────
   static const String scannerSemanticIdle =
@@ -416,14 +407,14 @@ abstract final class TlStrings {
   static const String ttsOnboardingWelcome =
       'Maligayang pagdating sa MoneySense. '
       'Ang iyong accessible na identifier ng piso. '
-      'I-tap ang Susunod para magpatuloy.';
+      'Sabihin ang Ituloy para magpatuloy.';
   static const String ttsOnboardingVision =
       'Paano ka nakakita? Pumili ng vision profile. '
       'Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag. '
-      'I-tap ang isang opsyon, tapos i-tap ang Susunod.';
+      'Sabihin ang isang opsyon para piliin ito.';
   static const String ttsOnboardingLanguage =
       'Piliin ang iyong wika. Ingles o Tagalog. '
-      'I-tap ang isang opsyon, tapos i-tap ang Magsimula.';
+      'Sabihin ang isang opsyon para piliin ito.';
   static const String ttsOnboardingProfileSelected =
       'Na-set na ang vision profile.';
 
@@ -500,33 +491,29 @@ abstract final class TlStrings {
 
   // Tutorial audio guides — spoken on screen entry (TTS)
   static const String ttsInertialGuide =
-      'Tutorial sa Inertial Navigation. '
-      'Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate sa pamamagitan ng pag-tilt ng iyong telepono. '
-      'I-tilt pakanan para buksan ang Mga Setting. I-tilt pakaliwa para buksan ang Tutorial. '
-      'Hawakan ang tilt nang isang segundo para ma-trigger. '
-      'Ang telepono ay dapat nakatayo, hindi patag sa ibabaw. '
-      'Mag-scroll pababa para subukan ang live tilt demo.';
+      'Maligayang pagdating sa Tutorial ng Inertial Navigation. Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate sa pamamagitan lamang ng pag-tilt ng iyong telepono. '
+      'Maaari mong i-tilt pakanan para buksan ang Mga Setting, o i-tilt pakaliwa para buksan ang Tutorial. '
+      'Hawakan lang ang tilt nang isang segundo para ma-trigger ito. '
+      'Pakitiyak na ang iyong telepono ay nakatayo at hindi nakapatag. '
+      'Mag-scroll pababa para subukan ang aming live tilt demo!';
 
   static const String ttsGesturalGuide =
-      'Tutorial sa Gestural Navigation. '
-      'Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate gamit ang mga swipe gesture sa scanner screen. '
-      'Mag-swipe pakanan para buksan ang Mga Setting. Mag-swipe pakaliwa para buksan ang Tutorial. '
-      'Mag-swipe pataas para i-toggle ang flashlight. Mag-double-tap para i-freeze ang preview. '
-      'Mag-scroll pababa para subukan ang gesture playground.';
+      'Maligayang pagdating sa Tutorial ng Gestural Navigation. Ang feature na ito ay nagbibigay-daan sa iyo na mag-navigate gamit ang mga simpleng swipe gesture sa scanner screen. '
+      'Maaari kang mag-swipe pakanan para sa Mga Setting, o mag-swipe pakaliwa para sa Tutorial. '
+      'Puwede mo ring i-swipe pataas para buksan ang flashlight, o mag-double-tap kahit saan para ihinto ang preview. '
+      'Mag-scroll pababa kapag handa ka na para subukan ang ating gesture playground.';
 
   static const String ttsShakeGuide =
-      'Tutorial sa Shake to Go Back. '
-      'Ang feature na ito ay nagbibigay-daan sa iyo na bumalik sa nakaraang screen sa pamamagitan ng pag-shake ng iyong telepono. '
-      'Bigyan ng maikling matibay na shake ang telepono, parang sinasabing hindi. '
-      'Ang vibration ay nagpapatunay na natukoy ang gesture. '
-      'Mag-scroll pababa para subukan ang shake detector.';
+      'Maligayang pagdating sa Tutorial ng Shake to Go Back. Ang feature na ito ay nagbibigay-daan sa iyo na bumalik sa scanner mula sa anumang screen sa pamamagitan lamang ng pag-shake ng iyong telepono. '
+      'Sapat na ang isang maikli at mabilis na shake, na parang sinasabing hindi. '
+      'Magpe-play ako ng maikling vibration para kumpirmahing naramdaman ko ang shake. '
+      'Maaari kang mag-scroll pababa para subukan ang shake detector ngayon.';
 
   static const String ttsHapticGuide =
-      'Tutorial sa Denomination Vibration. '
-      'Ang feature na ito ay nagpe-play ng natatanging pattern ng vibration kapag nakilala ang isang pera. '
-      'Ang mga barya ay gumagamit ng isang mahabang pulse na sinusundan ng mga maikling pulse. Ang mga papel na pera ay gumagamit lamang ng mga maikling pulse. '
-      'Ang bilang ng mga maikling pulse ay tumutugma sa tier ng denominasyon. '
-      'Mag-scroll pababa para maramdaman ang bawat pattern nang isa-isa.';
+      'Maligayang pagdating sa Tutorial ng Denomination Vibration. Ang feature na ito ay nagpe-play ng natatanging pattern ng vibration tuwing may makikilala akong pera para sa iyo. '
+      'Ang mga barya ay gumagamit ng isang mahabang pulse na sinusundan ng mas maikling mga pulse, habang ang mga papel na pera naman ay gumagamit lamang ng mga maikling pulse. '
+      'Ang bilang ng mga pulse ay tutugma sa halaga ng pera. '
+      'Mag-scroll pababa para maramdaman ang bawat pattern.';
 
   // Tutorial hero semantic descriptions
   static const String inertialHeroSemantic =
@@ -660,4 +647,11 @@ abstract final class TlStrings {
   static const String voiceCmdHelp = 'Humingi ng Tulong';
   static const String voiceCmdExit = 'Isara ang Application';
   static const String blindTapToSpeak = 'I-tap kahit saan para magsalita';
+
+  // Command Confirmation & Feedback
+  static const String voiceConfirmPrefix = 'Sabi mo ba ay: ';
+  static const String voiceConfirmSuffix = '? Oo o hindi?';
+  static const String voiceActionSuccess = 'Sige!';
+  static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
+  static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
 }
