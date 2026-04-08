@@ -165,6 +165,8 @@ class VoiceCommandService {
     _isListeningSessionActive = false;
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
     
+    EarconService.instance.play(EarconEvent.actionDisabled);
+
     if (_speech.isListening) {
       // Use cancel() instead of stop() for faster turnaround during transitions
       await _speech.cancel();
