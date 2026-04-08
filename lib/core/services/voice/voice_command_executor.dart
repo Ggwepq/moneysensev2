@@ -129,15 +129,44 @@ class VoiceCommandExecutor {
       case HelpIntent():
         final context = navigatorKey.currentContext;
         if (context != null) {
-          say(TtsMessage.navigation(l10n.tutorialCardVoiceTitle));
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const TutorialScreen()),
-          );
-          Future.delayed(const Duration(milliseconds: 300), () {
-            TutorialNavigator.push(context, TutorialRoute.voice);
-          });
+          final targetRoute = switch (intent.target) {
+            HelpTarget.general => null,
+            HelpTarget.inertial => TutorialRoute.inertialNavigation,
+            HelpTarget.gestural => TutorialRoute.gesturalNavigation,
+            HelpTarget.voice => TutorialRoute.voice,
+            HelpTarget.scanning => TutorialRoute.denominationVibration,
+          };
+
+          if (targetRoute == null) {
+            say(TtsMessage.navigation(l10n.navTutorial));
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TutorialScreen()),
+            );
+          } else {
+            // Mapping for speech
+            final title = switch (intent.target) {
+              HelpTarget.inertial => l10n.tutorialCardInertialTitle,
+              HelpTarget.gestural => l10n.tutorialCardGestureTitle,
+              HelpTarget.voice => l10n.tutorialCardVoiceTitle,
+              HelpTarget.scanning => l10n.tutorialCardDenomTitle,
+              _ => l10n.navTutorial,
+            };
+
+            say(TtsMessage.navigation(title));
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TutorialScreen()),
+            );
+            Future.delayed(const Duration(milliseconds: 300), () {
+              TutorialNavigator.push(context, targetRoute);
+            });
+          }
         }
+        break;
+
+      case StopSpeakingIntent():
+        ref.read(ttsServiceProvider).stop();
         break;
 
       case WakeIntent():
