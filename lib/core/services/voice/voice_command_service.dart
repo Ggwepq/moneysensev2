@@ -39,11 +39,20 @@ class VoiceCommandService {
   final SpeechToText _speech = SpeechToText();
   bool _isInit = false;
 
+  /// Exposes intents as they are parsed, allowing contextual listeners
+  /// (like onboarding) to react to voice commands.
+  final _intentController = StreamController<VoiceIntent>.broadcast();
+  Stream<VoiceIntent> get intentStream => _intentController.stream;
+
   /// Used to distinguish standard double-tap listening from background passive listening.
   bool _isPassiveMode = false;
   
   /// Track current recognition state manually to handle auto-restart logic for passive mode
   bool _isListeningSessionActive = false;
+  
+  /// If true, the system will auto-restart active listening if it stops 
+  /// without an intent (used for onboarding).
+  bool _isPersistentActive = false;
 
   /// Lock to prevent concurrent hardware operations (stop vs start)
   bool _isHardwareBusy = false;
@@ -74,8 +83,9 @@ class VoiceCommandService {
     }
   }
 
-  /// Triggers a one-time active listening session (e.g. from a double-tap).
-  Future<void> startActiveListening() async {
+  /// Triggers an active listening session.
+  /// If [persistent] is true, it will auto-restart if it times out without a result.
+  Future<void> startActiveListening({bool persistent = false}) async {
     if (_isHardwareBusy) return;
     
     await _initIfNeeded();
@@ -93,6 +103,7 @@ class VoiceCommandService {
 
     await _runHardwareAction(() async {
       _isPassiveMode = false;
+      _isPersistentActive = persistent;
       _isListeningSessionActive = true;
       ref.read(voiceCommandTextProvider.notifier).state = '';
       ref.read(lastDetectedIntentProvider.notifier).state = null;
@@ -101,8 +112,9 @@ class VoiceCommandService {
 
       final started = await _speech.listen(
         onResult: _onResult,
-        listenFor: const Duration(seconds: 10),
-        cancelOnError: true,
+        listenFor: persistent ? const Duration(minutes: 1) : const Duration(seconds: 10),
+        pauseFor: persistent ? const Duration(seconds: 20) : null,
+        cancelOnError: !persistent,
         partialResults: true, 
       );
 
@@ -162,6 +174,7 @@ class VoiceCommandService {
   /// Immediately stops both active and passive listening.
   Future<void> stopListening() async {
     _isPassiveMode = false;
+    _isPersistentActive = false;
     _isListeningSessionActive = false;
     ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
     
@@ -178,11 +191,12 @@ class VoiceCommandService {
   void _onStatus(String status) {
     // If hardware says it's done/notListening but we're supposed to be passive, restart.
     if (status == 'done' || status == 'notListening') {
-      if (_isPassiveMode && _isListeningSessionActive) {
+      if ((_isPassiveMode || _isPersistentActive) && _isListeningSessionActive) {
         // Clear status but restart quickly
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-        Future.delayed(const Duration(milliseconds: 300), _startContinuousLoop);
-      } else if (!_isPassiveMode) {
+        final nextCall = _isPassiveMode ? _startContinuousLoop : () => startActiveListening(persistent: true);
+        Future.delayed(const Duration(milliseconds: 300), nextCall);
+      } else if (!_isPassiveMode && !_isPersistentActive) {
         _isListeningSessionActive = false;
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
         EarconService.instance.play(EarconEvent.actionDisabled);
@@ -191,14 +205,15 @@ class VoiceCommandService {
   }
 
   void _onError(SpeechRecognitionError error) {
-    if (!_isPassiveMode) {
+    if (!_isPassiveMode && !_isPersistentActive) {
       _isListeningSessionActive = false;
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       EarconService.instance.play(EarconEvent.scanFail);
     } else {
-      // Passive listening recovery
+      // Recovery for continuous modes
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-      Future.delayed(const Duration(seconds: 1), _startContinuousLoop);
+      final nextCall = _isPassiveMode ? _startContinuousLoop : () => startActiveListening(persistent: true);
+      Future.delayed(const Duration(seconds: 1), nextCall);
     }
   }
 
@@ -257,6 +272,7 @@ class VoiceCommandService {
       // EXECUTE
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
+      _intentController.add(intent);
       EarconService.instance.play(EarconEvent.actionConfirmed);
 
       if (!_isPassiveMode) {

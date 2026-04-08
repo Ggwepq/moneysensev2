@@ -62,3 +62,22 @@ class NavigateIntent extends VoiceIntent {
   const NavigateIntent(this.target);
   final NavTarget target;
 }
+
+/// ── Onboarding Specific Intents ─────────────────────────────────────────────
+
+/// Triggers the voice-guided onboarding flow
+class StartVoiceSetupIntent extends VoiceIntent {
+  const StartVoiceSetupIntent();
+}
+
+/// Represents a selection during onboarding (e.g. choice of language, profile)
+class SelectionIntent extends VoiceIntent {
+  const SelectionIntent(this.value);
+  final String value;
+}
+
+/// Represents generic agreement/disagreement (Yes/No)
+class SelectionConfirmationIntent extends VoiceIntent {
+  const SelectionConfirmationIntent(this.isConfirmed);
+  final bool isConfirmed;
+}

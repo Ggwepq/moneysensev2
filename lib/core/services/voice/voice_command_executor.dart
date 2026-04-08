@@ -176,6 +176,12 @@ class VoiceCommandExecutor {
       case UnknownIntent():
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
         break;
+
+      case StartVoiceSetupIntent():
+      case SelectionIntent():
+      case SelectionConfirmationIntent():
+        // These are handled contextually by the Onboarding screen
+        break;
     }
   }
 }

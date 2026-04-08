@@ -300,6 +300,7 @@ abstract final class EnStrings {
   static const String visionLowVision = 'Low Vision';
   static const String visionPartiallyBlind = 'Partially Blind';
   static const String visionFullyBlind = 'Fully Blind';
+  static const String onboardingVisionOptions = 'Please say: Low Vision, Partially Blind, or Fully Blind.';
 
   // Onboarding: Navigation style
   static const String onboardingNavTitle = 'How do you navigate?';
@@ -320,6 +321,8 @@ abstract final class EnStrings {
 
   static const String voiceNavigation = 'Voice Navigation';
   static const String voiceNavigationDesc = 'Use voice commands to control the app.';
+  static const String onboardingLanguageOptions = 'Please say: English, or Tagalog.';
+  static const String onboardingNavOptions = 'Please say: Standard, Gestural, Inertial, or Voice.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Camera access';
@@ -337,6 +340,13 @@ abstract final class EnStrings {
       'MoneySense is ready to use. Would you like a quick tour of the app first?';
   static const String onboardingFinishTour = 'Show me around';
   static const String onboardingFinishSkip = 'Start scanning';
+  static const String onboardingFinishOptions = 'Say Yes to start the tour, or No to start scanning immediately.';
+  static const String onboardingWelcomeConfirm = 'Great, let\'s begin. Now moving to vision profile selection.';
+  static const String onboardingConfirmVision = 'Vision profile set. Moving to language selection.';
+  static const String onboardingConfirmLanguage = 'Language set. Moving to navigation style.';
+  static const String onboardingConfirmNav = 'Navigation style set. Moving to camera access.';
+  static const String onboardingConfirmPerm = 'Permissions granted. Moving to the final step.';
+  static const String onboardingConfirmPermAlready = 'Permissions already granted. Moving to the final step.';
 
   // Tutorial: App Navigation overview card
   static const String tutorialCardAppNavTitle = 'App Navigation';
@@ -418,14 +428,14 @@ abstract final class EnStrings {
   // ── Onboarding TTS: spoken aloud during setup ────────────────────────────
   static const String ttsOnboardingWelcome =
       'Welcome to MoneySense. Your accessible Philippine currency identifier. '
-      'Tap Next to continue.';
+      'Say Proceed to continue.';
   static const String ttsOnboardingVision =
       'How do you see? Choose a vision profile. '
       'Low Vision, Partially Blind, or Fully Blind. '
-      'Tap an option, then tap Next.';
+      'Say an option to choose it.';
   static const String ttsOnboardingLanguage =
       'Choose your language. English or Tagalog. '
-      'Tap an option, then tap Get Started.';
+      'Say an option to choose it.';
   static const String ttsOnboardingProfileSelected = 'Vision profile set.';
 
   // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.

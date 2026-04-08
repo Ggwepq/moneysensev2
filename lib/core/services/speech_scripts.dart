@@ -79,7 +79,7 @@ abstract final class OnboardingSpeech {
 
   /// Spoken when the vision profile step is shown.
   static TtsMessage visionStep(AppLocalizations l10n) =>
-      TtsMessage.navigation(l10n.ttsOnboardingVision, id: 'onboarding.vision');
+      TtsMessage.navigation('${l10n.onboardingVisionTitle}. ${l10n.onboardingVisionSubtitle}. ${l10n.onboardingVisionOptions}', id: 'onboarding.vision');
 
   /// Spoken when a profile is selected (confirmation).
   static TtsMessage profileSelected(AppLocalizations l10n) =>
@@ -88,8 +88,23 @@ abstract final class OnboardingSpeech {
 
   /// Spoken when the language step is shown.
   static TtsMessage languageStep(AppLocalizations l10n) =>
-      TtsMessage.navigation(l10n.ttsOnboardingLanguage,
+      TtsMessage.navigation('${l10n.language}. ${l10n.onboardingLanguageOptions}',
           id: 'onboarding.language');
+
+  /// Spoken when the navigation style step is shown.
+  static TtsMessage navStep(AppLocalizations l10n) =>
+      TtsMessage.navigation('${l10n.onboardingNavTitle}. ${l10n.onboardingNavOptions}',
+          id: 'onboarding.nav');
+
+  /// Spoken when the permission step is shown.
+  static TtsMessage permStep(AppLocalizations l10n) =>
+      TtsMessage.navigation('${l10n.onboardingPermissionTitle}. MoneySense needs access to the Camera and Microphone. Say Proceed or Yes to grant permissions.',
+          id: 'onboarding.perm');
+
+  /// Spoken when the final step is shown.
+  static TtsMessage finish(AppLocalizations l10n) =>
+      TtsMessage.navigation('${l10n.onboardingFinishTitle}. ${l10n.onboardingFinishSubtitle} ${l10n.onboardingFinishOptions}',
+          id: 'onboarding.finish');
 }
 
 abstract final class TutorialSpeech {

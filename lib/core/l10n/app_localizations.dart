@@ -388,6 +388,8 @@ class AppLocalizations {
       : EnStrings.visionPartiallyBlind;
   String get visionFullyBlind =>
       isTagalog ? TlStrings.visionFullyBlind : EnStrings.visionFullyBlind;
+  String get onboardingVisionOptions =>
+      isTagalog ? TlStrings.onboardingVisionOptions : EnStrings.onboardingVisionOptions;
 
   // ── Accessibility settings ────────────────────────────────────────────────
   String get visionProfileTitle =>
@@ -484,6 +486,12 @@ class AppLocalizations {
   String get voiceNavigationDesc => isTagalog 
       ? TlStrings.voiceNavigationDesc
       : EnStrings.voiceNavigationDesc;
+  String get onboardingLanguageOptions => isTagalog
+      ? TlStrings.onboardingLanguageOptions
+      : EnStrings.onboardingLanguageOptions;
+  String get onboardingNavOptions => isTagalog
+      ? TlStrings.onboardingNavOptions
+      : EnStrings.onboardingNavOptions;
   String get onboardingNavInertial => isTagalog
       ? TlStrings.onboardingNavInertial
       : EnStrings.onboardingNavInertial;
@@ -521,9 +529,27 @@ class AppLocalizations {
   String get onboardingFinishTour => isTagalog
       ? TlStrings.onboardingFinishTour
       : EnStrings.onboardingFinishTour;
-  String get onboardingFinishSkip => isTagalog
-      ? TlStrings.onboardingFinishSkip
-      : EnStrings.onboardingFinishSkip;
+  String get onboardingFinishOptions => isTagalog
+      ? TlStrings.onboardingFinishOptions
+      : EnStrings.onboardingFinishOptions;
+  String get onboardingWelcomeConfirm => isTagalog
+      ? TlStrings.onboardingWelcomeConfirm
+      : EnStrings.onboardingWelcomeConfirm;
+  String get onboardingConfirmVision => isTagalog
+      ? TlStrings.onboardingConfirmVision
+      : EnStrings.onboardingConfirmVision;
+  String get onboardingConfirmLanguage => isTagalog
+      ? TlStrings.onboardingConfirmLanguage
+      : EnStrings.onboardingConfirmLanguage;
+  String get onboardingConfirmNav => isTagalog
+      ? TlStrings.onboardingConfirmNav
+      : EnStrings.onboardingConfirmNav;
+  String get onboardingConfirmPerm => isTagalog
+      ? TlStrings.onboardingConfirmPerm
+      : EnStrings.onboardingConfirmPerm;
+  String get onboardingConfirmPermAlready => isTagalog
+      ? TlStrings.onboardingConfirmPermAlready
+      : EnStrings.onboardingConfirmPermAlready;
 
   // Tutorial: App Navigation
   String get tutorialCardAppNavTitle => isTagalog

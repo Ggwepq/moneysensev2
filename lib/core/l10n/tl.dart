@@ -304,6 +304,7 @@ abstract final class TlStrings {
   static const String visionLowVision = 'Mababang Paningin';
   static const String visionPartiallyBlind = 'Bahagyang Bulag';
   static const String visionFullyBlind = 'Ganap na Bulag';
+  static const String onboardingVisionOptions = 'Mangyaring sabihin: Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag.';
 
   // Onboarding: Navigation style
   static const String onboardingNavTitle = 'Paano ka mag-navigate?';
@@ -325,6 +326,8 @@ abstract final class TlStrings {
 
   static const String voiceNavigation = 'Voice Navigation';
   static const String voiceNavigationDesc = 'Gumamit ng voice commands para makontrol ang app.';
+  static const String onboardingLanguageOptions = 'Mangyaring sabihin: English, o Tagalog.';
+  static const String onboardingNavOptions = 'Mangyaring sabihin: Karaniwan, Gestural, Inertial, o Voice.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Access sa Camera';
@@ -343,6 +346,13 @@ abstract final class TlStrings {
       'Handang gamitin ang MoneySense. Gusto mo bang mabigyan ng mabilis na gabay sa app?';
   static const String onboardingFinishTour = 'Ipakita sa akin';
   static const String onboardingFinishSkip = 'Magsimulang mag-scan';
+  static const String onboardingFinishOptions = 'Sabihin ang Oo para simulan ang tour, o Hindi para mag-scan agad.';
+  static const String onboardingWelcomeConfirm = 'Magaling, magsimula na tayo. Ngayon ay pupunta sa pagpili ng vision profile.';
+  static const String onboardingConfirmVision = 'Na-set na ang vision profile. Pupunta na sa pagpili ng wika.';
+  static const String onboardingConfirmLanguage = 'Na-set na ang wika. Pupunta na sa istilo ng nabigasyon.';
+  static const String onboardingConfirmNav = 'Na-set na ang istilo ng nabigasyon. Pupunta na sa access sa camera.';
+  static const String onboardingConfirmPerm = 'Naibigay na ang mga pahintulot. Pupunta na sa huling hakbang.';
+  static const String onboardingConfirmPermAlready = 'Naibigay na dati ang mga pahintulot. Pupunta na sa huling hakbang.';
 
   // Tutorial: App Navigation card
   static const String tutorialCardAppNavTitle = 'Nabigasyon sa App';
@@ -416,14 +426,14 @@ abstract final class TlStrings {
   static const String ttsOnboardingWelcome =
       'Maligayang pagdating sa MoneySense. '
       'Ang iyong accessible na identifier ng piso. '
-      'I-tap ang Susunod para magpatuloy.';
+      'Sabihin ang Ituloy para magpatuloy.';
   static const String ttsOnboardingVision =
       'Paano ka nakakita? Pumili ng vision profile. '
       'Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag. '
-      'I-tap ang isang opsyon, tapos i-tap ang Susunod.';
+      'Sabihin ang isang opsyon para piliin ito.';
   static const String ttsOnboardingLanguage =
       'Piliin ang iyong wika. Ingles o Tagalog. '
-      'I-tap ang isang opsyon, tapos i-tap ang Magsimula.';
+      'Sabihin ang isang opsyon para piliin ito.';
   static const String ttsOnboardingProfileSelected =
       'Na-set na ang vision profile.';
 
