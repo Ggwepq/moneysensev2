@@ -218,54 +218,6 @@ class SimpleSettingsScreen extends ConsumerWidget {
                         },
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      _BigRow(
-                        children: [
-                          // Gestural navigation toggle
-                          _ToggleCard(
-                            icon: Icons.swipe_rounded,
-                            label: l10n.gesturalNavigation,
-                            isActive: settings.gesturalNavigation,
-                            onTap: () {
-                              final next = !settings.gesturalNavigation;
-                              EarconService.instance.play(
-                                next
-                                    ? EarconEvent.actionEnabled
-                                    : EarconEvent.actionDisabled,
-                              );
-                              notifier.toggleGesturalNavigation(next);
-                              say(
-                                SettingsSpeech.toggled(
-                                  l10n,
-                                  l10n.gesturalNavigation,
-                                  next,
-                                ),
-                              );
-                            },
-                          ),
-                          // Voice feature toggle
-                          _ToggleCard(
-                            icon: Icons.mic_rounded,
-                            label: l10n.voiceNavigation,
-                            isActive: settings.voiceNavigation,
-                            onTap: () {
-                              final next = !settings.voiceNavigation;
-                              EarconService.instance.play(
-                                next
-                                    ? EarconEvent.actionEnabled
-                                    : EarconEvent.actionDisabled,
-                              );
-                              notifier.toggleVoiceNavigation(next);
-                              say(
-                                SettingsSpeech.toggled(
-                                  l10n,
-                                  l10n.voiceNavigation,
-                                  next,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
                       
 
 
