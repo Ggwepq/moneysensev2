@@ -56,10 +56,10 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
                if (now.difference(_lastTap).inMilliseconds < 500) return;
                _lastTap = now;
 
-               if (!isListening) {
-                 ref.read(voiceCommandServiceProvider).startActiveListening();
-               } else {
+               if (status == VoiceStatus.activeListening) {
                  ref.read(voiceCommandServiceProvider).stopListening();
+               } else {
+                 ref.read(voiceCommandServiceProvider).startActiveListening();
                }
             },
             child: SafeArea(

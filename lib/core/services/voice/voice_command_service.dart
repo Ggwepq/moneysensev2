@@ -208,7 +208,7 @@ class VoiceCommandService {
 
     if (_isPassiveMode) {
       final wakeWordRegex = RegExp(
-        r'(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ms|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?',
+        r'(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ams|ms|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?',
         caseSensitive: false,
       );
       if (!wakeWordRegex.hasMatch(recognizedText)) return; 

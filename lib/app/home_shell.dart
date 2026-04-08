@@ -235,7 +235,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
               ),
               if (isFullyBlind)
                 const BlindVoiceUi(),
-              if (settings.voiceNavigation)
+              if (settings.voiceNavigation && !isFullyBlind)
                 const VoiceCommandOverlay(),
             ],
           ),
