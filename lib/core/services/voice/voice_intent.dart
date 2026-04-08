@@ -41,8 +41,13 @@ class ExitAppIntent extends VoiceIntent {
   const ExitAppIntent();
 }
 
+/// Indicates a request for help or available commands
+class HelpIntent extends VoiceIntent {
+  const HelpIntent();
+}
+
 /// General navigation targets
-enum NavTarget { settings, home, tutorial }
+enum NavTarget { settings, home, tutorial, commandList }
 
 class NavigateIntent extends VoiceIntent {
   const NavigateIntent(this.target);

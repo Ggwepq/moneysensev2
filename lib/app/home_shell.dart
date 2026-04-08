@@ -40,7 +40,8 @@ class HomeShell extends ConsumerStatefulWidget {
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends ConsumerState<HomeShell> {
+class _HomeShellState extends ConsumerState<HomeShell>
+    with WidgetsBindingObserver, RouteAware {
 
   int _pointerCount = 0;
   DateTime _lastTap = DateTime.now();
@@ -48,6 +49,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     if (widget.launchTutorialOnLoad) {
       // Push the app-navigation tutorial directly: not the tutorial list.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,13 +59,44 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final settings = ref.read(appSettingsProvider);
-        if (settings.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        }
-      }
+      _resumeVoiceIfEnabled();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final observer = ref.read(routeObserverProvider);
+    final route = ModalRoute.of(context);
+    if (route != null) observer.subscribe(this, route);
+  }
+
+  @override
+  void dispose() {
+    ref.read(routeObserverProvider).unsubscribe(this);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Critical: Resume when we navigate BACK to this screen
+    _resumeVoiceIfEnabled();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _resumeVoiceIfEnabled();
+    }
+  }
+
+  void _resumeVoiceIfEnabled() {
+    if (!mounted) return;
+    final settings = ref.read(appSettingsProvider);
+    if (settings.voiceNavigation) {
+      ref.read(voiceCommandServiceProvider).startPassiveListening();
+    }
   }
 
   void _pushSettings() {
@@ -225,4 +259,3 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     );
   }
 }
-

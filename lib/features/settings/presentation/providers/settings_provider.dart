@@ -116,6 +116,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       visionProfile:   profile,
       ttsVerbosity:    config.defaultTtsVerbosity,
       hapticIntensity: config.defaultHapticIntensity,
+      voiceNavigation: profile == VisionProfile.fullyBlind ? true : state.voiceNavigation,
     ));
   }
 

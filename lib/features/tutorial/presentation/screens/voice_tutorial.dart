@@ -62,12 +62,18 @@ class _VoiceTutorialState extends ConsumerState<VoiceTutorial> {
       interactiveSemantic: l10n.voicePlaygroundSemantic,
       hero: _VoiceHero(isDark: isDark, isListening: _isListening || _wakeWordDetected),
       accentColor: accent,
-      interactive: _VoiceDemo(
-        lastCaptured: _lastCaptured,
-        isListening: _isListening,
-        wakeWordDetected: _wakeWordDetected,
-        isDark: isDark,
-        l10n: l10n,
+      interactive: Column(
+        children: [
+          _VoiceDemo(
+            lastCaptured: _lastCaptured,
+            isListening: _isListening,
+            wakeWordDetected: _wakeWordDetected,
+            isDark: isDark,
+            l10n: l10n,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          _CommandList(l10n: l10n, isDark: isDark),
+        ],
       ),
     );
   }
@@ -236,6 +242,112 @@ class _VoiceDemo extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CommandList extends StatelessWidget {
+  const _CommandList({required this.l10n, required this.isDark});
+  final AppLocalizations l10n;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.voiceHelpCommandList.split(':').first.toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
+            color: isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _CategoryGroup(
+          label: l10n.voiceCommandCatNav,
+          commands: [
+            l10n.voiceCmdOpenSettings,
+            l10n.voiceCmdGoHome,
+            l10n.voiceCmdOpenTutorial,
+          ],
+          isDark: isDark,
+        ),
+        _CategoryGroup(
+          label: l10n.voiceCommandCatScan,
+          commands: [
+            l10n.voiceCmdFlashOn,
+            l10n.voiceCmdFlashOff,
+            l10n.voiceCmdFrontCam,
+          ],
+          isDark: isDark,
+        ),
+        _CategoryGroup(
+          label: l10n.voiceCommandCatHelp,
+          commands: [
+            l10n.voiceCmdHelp,
+            l10n.voiceCmdCommandList,
+            l10n.voiceCmdExit,
+          ],
+          isDark: isDark,
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryGroup extends StatelessWidget {
+  const _CategoryGroup({
+    required this.label,
+    required this.commands,
+    required this.isDark,
+  });
+  final String label;
+  final List<String> commands;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
+    final accent = ProviderScope.containerOf(context, listen: false).read(visionConfigProvider).accentBlue;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(width: 4, height: 16, color: accent),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: accent,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...commands.map((cmd) => Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 4),
+            child: Row(
+              children: [
+                Icon(Icons.chevron_right_rounded, size: 14, color: onSurface.withValues(alpha: 0.5)),
+                const SizedBox(width: 4),
+                Text(
+                  cmd,
+                  style: TextStyle(fontSize: 14, color: onSurface, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          )),
         ],
       ),
     );

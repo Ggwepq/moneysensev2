@@ -852,10 +852,30 @@ class AppLocalizations {
       : EnStrings.voiceWakeWordDetectedLabel;
   String get voiceTryItHint =>
       isTagalog ? TlStrings.voiceTryItHint : EnStrings.voiceTryItHint;
+  String get voiceHelpCommandList =>
+      isTagalog ? TlStrings.voiceHelpCommandList : EnStrings.voiceHelpCommandList;
   String get voiceStatusStandingBy =>
       isTagalog ? TlStrings.voiceStatusStandingBy : EnStrings.voiceStatusStandingBy;
+  String get voicePromptWhatShallIDo =>
+      isTagalog ? TlStrings.voicePromptWhatShallIDo : EnStrings.voicePromptWhatShallIDo;
   String get blindTapToSpeak =>
       isTagalog ? TlStrings.blindTapToSpeak : EnStrings.blindTapToSpeak;
+
+  // Categorized Commands
+  String get voiceCommandCatNav => isTagalog ? TlStrings.voiceCommandCatNav : EnStrings.voiceCommandCatNav;
+  String get voiceCommandCatScan => isTagalog ? TlStrings.voiceCommandCatScan : EnStrings.voiceCommandCatScan;
+  String get voiceCommandCatHelp => isTagalog ? TlStrings.voiceCommandCatHelp : EnStrings.voiceCommandCatHelp;
+
+  String get voiceCmdOpenSettings => isTagalog ? TlStrings.voiceCmdOpenSettings : EnStrings.voiceCmdOpenSettings;
+  String get voiceCmdGoHome => isTagalog ? TlStrings.voiceCmdGoHome : EnStrings.voiceCmdGoHome;
+  String get voiceCmdOpenTutorial => isTagalog ? TlStrings.voiceCmdOpenTutorial : EnStrings.voiceCmdOpenTutorial;
+  String get voiceCmdCommandList => isTagalog ? TlStrings.voiceCmdCommandList : EnStrings.voiceCmdCommandList;
+  String get voiceCmdFlashOn => isTagalog ? TlStrings.voiceCmdFlashOn : EnStrings.voiceCmdFlashOn;
+  String get voiceCmdFlashOff => isTagalog ? TlStrings.voiceCmdFlashOff : EnStrings.voiceCmdFlashOff;
+  String get voiceCmdFrontCam => isTagalog ? TlStrings.voiceCmdFrontCam : EnStrings.voiceCmdFrontCam;
+  String get voiceCmdBackCam => isTagalog ? TlStrings.voiceCmdBackCam : EnStrings.voiceCmdBackCam;
+  String get voiceCmdHelp => isTagalog ? TlStrings.voiceCmdHelp : EnStrings.voiceCmdHelp;
+  String get voiceCmdExit => isTagalog ? TlStrings.voiceCmdExit : EnStrings.voiceCmdExit;
 
   // Scanner status labels
   String get scannerStatusIdle =>

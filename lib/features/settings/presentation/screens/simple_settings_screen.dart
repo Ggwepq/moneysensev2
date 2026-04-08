@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_spacing.dart';
@@ -12,7 +13,6 @@ import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'vision_profile_picker_screen.dart';
-import '../../../../core/constants/app_colors.dart';
 
 class SimpleSettingsScreen extends ConsumerWidget {
   const SimpleSettingsScreen({super.key});
@@ -126,7 +126,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       _BigRow(
                         children: [
                           // Camera toggle: Back ↔ Front (one box)
@@ -178,7 +178,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       // Vision Profile — full width, opens picker
                       _ToggleCardWide(
                         icon: _visionIcon(settings.visionProfile),
@@ -214,7 +214,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       _BigRow(
                         children: [
                           // Gestural navigation toggle
@@ -263,7 +263,10 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      
+
+
+                      const SizedBox(height: AppSpacing.md),
                       // ── Advanced Mode button (scrollable) ─────────────────
                       Semantics(
                         label: 'Advanced Mode. Go back to the full settings page.',
@@ -307,7 +310,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.xl),
                     ], // End of inner Column children
                   ), // End of inner Column
                 ), // End of SingleChildScrollView
@@ -379,7 +382,7 @@ class _BigRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(child: children[0]),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.lg), // Increased from md
         Expanded(child: children[1]),
       ],
     );
@@ -412,9 +415,6 @@ class _ToggleCard extends StatelessWidget {
     final textColor = isActive
         ? theme.colorScheme.onPrimary
         : theme.colorScheme.onSurface;
-    final iconBackground = isActive
-        ? textColor.withOpacity(0.08)
-        : textColor.withOpacity(0.12);
 
     return Semantics(
       label: '$label. Button',
@@ -491,9 +491,6 @@ class _ToggleCardWide extends StatelessWidget {
     final textColor = isActive
         ? theme.colorScheme.onPrimary
         : theme.colorScheme.onSurface;
-    final iconBackground = isActive
-        ? textColor.withOpacity(0.08)
-        : textColor.withOpacity(0.12);
 
     return Semantics(
       label: '$label. ${sublabel ?? ''}. Button',
@@ -575,3 +572,5 @@ class _SwipeBackWrapper extends StatelessWidget {
     );
   }
 }
+
+

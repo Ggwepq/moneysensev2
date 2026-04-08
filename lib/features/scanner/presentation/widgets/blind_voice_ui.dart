@@ -11,11 +11,18 @@ import '../../../settings/domain/entities/app_settings.dart';
 
 /// A heavily optimized, minimal-touch UI for fully blind users.
 /// Replaces standard menus with a massive, high-contrast, fully tappable layout.
-class BlindVoiceUi extends ConsumerWidget {
+class BlindVoiceUi extends ConsumerStatefulWidget {
   const BlindVoiceUi({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BlindVoiceUi> createState() => _BlindVoiceUiState();
+}
+
+class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
+  DateTime _lastTap = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
     final status = ref.watch(voiceCommandStatusProvider);
     final text = ref.watch(voiceCommandTextProvider);
     final settings = ref.watch(appSettingsProvider);
@@ -26,7 +33,9 @@ class BlindVoiceUi extends ConsumerWidget {
     
     final accent = cfg.accent(isDark);
     final accentFg = cfg.accentForeground(isDark);
-    final isListening = status == VoiceStatus.activeListening || status == VoiceStatus.processing;
+    final isListening = status == VoiceStatus.activeListening || 
+                        status == VoiceStatus.processing ||
+                        status == VoiceStatus.passiveListening;
 
     return Stack(
       children: [
@@ -43,8 +52,10 @@ class BlindVoiceUi extends ConsumerWidget {
           child: Listener(
             behavior: HitTestBehavior.opaque, // Entire screen captures touches
             onPointerDown: (_) {
-               // A simple single tap from a fully blind user can instantly trigger the active microphone!
-               // They don't need to double tap if in "blind mode" because there are no other buttons.
+               final now = DateTime.now();
+               if (now.difference(_lastTap).inMilliseconds < 500) return;
+               _lastTap = now;
+
                if (!isListening) {
                  ref.read(voiceCommandServiceProvider).startActiveListening();
                } else {
@@ -84,9 +95,15 @@ class BlindVoiceUi extends ConsumerWidget {
                     const SizedBox(height: 60),
 
                     Text(
-                      isListening 
-                          ? (status == VoiceStatus.processing ? l10n.voiceDetectedLabel : (text.isEmpty ? l10n.voiceListeningLabel : text))
-                          : (status == VoiceStatus.passiveListening ? l10n.voiceStatusStandingBy : l10n.blindTapToSpeak),
+                      status == VoiceStatus.processing
+                          ? l10n.voiceDetectedLabel
+                          : (text.isNotEmpty
+                              ? text
+                              : (status == VoiceStatus.passiveListening
+                                  ? l10n.voiceStatusStandingBy
+                                  : (status == VoiceStatus.activeListening
+                                      ? l10n.voiceListeningLabel
+                                      : l10n.blindTapToSpeak))),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black87,

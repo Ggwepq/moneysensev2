@@ -8,7 +8,7 @@ class VoiceIntentParser {
 
     // Consistent, flexible wake-word regex shared with the service
     final wakeWordRegex = RegExp(
-      r'(hey|hoy|hay|hi|hello|ok|paki|yo)?\s*(money|monie|moni|monee|mane|mani|many|mona|mone|monay)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence)',
+      r'(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ms|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?',
       caseSensitive: false,
     );
 
@@ -74,8 +74,34 @@ class VoiceIntentParser {
     ])) {
       return const NavigateIntent(NavTarget.home);
     }
-    if (_matches(sanitized, ['tutorial', 'help', 'tulong', 'open tutorial'])) {
+    if (_matches(sanitized, [
+      'tutorial',
+      'open tutorial',
+      'paano gamitin',
+    ])) {
       return const NavigateIntent(NavTarget.tutorial);
+    }
+
+    if (_matches(sanitized, [
+      'help',
+      'what can i say',
+      'tulong',
+      'tulong po',
+      'ano ang sasabihin',
+    ])) {
+      return const HelpIntent();
+    }
+
+    if (_matches(sanitized, [
+      'list commands',
+      'command list',
+      'show commands',
+      'commands',
+      'ano ang mga utos',
+      'mga utos',
+      'lista ng utos',
+    ])) {
+      return const NavigateIntent(NavTarget.commandList);
     }
 
     // ── Camera hardware ──────────────────────────────────────────────────────

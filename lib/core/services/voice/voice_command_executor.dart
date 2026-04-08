@@ -8,6 +8,8 @@ import '../tts_service.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../features/settings/presentation/screens/simple_settings_screen.dart';
 import '../../../features/tutorial/presentation/screens/tutorial_screen.dart';
+import '../../../features/tutorial/presentation/screens/tutorial_navigator.dart';
+import '../../../features/tutorial/domain/tutorial_route.dart';
 import '../../../features/settings/presentation/providers/settings_provider.dart';
 import '../../../features/scanner/presentation/providers/scanner_provider.dart';
 
@@ -89,11 +91,9 @@ class VoiceCommandExecutor {
         break;
 
       case NavigateIntent():
-        // We use the global navigator key to push/pop
         final context = navigatorKey.currentContext;
         if (context == null) return;
         
-        // Pop all dialogues or nested routes safely back to Home shell
         Navigator.of(context).popUntil((route) => route.isFirst);
 
         if (intent.target == NavTarget.settings) {
@@ -106,6 +106,14 @@ class VoiceCommandExecutor {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const TutorialScreen()),
           );
+        } else if (intent.target == NavTarget.commandList) {
+          say(TtsMessage.navigation(l10n.tutorialCardVoiceTitle));
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TutorialScreen()),
+          );
+          Future.delayed(const Duration(milliseconds: 300), () {
+            TutorialNavigator.push(context, TutorialRoute.voice);
+          });
         } else if (intent.target == NavTarget.home) {
           say(NavSpeech.returnedHome(l10n));
         }
@@ -113,10 +121,20 @@ class VoiceCommandExecutor {
 
       case ExitAppIntent():
         say(TtsMessage.ambient('Closing Money Sense', id: 'voice.exit'));
-        // Wait a tiny bit for the TTS queue to register
         Future.delayed(const Duration(milliseconds: 500), () {
-          SystemNavigator.pop();
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         });
+        break;
+
+      case HelpIntent():
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          say(TtsMessage.navigation(l10n.navTutorial));
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TutorialScreen()),
+          );
+        }
         break;
 
       case WakeIntent():
@@ -124,8 +142,6 @@ class VoiceCommandExecutor {
         break;
 
       case UnknownIntent():
-        // In fully blind contexts, it's often better to slightly nudge or ignore.
-        // We will just do a small error chime or say "Command not recognized".
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
         break;
     }
