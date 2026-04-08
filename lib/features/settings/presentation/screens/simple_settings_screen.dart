@@ -139,15 +139,18 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                 : 'Back Camera',
                             isActive: true,
                             onTap: () {
+                              final nextIsFront = !isFrontCamera;
                               EarconService.instance.play(
-                                EarconEvent.actionConfirmed,
+                                nextIsFront
+                                    ? EarconEvent.actionEnabled
+                                    : EarconEvent.actionDisabled,
                               );
-                              notifier.toggleFrontCamera(!isFrontCamera);
+                              notifier.toggleFrontCamera(nextIsFront);
                               say(
                                 SettingsSpeech.toggled(
                                   l10n,
                                   l10n.useFrontCamera,
-                                  !isFrontCamera,
+                                  nextIsFront,
                                 ),
                               );
                             },
@@ -342,6 +345,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
       context,
       message: oldL10n.ttsLangChanging(newLangName),
     );
+    EarconService.instance.play(EarconEvent.actionConfirmed);
     tts.enqueue(
       LanguageSpeech.changing(oldL10n, newLangName),
       enabled: settings.ttsEnabled,

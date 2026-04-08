@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../../core/services/earcon_service.dart';
 
 /// Shared scaffold for all feature tutorials.
 ///
@@ -87,6 +88,14 @@ class MsTutorialScaffold extends StatelessWidget {
         foregroundColor: onSurface,
         elevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            EarconService.instance.play(EarconEvent.navBack);
+            Navigator.of(context).maybePop();
+          },
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        ),
         title: Text(
           title,
           style: theme.textTheme.titleMedium?.copyWith(
