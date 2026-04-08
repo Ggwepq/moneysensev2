@@ -17,11 +17,8 @@ import '../../../../core/services/voice/voice_command_service.dart';
 import '../../../../core/services/voice/voice_intent.dart';
 import '../widgets/voice_onboarding_orb.dart';
 
-// 6-page onboarding flow shown on first launch. The user picks their vision
-// profile, language, and navigation preferences before entering the app.
+// profile, language, and permissions before entering the app.
 // Accent colors update live as the profile is selected on page 1.
-
-enum _NavStyle { standard, gestural, inertial, voice }
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key, required this.onComplete});
@@ -33,13 +30,12 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  static const int _total = 6;
+  static const int _total = 5;
 
   int _page = 0;
 
   VisionProfile _profile  = VisionProfile.lowVision;
   AppLanguage   _language = AppLanguage.english;
-  _NavStyle     _nav      = _NavStyle.standard;
 
   // ── Voice Setup Mode ──────────────────────────────────────────────────────
   bool _isVoiceActive = true;
@@ -87,9 +83,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       0 => OnboardingSpeech.welcome(l10n),
       1 => OnboardingSpeech.visionStep(l10n),
       2 => OnboardingSpeech.languageStep(l10n),
-      3 => OnboardingSpeech.navStep(l10n),
-      4 => OnboardingSpeech.permStep(l10n),
-      5 => OnboardingSpeech.finish(l10n),
+      3 => OnboardingSpeech.permStep(l10n),
+      4 => OnboardingSpeech.finish(l10n),
       _ => null,
     };
     if (msg != null) _say(msg);
@@ -105,7 +100,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // 1. If we were waiting to move to the next step, do it now
         if (_isAdvancing) {
           _isAdvancing = false;
-          if (_page == 5) {
+          if (_page == 4) {
             _finish(launchTutorial: _launchFinalTutorial);
           } else {
             _next();
@@ -151,7 +146,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         if (_page == 0) {
           _isAdvancing = true;
           _say(TtsMessage.navigation(l10n.onboardingWelcomeConfirm));
-        } else if (_page == 4) {
+        } else if (_page == 3) {
           _requestPerm().then((alreadyGranted) {
             _isAdvancing = true;
             if (alreadyGranted) {
@@ -160,13 +155,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               _say(TtsMessage.navigation(l10n.onboardingConfirmPerm));
             }
           });
-        } else if (_page == 5) {
+        } else if (_page == 4) {
           _isAdvancing = true;
           _launchFinalTutorial = true;
           _say(OnboardingSpeech.exitToTour(l10n));
         }
       } else {
-        if (_page == 5) {
+        if (_page == 4) {
           _isAdvancing = true;
           _launchFinalTutorial = false;
           _say(OnboardingSpeech.exitToScanner(l10n));
@@ -201,17 +196,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 'fullyBlind': setState(() => _profile = VisionProfile.fullyBlind);
       case 'english': setState(() => _language = AppLanguage.english);
       case 'tagalog': setState(() => _language = AppLanguage.tagalog);
-      case 'standard': setState(() => _nav = _NavStyle.standard);
-      case 'gestural': setState(() => _nav = _NavStyle.gestural);
-      case 'inertial': setState(() => _nav = _NavStyle.inertial);
-      case 'voice': setState(() => _nav = _NavStyle.voice);
     }
     
     // Confirm the choice then move on
     _isAdvancing = true;
     final confirmMsg = _page == 1 
         ? l10n.onboardingConfirmVision 
-        : (_page == 2 ? l10n.onboardingConfirmLanguage : l10n.onboardingConfirmNav);
+        : l10n.onboardingConfirmLanguage;
     _say(TtsMessage.navigation(confirmMsg));
   }
 
@@ -239,25 +230,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final n = ref.read(appSettingsProvider.notifier);
     n.setVisionProfile(_profile);
     n.setLanguage(_language);
-    switch (_nav) {
-      case _NavStyle.standard:
-        n.toggleGesturalNavigation(false);
-        n.toggleInertialNavigation(false);
-        n.toggleVoiceNavigation(false);
-      case _NavStyle.gestural:
-        n.toggleGesturalNavigation(true);
-        n.toggleInertialNavigation(false);
-        n.toggleVoiceNavigation(false);
-      case _NavStyle.inertial:
-        n.toggleGesturalNavigation(false);
-        n.toggleInertialNavigation(true);
-        n.toggleVoiceNavigation(false);
-      case _NavStyle.voice:
-        // Voice mode also leaves standard touch enabled
-        n.toggleGesturalNavigation(false);
-        n.toggleInertialNavigation(false);
-        n.toggleVoiceNavigation(true);
-    }
+    
     final cfg = VisionConfig.from(_profile);
     if (cfg.preferAudioPrimary) {
       n.toggleTts(true);
@@ -379,9 +352,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 0: return 'Welcome';
       case 1: return 'Vision Profile';
       case 2: return 'Language';
-      case 3: return 'Navigation Style';
-      case 4: return 'Permissions';
-      case 5: return 'Ready to Go';
+      case 3: return 'Permissions';
+      case 4: return 'Ready to Go';
       default: return '';
     }
   }
@@ -392,9 +364,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 0: return 'Say "Proceed" or "Yes" to begin setup.';
       case 1: return 'Say "Low Vision", "Partially Blind", or "Fully Blind".';
       case 2: return 'Say "English" or "Tagalog".';
-      case 3: return 'Say "Standard", "Gestural", "Inertial", or "Voice".';
-      case 4: return 'Say "Proceed" to grant camera access.';
-      case 5: return 'Say "Start" to begin using MoneySense.';
+      case 3: return 'Say "Proceed" to grant camera access.';
+      case 4: return 'Say "Start" to begin using MoneySense.';
       default: return '';
     }
   }

@@ -113,10 +113,12 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setVisionProfile(VisionProfile profile) {
     final config = VisionConfig.from(profile);
     _update(state.copyWith(
-      visionProfile:   profile,
-      ttsVerbosity:    config.defaultTtsVerbosity,
-      hapticIntensity: config.defaultHapticIntensity,
-      voiceNavigation: profile == VisionProfile.fullyBlind ? true : state.voiceNavigation,
+      visionProfile:      profile,
+      ttsVerbosity:       config.defaultTtsVerbosity,
+      hapticIntensity:    config.defaultHapticIntensity,
+      voiceNavigation:    profile == VisionProfile.fullyBlind,
+      gesturalNavigation: profile == VisionProfile.fullyBlind || profile == VisionProfile.partiallyBlind,
+      inertialNavigation: false,
     ));
   }
 

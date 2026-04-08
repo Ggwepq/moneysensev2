@@ -306,28 +306,10 @@ abstract final class TlStrings {
   static const String visionFullyBlind = 'Ganap na Bulag';
   static const String onboardingVisionOptions = 'Mangyaring sabihin: Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag.';
 
-  // Onboarding: Navigation style
-  static const String onboardingNavTitle = 'Paano ka mag-navigate?';
-  static const String onboardingNavSubtitle =
-      'Piliin kung paano gusto mong lumipat sa pagitan ng mga screen. Maaari mong baguhin ito sa Settings.';
-  static const String onboardingNavNormal = 'Karaniwan';
-  static const String onboardingNavNormalDesc =
-      'Gamitin ang mga pindutan at bottom navigation bar.';
-  static const String onboardingNavGestural = 'Gestural';
-  static const String onboardingNavGesturalDesc =
-      'I-swipe pakaliwa o pakanan para buksan ang Settings at Tutorial.';
-  static const String onboardingNavInertial = 'Inertial';
-  static const String onboardingNavInertialDesc =
-      'Ikiling ang iyong telepono pakaliwa o pakanan para mag-navigate.';
-
-  static const String onboardingNavVoice = 'Voice Commands';
-  static const String onboardingNavVoiceDesc =
-      'Gamitin ang iyong boses para direktang mag-navigate sa app.';
-
-  static const String voiceNavigation = 'Voice Navigation';
-  static const String voiceNavigationDesc = 'Gumamit ng voice commands para makontrol ang app.';
+  static const String voiceNavigation = 'Nabigasyon sa Boses';
+  static const String voiceNavigationDesc = 'Gamitin ang mga voice command para makontrol ang app.';
   static const String onboardingLanguageOptions = 'Mangyaring sabihin: English, o Tagalog.';
-  static const String onboardingNavOptions = 'Mangyaring sabihin: Karaniwan, Gestural, Inertial, o Voice.';
+
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Access sa Camera';
@@ -351,8 +333,7 @@ abstract final class TlStrings {
   static const String onboardingExitToTour = 'Magandang pili! Simulan na natin ang tour.';
   static const String onboardingWelcomeConfirm = 'Magaling, magsimula na tayo. Ngayon ay pupunta sa pagpili ng vision profile.';
   static const String onboardingConfirmVision = 'Na-set na ang vision profile. Pupunta na sa pagpili ng wika.';
-  static const String onboardingConfirmLanguage = 'Na-set na ang wika. Pupunta na sa istilo ng nabigasyon.';
-  static const String onboardingConfirmNav = 'Na-set na ang istilo ng nabigasyon. Pupunta na sa access sa camera.';
+  static const String onboardingConfirmLanguage = 'Naibigay na ang wika. Susunod na ang pag-access sa camera.';
   static const String onboardingConfirmPerm = 'Naibigay na ang mga pahintulot. Pupunta na sa huling hakbang.';
   static const String onboardingConfirmPermAlready = 'Naibigay na dati ang mga pahintulot. Pupunta na sa huling hakbang.';
 

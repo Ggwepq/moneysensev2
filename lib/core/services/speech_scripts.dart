@@ -91,11 +91,6 @@ abstract final class OnboardingSpeech {
       TtsMessage.navigation('${l10n.language}. ${l10n.onboardingLanguageOptions}',
           id: 'onboarding.language');
 
-  /// Spoken when the navigation style step is shown.
-  static TtsMessage navStep(AppLocalizations l10n) =>
-      TtsMessage.navigation('${l10n.onboardingNavTitle}. ${l10n.onboardingNavOptions}',
-          id: 'onboarding.nav');
-
   /// Spoken when the permission step is shown.
   static TtsMessage permStep(AppLocalizations l10n) =>
       TtsMessage.navigation('${l10n.onboardingPermissionTitle}. MoneySense needs access to the Camera and Microphone. Say Proceed or Yes to grant permissions.',

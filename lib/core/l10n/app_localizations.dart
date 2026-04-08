@@ -458,29 +458,6 @@ class AppLocalizations {
   String get getStarted =>
       isTagalog ? TlStrings.getStarted : EnStrings.getStarted;
 
-  // Onboarding: navigation style
-  String get onboardingNavTitle =>
-      isTagalog ? TlStrings.onboardingNavTitle : EnStrings.onboardingNavTitle;
-  String get onboardingNavSubtitle => isTagalog
-      ? TlStrings.onboardingNavSubtitle
-      : EnStrings.onboardingNavSubtitle;
-  String get onboardingNavNormal =>
-      isTagalog ? TlStrings.onboardingNavNormal : EnStrings.onboardingNavNormal;
-  String get onboardingNavNormalDesc => isTagalog
-      ? TlStrings.onboardingNavNormalDesc
-      : EnStrings.onboardingNavNormalDesc;
-  String get onboardingNavGestural => isTagalog
-      ? TlStrings.onboardingNavGestural
-      : EnStrings.onboardingNavGestural;
-  String get onboardingNavGesturalDesc => isTagalog
-      ? TlStrings.onboardingNavGesturalDesc
-      : EnStrings.onboardingNavGesturalDesc;
-  String get onboardingNavVoice => isTagalog
-      ? TlStrings.onboardingNavVoice
-      : EnStrings.onboardingNavVoice;
-  String get onboardingNavVoiceDesc => isTagalog
-      ? TlStrings.onboardingNavVoiceDesc
-      : EnStrings.onboardingNavVoiceDesc;
   String get voiceNavigation =>
       isTagalog ? TlStrings.voiceNavigation : EnStrings.voiceNavigation;
   String get voiceNavigationDesc => isTagalog 
@@ -489,15 +466,6 @@ class AppLocalizations {
   String get onboardingLanguageOptions => isTagalog
       ? TlStrings.onboardingLanguageOptions
       : EnStrings.onboardingLanguageOptions;
-  String get onboardingNavOptions => isTagalog
-      ? TlStrings.onboardingNavOptions
-      : EnStrings.onboardingNavOptions;
-  String get onboardingNavInertial => isTagalog
-      ? TlStrings.onboardingNavInertial
-      : EnStrings.onboardingNavInertial;
-  String get onboardingNavInertialDesc => isTagalog
-      ? TlStrings.onboardingNavInertialDesc
-      : EnStrings.onboardingNavInertialDesc;
 
   // Onboarding: permissions
   String get onboardingPermissionTitle => isTagalog
@@ -547,9 +515,6 @@ class AppLocalizations {
   String get onboardingConfirmLanguage => isTagalog
       ? TlStrings.onboardingConfirmLanguage
       : EnStrings.onboardingConfirmLanguage;
-  String get onboardingConfirmNav => isTagalog
-      ? TlStrings.onboardingConfirmNav
-      : EnStrings.onboardingConfirmNav;
   String get onboardingConfirmPerm => isTagalog
       ? TlStrings.onboardingConfirmPerm
       : EnStrings.onboardingConfirmPerm;

@@ -302,27 +302,9 @@ abstract final class EnStrings {
   static const String visionFullyBlind = 'Fully Blind';
   static const String onboardingVisionOptions = 'Please say: Low Vision, Partially Blind, or Fully Blind.';
 
-  // Onboarding: Navigation style
-  static const String onboardingNavTitle = 'How do you navigate?';
-  static const String onboardingNavSubtitle =
-      'Choose how you want to move between screens. You can change this later in Settings.';
-  static const String onboardingNavNormal = 'Standard';
-  static const String onboardingNavNormalDesc =
-      'Use the buttons and bottom navigation bar.';
-  static const String onboardingNavGestural = 'Gestural';
-  static const String onboardingNavGesturalDesc =
-      'Swipe left or right to open Settings and Tutorial.';
-  static const String onboardingNavInertial = 'Inertial';
-  static const String onboardingNavInertialDesc =
-      'Tilt your phone left or right to navigate.';
-  static const String onboardingNavVoice = 'Voice Commands';
-  static const String onboardingNavVoiceDesc =
-      'Use your voice to directly navigate the app.';
-
   static const String voiceNavigation = 'Voice Navigation';
   static const String voiceNavigationDesc = 'Use voice commands to control the app.';
   static const String onboardingLanguageOptions = 'Please say: English, or Tagalog.';
-  static const String onboardingNavOptions = 'Please say: Standard, Gestural, Inertial, or Voice.';
 
   // Onboarding: Permissions
   static const String onboardingPermissionTitle = 'Camera access';
@@ -347,8 +329,7 @@ abstract final class EnStrings {
   static const String onboardingExitToTour = 'Excellent choice! Let\'s start the tour.';
   static const String onboardingWelcomeConfirm = 'Great, let\'s begin. Now moving to vision profile selection.';
   static const String onboardingConfirmVision = 'Vision profile set. Moving to language selection.';
-  static const String onboardingConfirmLanguage = 'Language set. Moving to navigation style.';
-  static const String onboardingConfirmNav = 'Navigation style set. Moving to camera access.';
+  static const String onboardingConfirmLanguage = 'Language set. Moving to camera access.';
   static const String onboardingConfirmPerm = 'Permissions granted. Moving to the final step.';
   static const String onboardingConfirmPermAlready = 'Permissions already granted. Moving to the final step.';
 
