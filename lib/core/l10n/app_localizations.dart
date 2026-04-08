@@ -532,6 +532,12 @@ class AppLocalizations {
   String get onboardingFinishOptions => isTagalog
       ? TlStrings.onboardingFinishOptions
       : EnStrings.onboardingFinishOptions;
+  String get onboardingExitToScanner => isTagalog
+      ? TlStrings.onboardingExitToScanner
+      : EnStrings.onboardingExitToScanner;
+  String get onboardingExitToTour => isTagalog
+      ? TlStrings.onboardingExitToTour
+      : EnStrings.onboardingExitToTour;
   String get onboardingWelcomeConfirm => isTagalog
       ? TlStrings.onboardingWelcomeConfirm
       : EnStrings.onboardingWelcomeConfirm;
@@ -589,12 +595,15 @@ class AppLocalizations {
       : EnStrings.ttsLangChangingLabel;
 
   // Settings confirmations: parametric (not stored as const strings)
-  String ttsSettingEnabled(String settingName) =>
-      isTagalog ? '$settingName naka-on.' : '$settingName enabled.';
-  String ttsSettingDisabled(String settingName) =>
-      isTagalog ? '$settingName naka-off.' : '$settingName disabled.';
-  String ttsSettingChanged(String settingName, String newValue) =>
-      isTagalog ? '$settingName: $newValue.' : '$settingName set to $newValue.';
+  String ttsSettingEnabled(String settingName) => isTagalog
+      ? 'Siyempre. Binuksan ko na ang $settingName para sa iyo.'
+      : 'Certainly. I\'ve turned on $settingName for you.';
+  String ttsSettingDisabled(String settingName) => isTagalog
+      ? 'Naintindihan ko. Kasalukuyan nang naka-off ang $settingName.'
+      : 'Understood. $settingName is now off.';
+  String ttsSettingChanged(String settingName, String newValue) => isTagalog
+      ? 'Sige! Binago ko na ang $settingName sa $newValue.'
+      : 'Got it! I\'ve updated $settingName to $newValue.';
 
   // Scanner: results
   String ttsScanResult(String denomination) => isTagalog

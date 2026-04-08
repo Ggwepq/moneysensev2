@@ -340,7 +340,11 @@ abstract final class EnStrings {
       'MoneySense is ready to use. Would you like a quick tour of the app first?';
   static const String onboardingFinishTour = 'Show me around';
   static const String onboardingFinishSkip = 'Start scanning';
-  static const String onboardingFinishOptions = 'Say Yes to start the tour, or No to start scanning immediately.';
+  static const String onboardingFinishOptions =
+      'Setup is complete! Would you like a quick tour of the app before we begin scanning? '
+      'Say Yes to start the tour, or No to start using the scanner immediately.';
+  static const String onboardingExitToScanner = 'Alright, taking you to the scanner screen now. Happy scanning!';
+  static const String onboardingExitToTour = 'Excellent choice! Let\'s start the tour.';
   static const String onboardingWelcomeConfirm = 'Great, let\'s begin. Now moving to vision profile selection.';
   static const String onboardingConfirmVision = 'Vision profile set. Moving to language selection.';
   static const String onboardingConfirmLanguage = 'Language set. Moving to navigation style.';
@@ -361,19 +365,17 @@ abstract final class EnStrings {
   // Written for natural speech: concise, unambiguous, no symbols.
 
   // App-level
-  static const String ttsSpeechEnabled = 'Text to speech enabled.';
-  static const String ttsSpeechDisabling = 'Text to speech turning off.';
-
-  // Navigation
-  static const String ttsNavSettings = 'Settings.';
-  static const String ttsNavTutorial = 'Tutorial.';
-  static const String ttsNavHome = 'Scanner.';
+  static const String ttsSpeechEnabled = 'Certainly. Voice feedback is now active.';
+  static const String ttsSpeechDisabling = 'Understood. I\'m turning off voice feedback now.';
+  static const String ttsNavSettings = 'Opening your settings now.';
+  static const String ttsNavTutorial = 'I\'m opening the tutorial guides for you.';
+  static const String ttsNavHome = 'Heading back to the scanner screen.';
 
   // Language change: spoken before and after the engine switches
   static String ttsLangChanging(String langName) =>
-      'Changing audio to $langName.';
+      'Certainly. I\'m updating your language to $langName. Please wait a moment.';
   static String ttsLangChanged(String langName) =>
-      'Done. Now speaking $langName.';
+      'Got it! Your language has been updated to $langName.';
 
   // Short visible label shown next to the spinner during language change
   static const String ttsLangChangingLabel = 'Changing language…';
@@ -390,29 +392,29 @@ abstract final class EnStrings {
       '$denomination $type.';
   // ttsScanResultLowConfidence(denomination, type): full: low confidence
   static String ttsScanResultLowConfidence(String denomination, String type) =>
-      '$denomination $type. Not fully certain, please verify.';
+      'I think it\'s a $denomination pesos $type, but I\'m not fully certain. Could you please check it again?';
 
   // Scanner: camera state
-  static const String ttsCameraOpened = 'Camera ready.';
-  static const String ttsCameraClosed = 'Camera closed.';
-  static const String ttsPreviewFrozen = 'Preview frozen.';
-  static const String ttsPreviewResumed = 'Preview resumed.';
-  static const String ttsFlashOn = 'Flashlight on.';
-  static const String ttsFlashOff = 'Flashlight off.';
+  static const String ttsCameraOpened = 'The camera is ready for you.';
+  static const String ttsCameraClosed = 'I\'ve closed the camera for you.';
+  static const String ttsPreviewFrozen = 'I\'ve paused the preview so you can examine it closely.';
+  static const String ttsPreviewResumed = 'Resuming the live camera view.';
+  static const String ttsFlashOn = 'I\'ve turned the flashlight on for you.';
+  static const String ttsFlashOff = 'Flashlight is now off.';
 
   // Scanner: ambient hints (full verbosity only)
   static const String ttsScannerIdle =
-      'Hold a bill or coin flat in front of the camera to scan.';
-  static const String ttsScanStarted = 'Scanning.';
-  static const String ttsProcessing = 'Processing.';
+      'Hold a bill or coin flat in front of the camera, and I will identify it for you.';
+  static const String ttsScanStarted = 'I\'m starting the scan now. Please hold steady.';
+  static const String ttsProcessing = 'Just a moment, I\'m identifying the currency...';
 
   // Scanner: errors
   static const String ttsCameraPermissionDenied =
-      'Camera access denied. Please allow camera permission in Settings.';
+      'I need camera access to help identify currency. Please allow permission in your phone\'s settings.';
   static const String ttsScanFailed =
-      'Could not identify the currency. Please try again with better lighting.';
+      'I couldn\'t identify the currency this time. Please try again with different lighting or angle.';
   static const String ttsCameraError =
-      'Camera error. Please close and reopen the scanner.';
+      'I encountered a camera error. Please try closing and reopening the scanner.';
 
   // ── Scanner Semantics labels (read by TalkBack, not spoken by TTS) ────────
   static const String scannerSemanticIdle =
@@ -513,33 +515,29 @@ abstract final class EnStrings {
 
   // Tutorial audio guides — spoken on screen entry (TTS)
   static const String ttsInertialGuide =
-      'Inertial Navigation Tutorial. '
-      'This feature lets you navigate by tilting your phone. '
-      'Tilt right to open Settings. Tilt left to open the Tutorial. '
-      'Hold the tilt for one second to trigger. '
-      'The phone must be upright, not flat on a surface. '
-      'Scroll down to try the live tilt demo.';
+      'Welcome to the Inertial Navigation Tutorial. This feature allows you to navigate by simply tilting your phone. '
+      'You can tilt right to open Settings, or tilt left to open the Tutorial. '
+      'Just hold the tilt for one second to trigger it. '
+      'Please make sure your phone is held upright, not flat on a surface. '
+      'Feel free to scroll down to try the live tilt demo yourself!';
 
   static const String ttsGesturalGuide =
-      'Gestural Navigation Tutorial. '
-      'This feature lets you navigate using swipe gestures on the scanner screen. '
-      'Swipe right to open Settings. Swipe left to open the Tutorial. '
-      'Swipe up to toggle the flashlight. Double-tap to freeze the preview. '
-      'Scroll down to try the gesture playground.';
+      'Welcome to the Gestural Navigation Tutorial. This feature lets you navigate using simple swipe gestures on the scanner screen. '
+      'You can swipe right to open Settings, or swipe left to open the Tutorial. '
+      'You can also swipe up to toggle the flashlight, or double-tap anywhere to freeze the preview. '
+      'Scroll down whenever you are ready to try the gesture playground.';
 
   static const String ttsShakeGuide =
-      'Shake to Go Back Tutorial. '
-      'This feature lets you go back to the previous screen by shaking your phone. '
-      'Give the phone a short firm shake, like saying no. '
-      'A vibration confirms the gesture was detected. '
-      'Scroll down to test the shake detector.';
+      'Welcome to the Shake to Go Back Tutorial. This feature lets you return to the scanner from any screen just by shaking your phone. '
+      'Simply give your phone a short, firm shake, as if you were saying no. '
+      'I will play a short vibration to confirm I felt the shake. '
+      'You can scroll down to test the shake detector now.';
 
   static const String ttsHapticGuide =
-      'Denomination Vibration Tutorial. '
-      'This feature plays a unique vibration pattern when a currency is identified. '
-      'Coins use one long pulse followed by short pulses. Bills use only short pulses. '
-      'The number of short pulses matches the denomination tier. '
-      'Scroll down to feel each pattern individually.';
+      'Welcome to the Denomination Vibration Tutorial. This feature plays a unique vibration pattern whenever I identify currency for you. '
+      'Coins use one long pulse followed by shorter pulses, while bills use only short pulses. '
+      'The number of pulses will match the value of the currency. '
+      'Scroll down to feel each individual pattern.';
 
   // Tutorial hero semantic descriptions (read by TalkBack instead of visual labels)
   static const String inertialHeroSemantic =

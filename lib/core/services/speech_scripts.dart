@@ -105,6 +105,14 @@ abstract final class OnboardingSpeech {
   static TtsMessage finish(AppLocalizations l10n) =>
       TtsMessage.navigation('${l10n.onboardingFinishTitle}. ${l10n.onboardingFinishSubtitle} ${l10n.onboardingFinishOptions}',
           id: 'onboarding.finish');
+
+  /// Spoken when the user chooses to skip the tour.
+  static TtsMessage exitToScanner(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.onboardingExitToScanner, id: 'onboarding.exit_scanner');
+
+  /// Spoken when the user chooses to start the tour.
+  static TtsMessage exitToTour(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.onboardingExitToTour, id: 'onboarding.exit_tour');
 }
 
 abstract final class TutorialSpeech {

@@ -46,6 +46,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isSpeaking    = false;
   bool _isListening   = false;
   bool _isAdvancing   = false;
+  bool _launchFinalTutorial = false;
   StreamSubscription? _voiceSub;
 
   // ── TTS ───────────────────────────────────────────────────────────────────
@@ -104,7 +105,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // 1. If we were waiting to move to the next step, do it now
         if (_isAdvancing) {
           _isAdvancing = false;
-          _next();
+          if (_page == 5) {
+            _finish(launchTutorial: _launchFinalTutorial);
+          } else {
+            _next();
+          }
           return;
         }
 
@@ -156,11 +161,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }
           });
         } else if (_page == 5) {
-          _finish(launchTutorial: true);
+          _isAdvancing = true;
+          _launchFinalTutorial = true;
+          _say(OnboardingSpeech.exitToTour(l10n));
         }
       } else {
         if (_page == 5) {
-          _finish(launchTutorial: false);
+          _isAdvancing = true;
+          _launchFinalTutorial = false;
+          _say(OnboardingSpeech.exitToScanner(l10n));
         } else {
           _say(TtsMessage.ambient('No problem. What would you like to choose instead?'));
         }
