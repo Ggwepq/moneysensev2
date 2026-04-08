@@ -912,6 +912,13 @@ class AppLocalizations {
   String get voiceCmdHelp => isTagalog ? TlStrings.voiceCmdHelp : EnStrings.voiceCmdHelp;
   String get voiceCmdExit => isTagalog ? TlStrings.voiceCmdExit : EnStrings.voiceCmdExit;
 
+  // Command Confirmation & Feedback
+  String get voiceConfirmPrefix => isTagalog ? TlStrings.voiceConfirmPrefix : EnStrings.voiceConfirmPrefix;
+  String get voiceConfirmSuffix => isTagalog ? TlStrings.voiceConfirmSuffix : EnStrings.voiceConfirmSuffix;
+  String get voiceActionSuccess => isTagalog ? TlStrings.voiceActionSuccess : EnStrings.voiceActionSuccess;
+  String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
+  String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
+
   // Scanner status labels
   String get scannerStatusIdle =>
       isTagalog ? TlStrings.scannerStatusIdle : EnStrings.scannerStatusIdle;

@@ -668,4 +668,11 @@ abstract final class EnStrings {
   static const String voiceCmdHelp = 'Ask for Help';
   static const String voiceCmdExit = 'Exit Application';
   static const String blindTapToSpeak = 'Tap anywhere to speak';
+
+  // Command Confirmation & Feedback
+  static const String voiceConfirmPrefix = 'Did you say: ';
+  static const String voiceConfirmSuffix = '? Yes or no?';
+  static const String voiceActionSuccess = 'Got it!';
+  static const String voiceActionCancelled = 'No problem. What shall I do instead?';
+  static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
 }

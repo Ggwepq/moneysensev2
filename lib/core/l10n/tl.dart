@@ -666,4 +666,11 @@ abstract final class TlStrings {
   static const String voiceCmdHelp = 'Humingi ng Tulong';
   static const String voiceCmdExit = 'Isara ang Application';
   static const String blindTapToSpeak = 'I-tap kahit saan para magsalita';
+
+  // Command Confirmation & Feedback
+  static const String voiceConfirmPrefix = 'Sabi mo ba ay: ';
+  static const String voiceConfirmSuffix = '? Oo o hindi?';
+  static const String voiceActionSuccess = 'Sige!';
+  static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
+  static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
 }
