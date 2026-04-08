@@ -129,11 +129,14 @@ class VoiceCommandExecutor {
       case HelpIntent():
         final context = navigatorKey.currentContext;
         if (context != null) {
-          say(TtsMessage.navigation(l10n.navTutorial));
+          say(TtsMessage.navigation(l10n.tutorialCardVoiceTitle));
           Navigator.of(context).popUntil((route) => route.isFirst);
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const TutorialScreen()),
           );
+          Future.delayed(const Duration(milliseconds: 300), () {
+            TutorialNavigator.push(context, TutorialRoute.voice);
+          });
         }
         break;
 

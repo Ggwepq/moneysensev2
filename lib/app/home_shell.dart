@@ -16,8 +16,6 @@ import '../features/settings/presentation/screens/simple_settings_screen.dart';
 
 import '../features/settings/domain/entities/app_settings.dart';
 import '../core/services/voice/voice_command_service.dart';
-import '../core/services/voice/voice_command_overlay.dart';
-import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
 import '../features/tutorial/domain/tutorial_route.dart';
 import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -40,8 +38,7 @@ class HomeShell extends ConsumerStatefulWidget {
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends ConsumerState<HomeShell>
-    with WidgetsBindingObserver, RouteAware {
+class _HomeShellState extends ConsumerState<HomeShell> {
 
   int _pointerCount = 0;
   DateTime _lastTap = DateTime.now();
@@ -49,7 +46,6 @@ class _HomeShellState extends ConsumerState<HomeShell>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     if (widget.launchTutorialOnLoad) {
       // Push the app-navigation tutorial directly: not the tutorial list.
@@ -57,47 +53,13 @@ class _HomeShellState extends ConsumerState<HomeShell>
         if (mounted) TutorialNavigator.push(context, TutorialRoute.appNavigation);
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resumeVoiceIfEnabled();
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final observer = ref.read(routeObserverProvider);
-    final route = ModalRoute.of(context);
-    if (route != null) observer.subscribe(this, route);
   }
 
   @override
   void dispose() {
-    ref.read(routeObserverProvider).unsubscribe(this);
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  @override
-  void didPopNext() {
-    // Critical: Resume when we navigate BACK to this screen
-    _resumeVoiceIfEnabled();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _resumeVoiceIfEnabled();
-    }
-  }
-
-  void _resumeVoiceIfEnabled() {
-    if (!mounted) return;
-    final settings = ref.read(appSettingsProvider);
-    if (settings.voiceNavigation) {
-      ref.read(voiceCommandServiceProvider).startPassiveListening();
-    }
-  }
 
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
@@ -175,20 +137,6 @@ class _HomeShellState extends ConsumerState<HomeShell>
     final scannerState = ref.watch(scannerStateProvider);
     final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
 
-    // Listen for setting changes to start/stop the engine
-    ref.listen(appSettingsProvider, (previous, next) {
-      final voiceNavChanged = previous?.voiceNavigation != next.voiceNavigation;
-      final profileChanged = previous?.visionProfile != next.visionProfile;
-
-      if (voiceNavChanged || profileChanged) {
-        if (next.voiceNavigation) {
-          // Profile changed away from Blind or just enabled - restart passive listening
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        } else if (!next.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).stopListening();
-        }
-      }
-    });
 
     return Listener(
       onPointerDown: (e) {
@@ -233,10 +181,6 @@ class _HomeShellState extends ConsumerState<HomeShell>
                   },
                 ),
               ),
-              if (isFullyBlind)
-                const BlindVoiceUi(),
-              if (settings.voiceNavigation && !isFullyBlind)
-                const VoiceCommandOverlay(),
             ],
           ),
           bottomNavigationBar: isFullyBlind || scannerState == ScannerState.result 
