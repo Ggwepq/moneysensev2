@@ -620,16 +620,17 @@ abstract final class EnStrings {
       'Control the app using your voice and the "Hey MS" wake-word.';
   static const String voiceTutorialBadge = 'Navigation';
   static const String voiceTutorialDescription =
-      'Navigate between screens and control the camera hands-free. Just say "Hey MS" followed by a command.';
+      'Control MoneySense hands-free or with simple taps. Voice commands work in all modes once enabled.';
   static const String voiceTutorialStep1 =
-      'Enable "Voice Navigation" in Settings.';
+      'Say "Hey MS" then a command like "Open Settings" or "Start Scan".';
   static const String voiceTutorialStep2 =
-      'Say "Hey MS" to wake the app.';
-  static const String voiceTutorialStep3 = 'Wait for the visual ripple or beep.';
+      'In Standard mode, tap the center of the camera screen to start listening manually.';
+  static const String voiceTutorialStep3 =
+      'In Fully Blind mode, tap anywhere on the screen to talk to MoneySense.';
   static const String voiceTutorialStep4 =
-      'Say a command like "Go to Settings" or "Turn on Flash".';
+      'To hear "What shall I do?", use the wake word ("Hey MS") without a command. Tapping skip this prompt.';
   static const String ttsVoiceGuide =
-      'Voice Navigation Tutorial. This feature lets you control the app with your voice. Say "Hey MS" then a command. Commands include opening Settings, Tutorial, or toggling the Flash. Scroll down to see the full list of supported commands.';
+      'Voice Navigation Tutorial. You can control the app by saying "Hey MS" followed by a command. If you just say "Hey MS", I will ask what you want to do. You can also tap the screen to speak immediately. In Fully Blind mode, tap anywhere on the screen. In Standard mode, tap the middle of the camera view. Note that manually tapping will skip the "What shall I do" prompt for faster navigation.';
   static const String voiceHeroSemantic =
       'Animated microphone graphic with sound waves expanding. When you speak, the waves grow and change color to show activity.';
   static const String voicePlaygroundSemantic =

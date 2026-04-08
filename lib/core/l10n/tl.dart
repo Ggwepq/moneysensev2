@@ -620,17 +620,17 @@ abstract final class TlStrings {
       'Kontrolin ang app gamit ang iyong boses at ang "Hey MS" na wake-word.';
   static const String voiceTutorialBadge = 'Navigation';
   static const String voiceTutorialDescription =
-      'Lumipat sa pagitan ng mga screen at kontrolin ang kamera nang hands-free. Sabihin lamang ang "Hey MS" na sinusundan ng isang utos.';
+      'Kontrolin ang MoneySense nang hands-free o gamit ang simpleng tap. Gumagana ang boses sa lahat ng mode.';
   static const String voiceTutorialStep1 =
-      'I-enable ang "Voice Navigation" sa Settings.';
+      'Sabihin ang "Hey MS" kasunod ng utos tulad ng "Buksan ang Settings" o "Simulan ang Scan".';
   static const String voiceTutorialStep2 =
-      'Sabihin ang "Hey MS" para gisingin ang app.';
+      'Sa Standard mode, i-tap ang gitna ng camera screen para mag-manual na pakikinig.';
   static const String voiceTutorialStep3 =
-      'Maghintay para sa visual na ripple o beep.';
+      'Sa Fully Blind mode, i-tap kahit saan sa screen para kausapin ang MoneySense.';
   static const String voiceTutorialStep4 =
-      'Magsabi ng utos tulad ng "Pumunta sa Settings" o "Buksan ang Flash".';
+      'Para marinig ang "Ano ang aking gagawin?", gamitin ang "Hey MS" nang walang utos. Nilalampasan ng pag-tap ang tanong na ito.';
   static const String ttsVoiceGuide =
-      'Tutorial sa Voice Navigation. Hinahayaan ka ng feature na ito na kontrolin ang app gamit ang iyong boses. Sabihin ang "Hey MS" pagkatapos ay isang utos. Kasama sa mga utos ang pagbubukas ng Settings, Tutorial, o pag-switch ng Flash. Mag-scroll pababa para sa listahan ng mga utos.';
+      'Tutorial sa Voice Navigation. Maaari mong kontrolin ang app sa pamamagitan ng pagsasabi ng "Hey MS" na sinusundan ng isang utos. Kung sasabihin mo lang ang "Hey MS", tatanungin ko kung ano ang gusto mong gawin. Maaari mo ring i-tap ang screen para magsalita agad. Sa Fully Blind mode, i-tap kahit saan sa screen. Sa Standard mode, i-tap ang gitna ng camera view. Tandaan na ang pag-tap ay lalampas sa tanong na "Ano ang aking gagawin" para sa mas mabilis na paggamit.';
   static const String voiceHeroSemantic =
       'Animated na mikropono na may mga sound wave na lumalaki. Kapag nagsalita ka, ang mga wave ay lumalaki at nagbabago ng kulay para ipakita ang aktibidad.';
   static const String voicePlaygroundSemantic =

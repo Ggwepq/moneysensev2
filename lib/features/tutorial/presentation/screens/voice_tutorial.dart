@@ -9,6 +9,7 @@ import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../settings/domain/entities/vision_config.dart';
+import '../../../../core/services/voice/voice_command_service.dart';
 import '../widgets/ms_tutorial_scaffold.dart';
 
 class VoiceTutorial extends ConsumerStatefulWidget {
@@ -38,6 +39,28 @@ class _VoiceTutorialState extends ConsumerState<VoiceTutorial> {
         currentVerbosity: s.ttsVerbosity,
       );
     });
+
+    _listenToVoice();
+  }
+
+  void _listenToVoice() {
+    // Listen to status
+    ref.listenManual(voiceCommandStatusProvider, (prev, next) {
+      if (!mounted) return;
+      setState(() {
+        _isListening = next == VoiceStatus.activeListening || next == VoiceStatus.passiveListening;
+        _wakeWordDetected = next == VoiceStatus.processing;
+      });
+    });
+
+    // Listen to recognized text
+    ref.listenManual(voiceCommandTextProvider, (prev, next) {
+      if (!mounted) return;
+      setState(() {
+        final text = next;
+        _lastCaptured = text.isEmpty ? _lastCaptured : text;
+      });
+    });
   }
 
   @override
@@ -64,12 +87,17 @@ class _VoiceTutorialState extends ConsumerState<VoiceTutorial> {
       accentColor: accent,
       interactive: Column(
         children: [
-          _VoiceDemo(
-            lastCaptured: _lastCaptured,
-            isListening: _isListening,
-            wakeWordDetected: _wakeWordDetected,
-            isDark: isDark,
-            l10n: l10n,
+          GestureDetector(
+            onTap: () {
+              ref.read(voiceCommandServiceProvider).startActiveListening();
+            },
+            child: _VoiceDemo(
+              lastCaptured: _lastCaptured,
+              isListening: _isListening,
+              wakeWordDetected: _wakeWordDetected,
+              isDark: isDark,
+              l10n: l10n,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           _CommandList(l10n: l10n, isDark: isDark),
