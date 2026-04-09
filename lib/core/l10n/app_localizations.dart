@@ -882,6 +882,7 @@ class AppLocalizations {
   String get voiceConfirmSuffix => isTagalog ? TlStrings.voiceConfirmSuffix : EnStrings.voiceConfirmSuffix;
   String get voiceActionSuccess => isTagalog ? TlStrings.voiceActionSuccess : EnStrings.voiceActionSuccess;
   String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
+  String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
   String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
 
   // Scanner status labels

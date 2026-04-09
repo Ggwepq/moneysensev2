@@ -61,7 +61,7 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
                  if (status == VoiceStatus.activeListening) {
                    ref.read(voiceCommandServiceProvider).stopListening();
                  } else {
-                   ref.read(voiceCommandServiceProvider).startActiveListening();
+                   ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
                  }
               },
               child: SafeArea(
