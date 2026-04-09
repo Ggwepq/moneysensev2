@@ -66,7 +66,16 @@ class AuthenticityService {
   Future<VerificationResult> verify({
     required Uint8List imageBytes,
     required Rect? boundingBox,
+    bool forceCounterfeit = false,
   }) async {
+    if (forceCounterfeit) {
+      return VerificationResult(
+        status: AuthenticityResult.counterfeit,
+        confidence: 0.999,
+        label: 'counterfeit_cheat',
+      );
+    }
+
     if (!_isInit) await init();
     if (_modelBytes == null) {
       return VerificationResult(

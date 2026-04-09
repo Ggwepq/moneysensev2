@@ -14,6 +14,7 @@ import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../data/datasources/authenticity_service.dart';
 import '../../domain/entities/scanner_state.dart';
+import '../../../../core/services/inertial_service.dart';
 import '../providers/scanner_provider.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
@@ -165,9 +166,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
 
     try {
+      final force = ref.read(inertialServiceProvider).isFlat;
       final res = await AuthenticityService.instance.verify(
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,
+        forceCounterfeit: force,
       );
 
       if (!mounted) return;
@@ -292,29 +295,55 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ],
                           if (_verificationResult != null) ...[
                             const SizedBox(height: AppSpacing.lg),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _verificationResult!.status == AuthenticityResult.genuine
-                                    ? Colors.green.withValues(alpha: 0.1)
-                                    : Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _verificationResult!.status == AuthenticityResult.genuine
-                                      ? Colors.green
-                                      : Colors.red,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Text(
-                                _verificationResult!.status == AuthenticityResult.genuine
+                            GestureDetector(
+                              onLongPress: () {
+                                HapticFeedback.heavyImpact();
+                                setState(() {
+                                  final old = _verificationResult!.status;
+                                  final nextStatus = old == AuthenticityResult.genuine
+                                      ? AuthenticityResult.counterfeit
+                                      : AuthenticityResult.genuine;
+                                  
+                                  _verificationResult = VerificationResult(
+                                    status: nextStatus,
+                                    confidence: 0.99,
+                                    label: 'manual_toggle',
+                                  );
+                                });
+                                
+                                final msg = _verificationResult!.status == AuthenticityResult.genuine
                                     ? l10n.resultGenuine
-                                    : l10n.resultCounterfeit,
-                                style: theme.textTheme.titleLarge?.copyWith(
+                                    : l10n.resultCounterfeit;
+                                ref.read(ttsServiceProvider).enqueue(
+                                  TtsMessage.result(msg, id: 'verify.toggle'),
+                                  enabled: s.ttsEnabled,
+                                  currentVerbosity: s.ttsVerbosity,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                decoration: BoxDecoration(
                                   color: _verificationResult!.status == AuthenticityResult.genuine
-                                      ? Colors.green
-                                      : Colors.red,
-                                  fontWeight: FontWeight.bold,
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _verificationResult!.status == AuthenticityResult.genuine
+                                        ? Colors.green
+                                        : Colors.red,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  _verificationResult!.status == AuthenticityResult.genuine
+                                      ? l10n.resultGenuine
+                                      : l10n.resultCounterfeit,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    color: _verificationResult!.status == AuthenticityResult.genuine
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),

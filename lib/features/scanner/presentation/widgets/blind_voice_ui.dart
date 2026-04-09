@@ -6,8 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/voice/voice_command_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
-import '../../../settings/domain/entities/vision_config.dart';
-import '../../../settings/domain/entities/app_settings.dart';
+import '../../../onboarding/presentation/widgets/voice_onboarding_orb.dart';
 
 /// A heavily optimized, minimal-touch UI for fully blind users.
 /// Replaces standard menus with a massive, high-contrast, fully tappable layout.
@@ -28,15 +27,8 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
     final settings = ref.watch(appSettingsProvider);
     final l10n = AppLocalizations.of(settings.isTagalog);
     
-    final cfg = VisionConfig.from(VisionProfile.fullyBlind);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    final accent = cfg.accent(isDark);
-    final accentFg = cfg.accentForeground(isDark);
-    final isListening = status == VoiceStatus.activeListening || 
-                        status == VoiceStatus.processing ||
-                        status == VoiceStatus.passiveListening;
-
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -52,17 +44,17 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
           // Massive Gesture Target
           Positioned.fill(
             child: Listener(
-              behavior: HitTestBehavior.opaque, // Entire screen captures touches
+              behavior: HitTestBehavior.opaque,
               onPointerDown: (_) {
-                 final now = DateTime.now();
-                 if (now.difference(_lastTap).inMilliseconds < 500) return;
-                 _lastTap = now;
-  
-                 if (status == VoiceStatus.activeListening) {
-                   ref.read(voiceCommandServiceProvider).stopListening();
-                 } else {
-                   ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
-                 }
+                final now = DateTime.now();
+                if (now.difference(_lastTap).inMilliseconds < 500) return;
+                _lastTap = now;
+
+                if (status == VoiceStatus.activeListening) {
+                  ref.read(voiceCommandServiceProvider).stopListening();
+                } else {
+                  ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
+                }
               },
               child: SafeArea(
                 child: Padding(
@@ -70,32 +62,14 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Glow animation if listening
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeInOut,
-                        width: isListening ? 220 : 160,
-                        height: isListening ? 220 : 160,
-                        decoration: BoxDecoration(
-                          color: isListening ? accent : accent.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                          boxShadow: isListening ? [
-                            BoxShadow(
-                              color: accent.withValues(alpha: 0.6),
-                              blurRadius: 40,
-                              spreadRadius: 20,
-                            )
-                          ] : [],
-                        ),
-                        child: Icon(
-                          isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                          size: isListening ? 100 : 80,
-                          color: isListening ? accentFg : accent,
-                        ),
+                      // Premium Pulse Orb
+                      VoiceOnboardingOrb(
+                        isListening: status == VoiceStatus.activeListening,
+                        isSpeaking: status == VoiceStatus.processing,
                       ),
-  
-                      const SizedBox(height: 60),
-  
+
+                      const SizedBox(height: 80),
+
                       Text(
                         status == VoiceStatus.processing
                             ? l10n.voiceDetectedLabel
@@ -109,9 +83,10 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: 0.5,
+                          height: 1.2,
                         ),
                       ),
   

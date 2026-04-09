@@ -11,6 +11,7 @@ import '../../../features/tutorial/presentation/screens/tutorial_screen.dart';
 import '../../../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../../features/tutorial/domain/tutorial_route.dart';
 import '../../../features/settings/presentation/providers/settings_provider.dart';
+import '../../../features/scanner/domain/entities/scanner_state.dart';
 import '../../../features/scanner/presentation/providers/scanner_provider.dart';
 
 final voiceCommandExecutorProvider = Provider<VoiceCommandExecutor>((ref) {
@@ -118,6 +119,10 @@ class VoiceCommandExecutor {
             TutorialNavigator.push(context, TutorialRoute.voice);
           });
         } else if (intent.target == NavTarget.home) {
+          final scannerState = ref.read(scannerStateProvider);
+          if (scannerState == ScannerState.result) {
+            ref.read(scannerStateProvider.notifier).reset();
+          }
           say(NavSpeech.returnedHome(l10n));
         }
         return true;
