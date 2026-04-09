@@ -655,4 +655,10 @@ abstract final class TlStrings {
   static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
   static const String voiceListeningFeedback = 'Nakikinig ako.';
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
+
+  static const String resultVerifyLabel = 'I-verify ang Katunayan';
+  static const String resultVerifying = 'Vini-verify...';
+  static const String resultGenuine = 'TUNAY NA PERA';
+  static const String resultCounterfeit = 'FAKE NA PERA';
+  static const String resultVerificationFailed = 'Bigo ang pag-verify.';
 }

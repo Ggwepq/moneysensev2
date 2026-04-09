@@ -885,6 +885,12 @@ class AppLocalizations {
   String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
   String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
 
+  String get resultVerifyLabel => isTagalog ? TlStrings.resultVerifyLabel : EnStrings.resultVerifyLabel;
+  String get resultVerifying => isTagalog ? TlStrings.resultVerifying : EnStrings.resultVerifying;
+  String get resultGenuine => isTagalog ? TlStrings.resultGenuine : EnStrings.resultGenuine;
+  String get resultCounterfeit => isTagalog ? TlStrings.resultCounterfeit : EnStrings.resultCounterfeit;
+  String get resultVerificationFailed => isTagalog ? TlStrings.resultVerificationFailed : EnStrings.resultVerificationFailed;
+
   // Scanner status labels
   String get scannerStatusIdle =>
       isTagalog ? TlStrings.scannerStatusIdle : EnStrings.scannerStatusIdle;

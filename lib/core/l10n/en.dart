@@ -657,4 +657,10 @@ abstract final class EnStrings {
   static const String voiceActionCancelled = 'No problem. What shall I do instead?';
   static const String voiceListeningFeedback = 'I am listening.';
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
+
+  static const String resultVerifyLabel = 'Verify Authenticity';
+  static const String resultVerifying = 'Verifying...';
+  static const String resultGenuine = 'GENUINE BILL';
+  static const String resultCounterfeit = 'COUNTERFEIT BILL';
+  static const String resultVerificationFailed = 'Verification failed.';
 }

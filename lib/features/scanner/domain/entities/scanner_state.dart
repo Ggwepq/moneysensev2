@@ -1,4 +1,5 @@
-// lib/features/scanner/domain/entities/scanner_state.dart
+import 'dart:typed_data';
+import 'package:flutter/painting.dart';
 
 /// All possible states of the real-time scanner.
 enum ScannerState {
@@ -26,13 +27,17 @@ class DetectionResult {
     required this.denomination,
     required this.type,
     required this.confidence,
+    this.boundingBox,
+    this.capturedImage,
     this.imagePath,
   });
 
-  final String  denomination; // e.g. "100" or "25c"
-  final String  type;         // "bill" or "coin"
-  final double  confidence;
-  final String? imagePath;
+  final String      denomination; // e.g. "100" or "25c"
+  final String      type;         // "bill" or "coin"
+  final double      confidence;
+  final Rect?       boundingBox;  // Normalized coordinates [0,1] in detection space
+  final Uint8List?  capturedImage; // High-res frame for verification
+  final String?     imagePath;
 
   ConfidenceLevel get confidenceLevel {
     if (confidence >= 0.80) return ConfidenceLevel.veryConfident;
