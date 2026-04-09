@@ -638,6 +638,8 @@ abstract final class EnStrings {
   static const String voiceCommandCatScan = 'SCANNER';
   static const String voiceCommandCatHelp = 'HELP';
   
+  static const String voiceCmdStartScanner = 'Start the Scanner';
+  static const String voiceCmdIdentify = 'Identify this Money';
   static const String voiceCmdOpenSettings = 'Open Settings';
   static const String voiceCmdGoHome = 'Go to Home / Scanner';
   static const String voiceCmdOpenTutorial = 'Open Tutorials';
@@ -663,4 +665,7 @@ abstract final class EnStrings {
   static const String resultGenuine = 'GENUINE BILL';
   static const String resultCounterfeit = 'COUNTERFEIT BILL';
   static const String resultVerificationFailed = 'Verification failed.';
+  static const String resultManualCapturing = 'Identifying bill...';
+  static String resultAutoVerifyHint(String seconds) => 'Verifying automatically in $seconds... ';
+  static const String resultAutoVerifyCancel = 'Cancel';
 }

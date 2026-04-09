@@ -6,6 +6,9 @@ import 'package:image/image.dart' as img;
 
 import '../../data/datasources/detection_service.dart';
 import '../../domain/entities/scanner_state.dart';
+import 'package:moneysensev2/core/l10n/app_localizations.dart';
+import 'package:moneysensev2/core/services/tts_service.dart';
+import 'package:moneysensev2/features/settings/presentation/providers/settings_provider.dart';
 
 
 export '../../data/datasources/camera_service.dart';
@@ -31,6 +34,7 @@ class ScannerNotifier extends Notifier<ScannerState> {
   int              _consecutiveFrames = 0;
   DetectionResult? _candidate;
   ScannerState?    _lastState;
+  bool             _manualCapturePending = false;
 
   // ── State transitions ─────────────────────────────────────────────────────
 
@@ -104,9 +108,30 @@ class ScannerNotifier extends Notifier<ScannerState> {
   void reset() {
     _consecutiveFrames = 0;
     _candidate = null;
+    _manualCapturePending = false;
     ref.read(detectionResultProvider.notifier).state = null;
     // Go back to scanning immediately after dismissing a result
     state = ScannerState.scanning;
+  }
+
+  /// Manually triggers an instant identification of the very next detected frame.
+  /// Bypasses the stability queue.
+  void manualIdentify() {
+    if (state == ScannerState.scanning || state == ScannerState.processing) {
+      _manualCapturePending = true;
+      
+      // Feedback
+      final settings = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(settings.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+        TtsMessage.ambient(l10n.resultManualCapturing, id: 'scanner.manual_capture'),
+        enabled: settings.ttsEnabled,
+        currentVerbosity: settings.ttsVerbosity,
+      );
+      
+      // Reset confidence filter briefly to catch the next frame
+      _consecutiveFrames = 0;
+    }
   }
 
   // ── Real-time detection ───────────────────────────────────────────────────
@@ -143,7 +168,10 @@ class ScannerNotifier extends Notifier<ScannerState> {
       if (state == ScannerState.scanning) state = ScannerState.processing;
     }
 
-    if (_consecutiveFrames >= _requiredFrames) {
+    final shouldCommit = _manualCapturePending || (_consecutiveFrames >= _requiredFrames);
+
+    if (shouldCommit) {
+      _manualCapturePending = false;
       if (_candidate!.type == 'bill') {
         // High-res capture for verification
         final copyY = Uint8List.fromList(frame.planes[0].bytes);

@@ -180,6 +180,15 @@ class VoiceCommandExecutor {
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
         return false;
 
+      case IdentifyIntent():
+        final cameraOpen = ref.read(cameraOpenProvider);
+        if (!cameraOpen) {
+          say(TtsMessage.ambient('Please start the scanner first', id: 'voice.error.not_scanning'));
+          return false;
+        }
+        ref.read(scannerStateProvider.notifier).manualIdentify();
+        return true;
+
       case StartVoiceSetupIntent():
       case SelectionIntent():
       case SelectionConfirmationIntent():

@@ -34,6 +34,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   late final Animation<Offset>   _slide;
   
   bool _isVerifying = false;
+  bool _isAutoVerifying = false;
   VerificationResult? _verificationResult;
 
   @override
@@ -50,14 +51,51 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) => _announce());
     HapticFeedback.mediumImpact();
 
-    final timerSecs = ref.read(appSettingsProvider).goBackTimerSeconds;
-    if (timerSecs > 0) {
-      setState(() => _secondsLeft = timerSecs);
-      _autoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-        if (!mounted) { t.cancel(); return; }
-        setState(() => _secondsLeft--);
-        if (_secondsLeft <= 0) { t.cancel(); _dismiss(); }
-      });
+    final s = ref.read(appSettingsProvider);
+    final r = widget.result;
+
+    // Use a faster 3s timer for automated verification if it's a bill
+    if (r.type == 'bill' && _verificationResult == null) {
+      _isAutoVerifying = true;
+      _secondsLeft = 3;
+    } else {
+      _secondsLeft = s.goBackTimerSeconds;
+    }
+
+    if (_secondsLeft > 0) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _autoTimer?.cancel();
+    _autoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _secondsLeft--);
+      if (_secondsLeft <= 0) {
+        t.cancel();
+        if (_isAutoVerifying) {
+          final result = ref.read(detectionResultProvider) ?? widget.result;
+          _verify(result);
+        } else {
+          _dismiss();
+        }
+      }
+    });
+  }
+
+  void _cancelAutoVerify() {
+    setState(() {
+      _isAutoVerifying = false;
+      _secondsLeft = ref.read(appSettingsProvider).goBackTimerSeconds;
+    });
+    if (_secondsLeft > 0) {
+      _startTimer();
+    } else {
+      _autoTimer?.cancel();
     }
   }
 
@@ -283,12 +321,19 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ],
                           if (_secondsLeft > 0) ...[
                             const SizedBox(height: AppSpacing.lg),
-                            _GoBackHint(
-                              secondsLeft: _secondsLeft,
-                              l10n: l10n,
-                              accentColor: blue,
-                              onTap: _dismiss,
-                            ),
+                            _isAutoVerifying
+                                ? _AutoVerifyHint(
+                                    secondsLeft: _secondsLeft,
+                                    l10n: l10n,
+                                    accentColor: blue,
+                                    onCancel: _cancelAutoVerify,
+                                  )
+                                : _GoBackHint(
+                                    secondsLeft: _secondsLeft,
+                                    l10n: l10n,
+                                    accentColor: blue,
+                                    onTap: _dismiss,
+                                  ),
                           ],
                         ],
                       ),
@@ -687,6 +732,53 @@ class _ConfidenceSentence extends StatelessWidget {
       ]);
     }
     return Text.rich(span, textAlign: TextAlign.center);
+  }
+}
+
+class _AutoVerifyHint extends StatelessWidget {
+  const _AutoVerifyHint({
+    required this.secondsLeft,
+    required this.l10n,
+    required this.accentColor,
+    required this.onCancel,
+  });
+  final int              secondsLeft;
+  final AppLocalizations l10n;
+  final Color            accentColor;
+  final VoidCallback     onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme  = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final subtle = isDark
+        ? AppColors.darkOnSurfaceVariant
+        : AppColors.lightOnSurfaceVariant;
+
+    return Semantics(
+      label: l10n.resultAutoVerifyHint(secondsLeft.toString()),
+      child: GestureDetector(
+        onTap: onCancel,
+        child: Text.rich(
+          TextSpan(
+            style: theme.textTheme.bodySmall?.copyWith(color: subtle),
+            children: [
+              TextSpan(text: l10n.resultAutoVerifyHint(secondsLeft.toString())),
+              TextSpan(
+                text: l10n.resultAutoVerifyCancel,
+                style: TextStyle(
+                  color: accentColor,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: accentColor,
+                ),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   }
 }
 
