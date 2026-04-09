@@ -208,6 +208,26 @@ class SettingsScreen extends ConsumerWidget {
                           TutorialRoute.denominationVibration,
                         ),
                       ),
+                      MsToggleTile(
+                        title: l10n.strictVerificationTitle,
+                        subtitle: l10n.strictVerificationSubtitle,
+                        value: settings.strictVerification,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleStrictVerification(v);
+                          say(
+                            SettingsSpeech.toggled(
+                              l10n,
+                              l10n.strictVerificationTitle,
+                              v,
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
 

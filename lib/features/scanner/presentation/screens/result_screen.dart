@@ -166,7 +166,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
 
     try {
-      final force = ref.read(inertialServiceProvider).isFlat;
+      final force = ref.read(inertialServiceProvider).isFlat || s.strictVerification;
       final res = await AuthenticityService.instance.verify(
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,

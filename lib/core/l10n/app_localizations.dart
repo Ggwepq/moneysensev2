@@ -896,6 +896,9 @@ class AppLocalizations {
   String resultAutoVerifyHint(String seconds) => isTagalog ? TlStrings.resultAutoVerifyHint(seconds) : EnStrings.resultAutoVerifyHint(seconds);
   String get resultAutoVerifyCancel => isTagalog ? TlStrings.resultAutoVerifyCancel : EnStrings.resultAutoVerifyCancel;
 
+  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
+  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
+
   // Scanner status labels
   String get scannerStatusIdle =>
       isTagalog ? TlStrings.scannerStatusIdle : EnStrings.scannerStatusIdle;

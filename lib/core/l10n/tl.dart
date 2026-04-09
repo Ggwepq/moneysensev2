@@ -666,4 +666,6 @@ abstract final class TlStrings {
   static const String resultManualCapturing = 'Kinikilala ang pera...';
   static String resultAutoVerifyHint(String seconds) => 'Awtomatikong magpapatunay sa loob ng $seconds... ';
   static const String resultAutoVerifyCancel = 'Kanselahin';
+  static const String strictVerificationTitle = 'Strict Verification';
+  static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
 }

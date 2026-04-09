@@ -668,4 +668,6 @@ abstract final class EnStrings {
   static const String resultManualCapturing = 'Identifying bill...';
   static String resultAutoVerifyHint(String seconds) => 'Verifying automatically in $seconds... ';
   static const String resultAutoVerifyCancel = 'Cancel';
+  static const String strictVerificationTitle = 'Strict Verification';
+  static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
 }
