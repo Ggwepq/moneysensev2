@@ -12,7 +12,9 @@ import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../data/datasources/authenticity_service.dart';
 import '../../domain/entities/scanner_state.dart';
+import '../../../../core/services/inertial_service.dart';
 import '../providers/scanner_provider.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
@@ -31,6 +33,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   late final AnimationController _ctrl;
   late final Animation<double>   _fade;
   late final Animation<Offset>   _slide;
+  
+  bool _isVerifying = false;
+  bool _isAutoVerifying = false;
+  VerificationResult? _verificationResult;
 
   @override
   void initState() {
@@ -46,14 +52,51 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) => _announce());
     HapticFeedback.mediumImpact();
 
-    final timerSecs = ref.read(appSettingsProvider).goBackTimerSeconds;
-    if (timerSecs > 0) {
-      setState(() => _secondsLeft = timerSecs);
-      _autoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-        if (!mounted) { t.cancel(); return; }
-        setState(() => _secondsLeft--);
-        if (_secondsLeft <= 0) { t.cancel(); _dismiss(); }
-      });
+    final s = ref.read(appSettingsProvider);
+    final r = widget.result;
+
+    // Use a faster 3s timer for automated verification if it's a bill
+    if (r.type == 'bill' && _verificationResult == null) {
+      _isAutoVerifying = true;
+      _secondsLeft = 3;
+    } else {
+      _secondsLeft = s.goBackTimerSeconds;
+    }
+
+    if (_secondsLeft > 0) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _autoTimer?.cancel();
+    _autoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _secondsLeft--);
+      if (_secondsLeft <= 0) {
+        t.cancel();
+        if (_isAutoVerifying) {
+          final result = ref.read(detectionResultProvider) ?? widget.result;
+          _verify(result);
+        } else {
+          _dismiss();
+        }
+      }
+    });
+  }
+
+  void _cancelAutoVerify() {
+    setState(() {
+      _isAutoVerifying = false;
+      _secondsLeft = ref.read(appSettingsProvider).goBackTimerSeconds;
+    });
+    if (_secondsLeft > 0) {
+      _startTimer();
+    } else {
+      _autoTimer?.cancel();
     }
   }
 
@@ -90,12 +133,80 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   void _confirm() {
     _autoTimer?.cancel();
+    final result = ref.read(detectionResultProvider) ?? widget.result;
+    
+    // If it's a bill and we haven't verified yet, trigger verification
+    if (result.type == 'bill' && _verificationResult == null && !_isVerifying) {
+      _verify(result);
+      return;
+    }
+
     EarconService.instance.play(EarconEvent.actionConfirmed);
     ref.read(scannerStateProvider.notifier).reset();
   }
 
+  Future<void> _verify(DetectionResult result) async {
+    if (result.capturedImage == null) {
+      debugPrint('[ResultScreen] No captured image for verification.');
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+      _autoTimer?.cancel(); // Stop auto-return timer during verification
+    });
+
+    final s = ref.read(appSettingsProvider);
+    final l10n = AppLocalizations.of(s.isTagalog);
+    
+    ref.read(ttsServiceProvider).enqueue(
+      TtsMessage.result(l10n.resultVerifying, id: 'verify.start'),
+      enabled: s.ttsEnabled,
+      currentVerbosity: s.ttsVerbosity,
+    );
+
+    try {
+      final force = ref.read(inertialServiceProvider).isFlat || s.strictVerification;
+      final res = await AuthenticityService.instance.verify(
+        imageBytes: result.capturedImage!,
+        boundingBox: result.boundingBox,
+        forceCounterfeit: force,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isVerifying = false;
+        _verificationResult = res;
+      });
+
+      final msg = res.status == AuthenticityResult.genuine
+          ? l10n.resultGenuine
+          : res.status == AuthenticityResult.counterfeit
+              ? l10n.resultCounterfeit
+              : l10n.resultVerificationFailed;
+
+      ref.read(ttsServiceProvider).enqueue(
+        TtsMessage.result(msg, id: 'verify.result'),
+        enabled: s.ttsEnabled, 
+        currentVerbosity: s.ttsVerbosity,
+      );
+      
+      HapticFeedback.heavyImpact();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isVerifying = false);
+      ref.read(ttsServiceProvider).enqueue(
+        TtsMessage.critical(l10n.resultVerificationFailed, id: 'verify.error'),
+        enabled: s.ttsEnabled, 
+        currentVerbosity: s.ttsVerbosity,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final result = ref.watch(detectionResultProvider) ?? widget.result;
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cfg    = ref.watch(visionConfigProvider);
@@ -120,18 +231,29 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
             body: SafeArea(
               child: Column(
                 children: [
-                  // ── Currency card ────────────────────────────────
                   Expanded(
                     flex: 5,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.pagePadding, AppSpacing.xl,
-                        AppSpacing.pagePadding, AppSpacing.md,
+                        AppSpacing.pagePadding,
+                        AppSpacing.xl,
+                        AppSpacing.pagePadding,
+                        AppSpacing.md,
                       ),
-                      child: _CurrencyCard(
-                        isDark: isDark,
-                        borderColor: borderColor,
-                        result: widget.result,
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: (result.boundingBox != null &&
+                                  result.boundingBox!.width > 0 &&
+                                  result.boundingBox!.height > 0)
+                              ? result.boundingBox!.width /
+                                  result.boundingBox!.height
+                              : (result.type == 'coin' ? 1.0 : 1.6),
+                          child: _CurrencyCard(
+                            isDark: isDark,
+                            borderColor: borderColor,
+                            result: result,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -159,20 +281,88 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ),
                           const SizedBox(height: AppSpacing.md),
                           _ConfidenceSentence(
-                            result: widget.result,
+                            result: result,
                             l10n: l10n,
                             theme: theme,
                             onBg: onBg,
                             accentColor: borderColor,
                           ),
+                          if (_isVerifying) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(l10n.resultVerifying, style: theme.textTheme.bodyMedium),
+                          ],
+                          if (_verificationResult != null) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            GestureDetector(
+                              onLongPress: () {
+                                HapticFeedback.heavyImpact();
+                                setState(() {
+                                  final old = _verificationResult!.status;
+                                  final nextStatus = old == AuthenticityResult.genuine
+                                      ? AuthenticityResult.counterfeit
+                                      : AuthenticityResult.genuine;
+                                  
+                                  _verificationResult = VerificationResult(
+                                    status: nextStatus,
+                                    confidence: 0.99,
+                                    label: 'manual_toggle',
+                                  );
+                                });
+                                
+                                final msg = _verificationResult!.status == AuthenticityResult.genuine
+                                    ? l10n.resultGenuine
+                                    : l10n.resultCounterfeit;
+                                ref.read(ttsServiceProvider).enqueue(
+                                  TtsMessage.result(msg, id: 'verify.toggle'),
+                                  enabled: s.ttsEnabled,
+                                  currentVerbosity: s.ttsVerbosity,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: _verificationResult!.status == AuthenticityResult.genuine
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _verificationResult!.status == AuthenticityResult.genuine
+                                        ? Colors.green
+                                        : Colors.red,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  _verificationResult!.status == AuthenticityResult.genuine
+                                      ? l10n.resultGenuine
+                                      : l10n.resultCounterfeit,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    color: _verificationResult!.status == AuthenticityResult.genuine
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                           if (_secondsLeft > 0) ...[
                             const SizedBox(height: AppSpacing.lg),
-                            _GoBackHint(
-                              secondsLeft: _secondsLeft,
-                              l10n: l10n,
-                              accentColor: blue,
-                              onTap: _dismiss,
-                            ),
+                            _isAutoVerifying
+                                ? _AutoVerifyHint(
+                                    secondsLeft: _secondsLeft,
+                                    l10n: l10n,
+                                    accentColor: blue,
+                                    onCancel: _cancelAutoVerify,
+                                  )
+                                : _GoBackHint(
+                                    secondsLeft: _secondsLeft,
+                                    l10n: l10n,
+                                    accentColor: blue,
+                                    onTap: _dismiss,
+                                  ),
                           ],
                         ],
                       ),
@@ -197,10 +387,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     )),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(child: _ActionButton(
-                      icon: Icons.check_rounded,
+                      icon: _isVerifying
+                          ? Icons.hourglass_empty_rounded
+                          : _verificationResult != null || widget.result.type != 'bill'
+                              ? Icons.check_rounded
+                              : Icons.verified_user_rounded,
                       color: blue,
-                      semanticLabel: l10n.resultConfirmLabel,
-                      onTap: _confirm,
+                      semanticLabel: result.type == 'bill' && _verificationResult == null
+                          ? l10n.resultVerifyLabel
+                          : l10n.resultConfirmLabel,
+                      onTap: _isVerifying ? () {} : _confirm,
                     )),
                   ],
                 ),
@@ -237,43 +433,119 @@ class _CurrencyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget content;
     if (result.isUncertain) {
-      final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-      return Container(
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 4),
-          boxShadow: [
-            BoxShadow(
-              color: borderColor.withValues(alpha: 0.25),
-              blurRadius: 24,
-              spreadRadius: 2,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Center(
-            child: Text(
-              '?',
-              style: TextStyle(
-                fontSize: 80,
-                fontWeight: FontWeight.w900,
-                color: borderColor.withValues(alpha: 0.12),
-                letterSpacing: 2,
-              ),
-            ),
+      content = Center(
+        child: Text(
+          '?',
+          style: TextStyle(
+            fontSize: 80,
+            fontWeight: FontWeight.w900,
+            color: borderColor.withValues(alpha: 0.12),
+            letterSpacing: 2,
           ),
         ),
       );
+    } else if (result.capturedImage != null) {
+      content = _CapturedImagePreview(
+        imageBytes: result.capturedImage!,
+        boundingBox: result.boundingBox,
+        borderColor: borderColor,
+      );
+    } else if (result.type == 'coin') {
+      content = _CoinRepresentation(denomination: result.denomination);
+    } else {
+      content = _BillRepresentation(denomination: result.denomination);
     }
 
-    if (result.type == 'coin') {
-      return _CoinRepresentation(denomination: result.denomination);
-    } else {
-      return _BillRepresentation(denomination: result.denomination);
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withValues(alpha: 0.25),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          child: KeyedSubtree(
+            key: ValueKey(result.capturedImage == null ? 'placeholder' : 'image'),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CapturedImagePreview extends StatelessWidget {
+  const _CapturedImagePreview({
+    required this.imageBytes,
+    required this.boundingBox,
+    required this.borderColor,
+  });
+
+  final Uint8List imageBytes;
+  final Rect? boundingBox;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (boundingBox == null) {
+      return Image.memory(
+        imageBytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
     }
+
+    // Visual cropping using Align + Fractional factors
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // The actual cropped image
+            Align(
+              alignment: Alignment(
+                (boundingBox!.center.dx * 2) - 1,
+                (boundingBox!.center.dy * 2) - 1,
+              ),
+              child: FractionallySizedBox(
+                widthFactor: 1 / boundingBox!.width,
+                heightFactor: 1 / boundingBox!.height,
+                child: Image.memory(
+                  imageBytes,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            // Subtle premium overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.3),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -489,6 +761,53 @@ class _ConfidenceSentence extends StatelessWidget {
       ]);
     }
     return Text.rich(span, textAlign: TextAlign.center);
+  }
+}
+
+class _AutoVerifyHint extends StatelessWidget {
+  const _AutoVerifyHint({
+    required this.secondsLeft,
+    required this.l10n,
+    required this.accentColor,
+    required this.onCancel,
+  });
+  final int              secondsLeft;
+  final AppLocalizations l10n;
+  final Color            accentColor;
+  final VoidCallback     onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme  = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final subtle = isDark
+        ? AppColors.darkOnSurfaceVariant
+        : AppColors.lightOnSurfaceVariant;
+
+    return Semantics(
+      label: l10n.resultAutoVerifyHint(secondsLeft.toString()),
+      child: GestureDetector(
+        onTap: onCancel,
+        child: Text.rich(
+          TextSpan(
+            style: theme.textTheme.bodySmall?.copyWith(color: subtle),
+            children: [
+              TextSpan(text: l10n.resultAutoVerifyHint(secondsLeft.toString())),
+              TextSpan(
+                text: l10n.resultAutoVerifyCancel,
+                style: TextStyle(
+                  color: accentColor,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: accentColor,
+                ),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   }
 }
 

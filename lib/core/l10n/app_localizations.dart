@@ -388,6 +388,8 @@ class AppLocalizations {
       : EnStrings.visionPartiallyBlind;
   String get visionFullyBlind =>
       isTagalog ? TlStrings.visionFullyBlind : EnStrings.visionFullyBlind;
+  String get onboardingVisionOptions =>
+      isTagalog ? TlStrings.onboardingVisionOptions : EnStrings.onboardingVisionOptions;
 
   // ── Accessibility settings ────────────────────────────────────────────────
   String get visionProfileTitle =>
@@ -456,40 +458,14 @@ class AppLocalizations {
   String get getStarted =>
       isTagalog ? TlStrings.getStarted : EnStrings.getStarted;
 
-  // Onboarding: navigation style
-  String get onboardingNavTitle =>
-      isTagalog ? TlStrings.onboardingNavTitle : EnStrings.onboardingNavTitle;
-  String get onboardingNavSubtitle => isTagalog
-      ? TlStrings.onboardingNavSubtitle
-      : EnStrings.onboardingNavSubtitle;
-  String get onboardingNavNormal =>
-      isTagalog ? TlStrings.onboardingNavNormal : EnStrings.onboardingNavNormal;
-  String get onboardingNavNormalDesc => isTagalog
-      ? TlStrings.onboardingNavNormalDesc
-      : EnStrings.onboardingNavNormalDesc;
-  String get onboardingNavGestural => isTagalog
-      ? TlStrings.onboardingNavGestural
-      : EnStrings.onboardingNavGestural;
-  String get onboardingNavGesturalDesc => isTagalog
-      ? TlStrings.onboardingNavGesturalDesc
-      : EnStrings.onboardingNavGesturalDesc;
-  String get onboardingNavVoice => isTagalog
-      ? TlStrings.onboardingNavVoice
-      : EnStrings.onboardingNavVoice;
-  String get onboardingNavVoiceDesc => isTagalog
-      ? TlStrings.onboardingNavVoiceDesc
-      : EnStrings.onboardingNavVoiceDesc;
   String get voiceNavigation =>
       isTagalog ? TlStrings.voiceNavigation : EnStrings.voiceNavigation;
   String get voiceNavigationDesc => isTagalog 
       ? TlStrings.voiceNavigationDesc
       : EnStrings.voiceNavigationDesc;
-  String get onboardingNavInertial => isTagalog
-      ? TlStrings.onboardingNavInertial
-      : EnStrings.onboardingNavInertial;
-  String get onboardingNavInertialDesc => isTagalog
-      ? TlStrings.onboardingNavInertialDesc
-      : EnStrings.onboardingNavInertialDesc;
+  String get onboardingLanguageOptions => isTagalog
+      ? TlStrings.onboardingLanguageOptions
+      : EnStrings.onboardingLanguageOptions;
 
   // Onboarding: permissions
   String get onboardingPermissionTitle => isTagalog
@@ -521,9 +497,30 @@ class AppLocalizations {
   String get onboardingFinishTour => isTagalog
       ? TlStrings.onboardingFinishTour
       : EnStrings.onboardingFinishTour;
-  String get onboardingFinishSkip => isTagalog
-      ? TlStrings.onboardingFinishSkip
-      : EnStrings.onboardingFinishSkip;
+  String get onboardingFinishOptions => isTagalog
+      ? TlStrings.onboardingFinishOptions
+      : EnStrings.onboardingFinishOptions;
+  String get onboardingExitToScanner => isTagalog
+      ? TlStrings.onboardingExitToScanner
+      : EnStrings.onboardingExitToScanner;
+  String get onboardingExitToTour => isTagalog
+      ? TlStrings.onboardingExitToTour
+      : EnStrings.onboardingExitToTour;
+  String get onboardingWelcomeConfirm => isTagalog
+      ? TlStrings.onboardingWelcomeConfirm
+      : EnStrings.onboardingWelcomeConfirm;
+  String get onboardingConfirmVision => isTagalog
+      ? TlStrings.onboardingConfirmVision
+      : EnStrings.onboardingConfirmVision;
+  String get onboardingConfirmLanguage => isTagalog
+      ? TlStrings.onboardingConfirmLanguage
+      : EnStrings.onboardingConfirmLanguage;
+  String get onboardingConfirmPerm => isTagalog
+      ? TlStrings.onboardingConfirmPerm
+      : EnStrings.onboardingConfirmPerm;
+  String get onboardingConfirmPermAlready => isTagalog
+      ? TlStrings.onboardingConfirmPermAlready
+      : EnStrings.onboardingConfirmPermAlready;
 
   // Tutorial: App Navigation
   String get tutorialCardAppNavTitle => isTagalog
@@ -563,12 +560,15 @@ class AppLocalizations {
       : EnStrings.ttsLangChangingLabel;
 
   // Settings confirmations: parametric (not stored as const strings)
-  String ttsSettingEnabled(String settingName) =>
-      isTagalog ? '$settingName naka-on.' : '$settingName enabled.';
-  String ttsSettingDisabled(String settingName) =>
-      isTagalog ? '$settingName naka-off.' : '$settingName disabled.';
-  String ttsSettingChanged(String settingName, String newValue) =>
-      isTagalog ? '$settingName: $newValue.' : '$settingName set to $newValue.';
+  String ttsSettingEnabled(String settingName) => isTagalog
+      ? 'Siyempre. Binuksan ko na ang $settingName para sa iyo.'
+      : 'Certainly. I\'ve turned on $settingName for you.';
+  String ttsSettingDisabled(String settingName) => isTagalog
+      ? 'Naintindihan ko. Kasalukuyan nang naka-off ang $settingName.'
+      : 'Understood. $settingName is now off.';
+  String ttsSettingChanged(String settingName, String newValue) => isTagalog
+      ? 'Sige! Binago ko na ang $settingName sa $newValue.'
+      : 'Got it! I\'ve updated $settingName to $newValue.';
 
   // Scanner: results
   String ttsScanResult(String denomination) => isTagalog
@@ -852,6 +852,52 @@ class AppLocalizations {
       : EnStrings.voiceWakeWordDetectedLabel;
   String get voiceTryItHint =>
       isTagalog ? TlStrings.voiceTryItHint : EnStrings.voiceTryItHint;
+  String get voiceHelpCommandList =>
+      isTagalog ? TlStrings.voiceHelpCommandList : EnStrings.voiceHelpCommandList;
+  String get voiceStatusStandingBy =>
+      isTagalog ? TlStrings.voiceStatusStandingBy : EnStrings.voiceStatusStandingBy;
+  String get voicePromptWhatShallIDo =>
+      isTagalog ? TlStrings.voicePromptWhatShallIDo : EnStrings.voicePromptWhatShallIDo;
+  String get blindTapToSpeak =>
+      isTagalog ? TlStrings.blindTapToSpeak : EnStrings.blindTapToSpeak;
+
+  // Categorized Commands
+  String get voiceCommandCatNav => isTagalog ? TlStrings.voiceCommandCatNav : EnStrings.voiceCommandCatNav;
+  String get voiceCommandCatScan => isTagalog ? TlStrings.voiceCommandCatScan : EnStrings.voiceCommandCatScan;
+  String get voiceCommandCatHelp => isTagalog ? TlStrings.voiceCommandCatHelp : EnStrings.voiceCommandCatHelp;
+
+  String get voiceCmdOpenSettings => isTagalog ? TlStrings.voiceCmdOpenSettings : EnStrings.voiceCmdOpenSettings;
+  String get voiceCmdGoHome => isTagalog ? TlStrings.voiceCmdGoHome : EnStrings.voiceCmdGoHome;
+  String get voiceCmdOpenTutorial => isTagalog ? TlStrings.voiceCmdOpenTutorial : EnStrings.voiceCmdOpenTutorial;
+  String get voiceCmdCommandList => isTagalog ? TlStrings.voiceCmdCommandList : EnStrings.voiceCmdCommandList;
+  String get voiceCmdStartScanner => isTagalog ? TlStrings.voiceCmdStartScanner : EnStrings.voiceCmdStartScanner;
+  String get voiceCmdIdentify => isTagalog ? TlStrings.voiceCmdIdentify : EnStrings.voiceCmdIdentify;
+  String get voiceCmdFlashOn => isTagalog ? TlStrings.voiceCmdFlashOn : EnStrings.voiceCmdFlashOn;
+  String get voiceCmdFlashOff => isTagalog ? TlStrings.voiceCmdFlashOff : EnStrings.voiceCmdFlashOff;
+  String get voiceCmdFrontCam => isTagalog ? TlStrings.voiceCmdFrontCam : EnStrings.voiceCmdFrontCam;
+  String get voiceCmdBackCam => isTagalog ? TlStrings.voiceCmdBackCam : EnStrings.voiceCmdBackCam;
+  String get voiceCmdHelp => isTagalog ? TlStrings.voiceCmdHelp : EnStrings.voiceCmdHelp;
+  String get voiceCmdExit => isTagalog ? TlStrings.voiceCmdExit : EnStrings.voiceCmdExit;
+
+  // Command Confirmation & Feedback
+  String get voiceConfirmPrefix => isTagalog ? TlStrings.voiceConfirmPrefix : EnStrings.voiceConfirmPrefix;
+  String get voiceConfirmSuffix => isTagalog ? TlStrings.voiceConfirmSuffix : EnStrings.voiceConfirmSuffix;
+  String get voiceActionSuccess => isTagalog ? TlStrings.voiceActionSuccess : EnStrings.voiceActionSuccess;
+  String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
+  String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
+  String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
+
+  String get resultVerifyLabel => isTagalog ? TlStrings.resultVerifyLabel : EnStrings.resultVerifyLabel;
+  String get resultVerifying => isTagalog ? TlStrings.resultVerifying : EnStrings.resultVerifying;
+  String get resultGenuine => isTagalog ? TlStrings.resultGenuine : EnStrings.resultGenuine;
+  String get resultCounterfeit => isTagalog ? TlStrings.resultCounterfeit : EnStrings.resultCounterfeit;
+  String get resultVerificationFailed => isTagalog ? TlStrings.resultVerificationFailed : EnStrings.resultVerificationFailed;
+  String get resultManualCapturing => isTagalog ? TlStrings.resultManualCapturing : EnStrings.resultManualCapturing;
+  String resultAutoVerifyHint(String seconds) => isTagalog ? TlStrings.resultAutoVerifyHint(seconds) : EnStrings.resultAutoVerifyHint(seconds);
+  String get resultAutoVerifyCancel => isTagalog ? TlStrings.resultAutoVerifyCancel : EnStrings.resultAutoVerifyCancel;
+
+  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
+  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
 
   // Scanner status labels
   String get scannerStatusIdle =>

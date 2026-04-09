@@ -8,7 +8,10 @@ import '../tts_service.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../features/settings/presentation/screens/simple_settings_screen.dart';
 import '../../../features/tutorial/presentation/screens/tutorial_screen.dart';
+import '../../../features/tutorial/presentation/screens/tutorial_navigator.dart';
+import '../../../features/tutorial/domain/tutorial_route.dart';
 import '../../../features/settings/presentation/providers/settings_provider.dart';
+import '../../../features/scanner/domain/entities/scanner_state.dart';
 import '../../../features/scanner/presentation/providers/scanner_provider.dart';
 
 final voiceCommandExecutorProvider = Provider<VoiceCommandExecutor>((ref) {
@@ -22,7 +25,7 @@ class VoiceCommandExecutor {
   /// Global navigator key to perform routing outside of widgets
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  void execute(VoiceIntent intent) {
+  bool execute(VoiceIntent intent) {
     final settings = ref.read(appSettingsProvider);
     final settingsNotifier = ref.read(appSettingsProvider.notifier);
     final l10n = AppLocalizations.of(settings.isTagalog);
@@ -48,7 +51,7 @@ class VoiceCommandExecutor {
           );
         }
         say(NavSpeech.returnedHome(l10n));
-        break;
+        return true;
 
       case PauseScanIntent():
         final cameraOpen = ref.read(cameraOpenProvider);
@@ -58,19 +61,22 @@ class VoiceCommandExecutor {
           ref.read(cameraControllerProvider.notifier).closeCamera();
         }
         say(TtsMessage.navigation('Scanner paused', id: 'voice.paused'));
-        break;
+        return true;
 
       case ToggleFlashlightIntent():
         final next = intent.turnOn;
+        if (next && settings.useFrontCamera) {
+          say(TtsMessage.ambient(l10n.voiceFlashFrontError, id: 'voice.error.flash_front'));
+          return false;
+        }
         if (settings.useFlashlight != next) {
           settingsNotifier.toggleFlashlight(next);
-          // Directly update the hardware camera if it is open
           if (ref.read(cameraOpenProvider)) {
             ref.read(cameraControllerProvider.notifier).setFlash(next);
           }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFlashlight, next));
-        break;
+        return true;
 
       case ChangeCameraIntent():
         final toFront = intent.toFront;
@@ -86,14 +92,12 @@ class VoiceCommandExecutor {
           }
         }
         say(SettingsSpeech.toggled(l10n, l10n.useFrontCamera, toFront));
-        break;
+        return true;
 
       case NavigateIntent():
-        // We use the global navigator key to push/pop
         final context = navigatorKey.currentContext;
-        if (context == null) return;
+        if (context == null) return false;
         
-        // Pop all dialogues or nested routes safely back to Home shell
         Navigator.of(context).popUntil((route) => route.isFirst);
 
         if (intent.target == NavTarget.settings) {
@@ -106,28 +110,95 @@ class VoiceCommandExecutor {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const TutorialScreen()),
           );
+        } else if (intent.target == NavTarget.commandList) {
+          say(TtsMessage.navigation(l10n.tutorialCardVoiceTitle));
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TutorialScreen()),
+          );
+          Future.delayed(const Duration(milliseconds: 300), () {
+            TutorialNavigator.push(context, TutorialRoute.voice);
+          });
         } else if (intent.target == NavTarget.home) {
+          final scannerState = ref.read(scannerStateProvider);
+          if (scannerState == ScannerState.result) {
+            ref.read(scannerStateProvider.notifier).reset();
+          }
           say(NavSpeech.returnedHome(l10n));
         }
-        break;
+        return true;
 
       case ExitAppIntent():
         say(TtsMessage.ambient('Closing Money Sense', id: 'voice.exit'));
-        // Wait a tiny bit for the TTS queue to register
         Future.delayed(const Duration(milliseconds: 500), () {
-          SystemNavigator.pop();
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         });
-        break;
+        return true;
+
+      case HelpIntent():
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          final targetRoute = switch (intent.target) {
+            HelpTarget.general => null,
+            HelpTarget.inertial => TutorialRoute.inertialNavigation,
+            HelpTarget.gestural => TutorialRoute.gesturalNavigation,
+            HelpTarget.voice => TutorialRoute.voice,
+            HelpTarget.scanning => TutorialRoute.denominationVibration,
+          };
+
+          if (targetRoute == null) {
+            say(TtsMessage.navigation(l10n.navTutorial));
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TutorialScreen()),
+            );
+          } else {
+            // Mapping for speech
+            final title = switch (intent.target) {
+              HelpTarget.inertial => l10n.tutorialCardInertialTitle,
+              HelpTarget.gestural => l10n.tutorialCardGestureTitle,
+              HelpTarget.voice => l10n.tutorialCardVoiceTitle,
+              HelpTarget.scanning => l10n.tutorialCardDenomTitle,
+              _ => l10n.navTutorial,
+            };
+
+            say(TtsMessage.navigation(title));
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TutorialScreen()),
+            );
+            Future.delayed(const Duration(milliseconds: 300), () {
+              TutorialNavigator.push(context, targetRoute);
+            });
+          }
+        }
+        return true;
+
+      case StopSpeakingIntent():
+        ref.read(ttsServiceProvider).stop();
+        return true;
 
       case WakeIntent():
         // Handled directly by the voice_command_service to transition state.
-        break;
+        return true;
 
       case UnknownIntent():
-        // In fully blind contexts, it's often better to slightly nudge or ignore.
-        // We will just do a small error chime or say "Command not recognized".
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
-        break;
+        return false;
+
+      case IdentifyIntent():
+        final cameraOpen = ref.read(cameraOpenProvider);
+        if (!cameraOpen) {
+          say(TtsMessage.ambient('Please start the scanner first', id: 'voice.error.not_scanning'));
+          return false;
+        }
+        ref.read(scannerStateProvider.notifier).manualIdentify();
+        return true;
+
+      case StartVoiceSetupIntent():
+      case SelectionIntent():
+      case SelectionConfirmationIntent():
+        // These are handled contextually by the Onboarding screen
+        return true;
     }
   }
 }

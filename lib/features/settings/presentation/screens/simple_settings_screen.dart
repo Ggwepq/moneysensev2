@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_spacing.dart';
@@ -12,7 +13,6 @@ import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'vision_profile_picker_screen.dart';
-import '../../../../core/constants/app_colors.dart';
 
 class SimpleSettingsScreen extends ConsumerWidget {
   const SimpleSettingsScreen({super.key});
@@ -126,7 +126,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       _BigRow(
                         children: [
                           // Camera toggle: Back ↔ Front (one box)
@@ -139,15 +139,18 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                 : 'Back Camera',
                             isActive: true,
                             onTap: () {
+                              final nextIsFront = !isFrontCamera;
                               EarconService.instance.play(
-                                EarconEvent.actionConfirmed,
+                                nextIsFront
+                                    ? EarconEvent.actionEnabled
+                                    : EarconEvent.actionDisabled,
                               );
-                              notifier.toggleFrontCamera(!isFrontCamera);
+                              notifier.toggleFrontCamera(nextIsFront);
                               say(
                                 SettingsSpeech.toggled(
                                   l10n,
                                   l10n.useFrontCamera,
-                                  !isFrontCamera,
+                                  nextIsFront,
                                 ),
                               );
                             },
@@ -178,7 +181,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       // Vision Profile — full width, opens picker
                       _ToggleCardWide(
                         icon: _visionIcon(settings.visionProfile),
@@ -214,56 +217,11 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _BigRow(
-                        children: [
-                          // Gestural navigation toggle
-                          _ToggleCard(
-                            icon: Icons.swipe_rounded,
-                            label: l10n.gesturalNavigation,
-                            isActive: settings.gesturalNavigation,
-                            onTap: () {
-                              final next = !settings.gesturalNavigation;
-                              EarconService.instance.play(
-                                next
-                                    ? EarconEvent.actionEnabled
-                                    : EarconEvent.actionDisabled,
-                              );
-                              notifier.toggleGesturalNavigation(next);
-                              say(
-                                SettingsSpeech.toggled(
-                                  l10n,
-                                  l10n.gesturalNavigation,
-                                  next,
-                                ),
-                              );
-                            },
-                          ),
-                          // Voice feature toggle
-                          _ToggleCard(
-                            icon: Icons.mic_rounded,
-                            label: l10n.voiceNavigation,
-                            isActive: settings.voiceNavigation,
-                            onTap: () {
-                              final next = !settings.voiceNavigation;
-                              EarconService.instance.play(
-                                next
-                                    ? EarconEvent.actionEnabled
-                                    : EarconEvent.actionDisabled,
-                              );
-                              notifier.toggleVoiceNavigation(next);
-                              say(
-                                SettingsSpeech.toggled(
-                                  l10n,
-                                  l10n.voiceNavigation,
-                                  next,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
+                      
+
+
+                      const SizedBox(height: AppSpacing.md),
                       // ── Advanced Mode button (scrollable) ─────────────────
                       Semantics(
                         label: 'Advanced Mode. Go back to the full settings page.',
@@ -307,7 +265,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.xl),
                     ], // End of inner Column children
                   ), // End of inner Column
                 ), // End of SingleChildScrollView
@@ -339,6 +297,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
       context,
       message: oldL10n.ttsLangChanging(newLangName),
     );
+    EarconService.instance.play(EarconEvent.actionConfirmed);
     tts.enqueue(
       LanguageSpeech.changing(oldL10n, newLangName),
       enabled: settings.ttsEnabled,
@@ -379,7 +338,7 @@ class _BigRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(child: children[0]),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.lg), // Increased from md
         Expanded(child: children[1]),
       ],
     );
@@ -412,9 +371,6 @@ class _ToggleCard extends StatelessWidget {
     final textColor = isActive
         ? theme.colorScheme.onPrimary
         : theme.colorScheme.onSurface;
-    final iconBackground = isActive
-        ? textColor.withOpacity(0.08)
-        : textColor.withOpacity(0.12);
 
     return Semantics(
       label: '$label. Button',
@@ -491,9 +447,6 @@ class _ToggleCardWide extends StatelessWidget {
     final textColor = isActive
         ? theme.colorScheme.onPrimary
         : theme.colorScheme.onSurface;
-    final iconBackground = isActive
-        ? textColor.withOpacity(0.08)
-        : textColor.withOpacity(0.12);
 
     return Semantics(
       label: '$label. ${sublabel ?? ''}. Button',
@@ -566,7 +519,7 @@ class _SwipeBackWrapper extends StatelessWidget {
         if (ax < _minVelocity) return;
         if (ax < ay) return;
         if (ay / ax > _maxCrossRatio) return;
-        if (v.dx > 0) {
+        if (v.dx < 0) {
           EarconService.instance.play(EarconEvent.navBack);
           Navigator.of(context).maybePop();
         }
@@ -575,3 +528,5 @@ class _SwipeBackWrapper extends StatelessWidget {
     );
   }
 }
+
+

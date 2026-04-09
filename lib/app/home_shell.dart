@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/app_localizations.dart';
@@ -15,8 +16,6 @@ import '../features/settings/presentation/screens/simple_settings_screen.dart';
 
 import '../features/settings/domain/entities/app_settings.dart';
 import '../core/services/voice/voice_command_service.dart';
-import '../core/services/voice/voice_command_overlay.dart';
-import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
 import '../features/tutorial/domain/tutorial_route.dart';
 import '../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -47,22 +46,20 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   void initState() {
     super.initState();
+
     if (widget.launchTutorialOnLoad) {
       // Push the app-navigation tutorial directly: not the tutorial list.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) TutorialNavigator.push(context, TutorialRoute.appNavigation);
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final settings = ref.read(appSettingsProvider);
-        if (settings.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        }
-      }
-    });
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
 
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
@@ -140,16 +137,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final scannerState = ref.watch(scannerStateProvider);
     final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
 
-    // Listen for setting changes to start/stop the engine
-    ref.listen(appSettingsProvider.select((s) => s.voiceNavigation), (previous, next) {
-      if (next != previous) { // only if changed
-        if (next) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        } else {
-          ref.read(voiceCommandServiceProvider).stopListening();
-        }
-      }
-    });
 
     return Listener(
       onPointerDown: (e) {
@@ -159,7 +146,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           final now = DateTime.now();
           if (now.difference(_lastTap).inMilliseconds < 500) {
             // Two-finger double-tap detected!
-            ref.read(voiceCommandServiceProvider).startActiveListening();
+            ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
           }
           _lastTap = now;
         }
@@ -178,16 +165,22 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         child: Scaffold(
           body: Stack(
             children: [
-              ScannerScreen(
-                onNavigate: (index) {
-                  if (index == 0) _pushSettings();
-                  if (index == 2) _pushTutorial();
+              // Main Camera / Scanner area - also acts as a giant voice trigger
+              GestureDetector(
+                onTap: () {
+                  if (settings.voiceNavigation && !isFullyBlind) {
+                    HapticFeedback.lightImpact();
+                    ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
+                  }
                 },
+                behavior: HitTestBehavior.opaque,
+                child: ScannerScreen(
+                  onNavigate: (index) {
+                    if (index == 0) _pushSettings();
+                    if (index == 2) _pushTutorial();
+                  },
+                ),
               ),
-              if (isFullyBlind)
-                const BlindVoiceUi(),
-              if (settings.voiceNavigation)
-                const VoiceCommandOverlay(),
             ],
           ),
           bottomNavigationBar: isFullyBlind || scannerState == ScannerState.result 
@@ -210,4 +203,3 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     );
   }
 }
-

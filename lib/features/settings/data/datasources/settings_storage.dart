@@ -24,6 +24,7 @@ abstract final class SettingsKeys {
   static const hapticFeedback      = 'settings.hapticFeedback';
   static const earconEnabled        = 'settings.earconEnabled';
   static const hapticIntensity     = 'settings.hapticIntensity';
+  static const strictVerification   = 'settings.strictVerification';
 
   /// Set to true once the user completes onboarding.
   /// Absent or false = first run → show onboarding.
@@ -107,6 +108,9 @@ class SettingsStorage {
         HapticIntensity.values,
         defaults.hapticIntensity,
       ),
+      strictVerification:
+          _prefs.getBool(SettingsKeys.strictVerification) ??
+              defaults.strictVerification,
     );
   }
 
@@ -135,6 +139,7 @@ class SettingsStorage {
     _prefs.setBool  (SettingsKeys.hapticFeedback,      s.hapticFeedback);
     _prefs.setBool  (SettingsKeys.earconEnabled,       s.earconEnabled);
     _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
+    _prefs.setBool  (SettingsKeys.strictVerification,  s.strictVerification);
   }
 
   /// Persist just [_lastTimerSeconds] separately.

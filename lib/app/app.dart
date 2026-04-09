@@ -8,10 +8,14 @@ import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
 import '../features/settings/domain/entities/vision_config.dart';
+import '../features/settings/domain/entities/app_settings.dart' show VisionProfile;
 import '../features/settings/presentation/providers/settings_provider.dart';
 import 'home_shell.dart';
 import 'startup_splash.dart';
 import '../core/services/voice/voice_command_executor.dart';
+import '../core/services/voice/voice_command_service.dart';
+import '../core/services/voice/voice_command_overlay.dart';
+import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
 
 class MoneySenseApp extends ConsumerWidget {
   const MoneySenseApp({super.key});
@@ -60,6 +64,19 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   bool _ttsReady       = false;
   bool _launchTutorial = false;
 
+  @override
+  void initState() {
+    super.initState();
+    
+    // Resume voice if enabled on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = ref.read(appSettingsProvider);
+      if (settings.voiceNavigation) {
+        ref.read(voiceCommandServiceProvider).startPassiveListening();
+      }
+    });
+  }
+
   void _onSplashReady() {
     setState(() => _ttsReady = true);
   }
@@ -67,6 +84,12 @@ class _AppRootState extends ConsumerState<_AppRoot> {
   void _onOnboardingComplete({bool launchTutorial = false}) {
     _launchTutorial = launchTutorial;
     markOnboardingComplete(ref);
+    
+    // Explicitly start voice if enabled after onboarding
+    final settings = ref.read(appSettingsProvider);
+    if (settings.voiceNavigation) {
+      ref.read(voiceCommandServiceProvider).startPassiveListening();
+    }
   }
 
   @override
@@ -82,11 +105,34 @@ class _AppRootState extends ConsumerState<_AppRoot> {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
-    // ShakeDetectorWidget is app-level so shake-to-go-back works everywhere.
-    // InertialDetectorWidget lives inside HomeShell so its RouteAware
-    // subscription correctly sees Settings/Tutorial pushes.
+    final settings = ref.watch(appSettingsProvider);
+    final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
+
+    // Manage global voice lifecycle: start/stop when settings change
+    ref.listen(appSettingsProvider, (previous, next) {
+      final voiceNavChanged = previous?.voiceNavigation != next.voiceNavigation;
+      final profileChanged = previous?.visionProfile != next.visionProfile;
+
+      if (voiceNavChanged || profileChanged) {
+        if (next.voiceNavigation) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        } else {
+          ref.read(voiceCommandServiceProvider).stopListening();
+        }
+      }
+    });
+
     return ShakeDetectorWidget(
-      child: HomeShell(launchTutorialOnLoad: _launchTutorial),
+      child: Stack(
+        children: [
+          HomeShell(launchTutorialOnLoad: _launchTutorial),
+          
+          if (isFullyBlind)
+            const BlindVoiceUi(),
+          if (settings.voiceNavigation && !isFullyBlind)
+            const VoiceCommandOverlay(),
+        ],
+      ),
     );
   }
 }

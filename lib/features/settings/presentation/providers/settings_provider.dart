@@ -113,9 +113,12 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setVisionProfile(VisionProfile profile) {
     final config = VisionConfig.from(profile);
     _update(state.copyWith(
-      visionProfile:   profile,
-      ttsVerbosity:    config.defaultTtsVerbosity,
-      hapticIntensity: config.defaultHapticIntensity,
+      visionProfile:      profile,
+      ttsVerbosity:       config.defaultTtsVerbosity,
+      hapticIntensity:    config.defaultHapticIntensity,
+      voiceNavigation:    profile == VisionProfile.fullyBlind,
+      gesturalNavigation: profile == VisionProfile.fullyBlind || profile == VisionProfile.partiallyBlind,
+      inertialNavigation: false,
     ));
   }
 
@@ -133,6 +136,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
 
   void toggleEarcon(bool value) =>
       _update(state.copyWith(earconEnabled: value));
+
+  void toggleStrictVerification(bool value) =>
+      _update(state.copyWith(strictVerification: value));
 
   /// Resets every setting to the factory default (const AppSettings()).
   /// Persists immediately. Does NOT touch the onboarding-complete flag —

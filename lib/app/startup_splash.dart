@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../core/constants/app_colors.dart';
 import '../core/l10n/app_localizations.dart';
 import '../core/services/earcon_service.dart';
@@ -10,8 +9,6 @@ import '../core/services/tts_service.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
 
 // Shown on every launch while TTS initializes.
-// The app is fully usable the moment this screen disappears — no more
-// queued audio playing over screens the user has already left.
 
 enum _StartupPhase { loading, ready }
 
@@ -63,8 +60,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     EarconService.instance.setEnabled(settings.earconEnabled);
     await EarconService.instance.refreshTalkBackState();
 
-    if (!mounted) return;
-    setState(() => _phase = _StartupPhase.ready);
+    if (mounted) setState(() => _phase = _StartupPhase.ready);
 
     // Earcon fires the instant "ready" is shown — while the checkmark is
     // visible and before the screen hands off. This gives audio confirmation
