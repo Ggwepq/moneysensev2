@@ -72,7 +72,7 @@ void _persistentIsolateEntry(SendPort setupPort) {
       try {
         interpreter = Interpreter.fromBuffer(
           message.modelBytes,
-          options: InterpreterOptions()..threads = 1,
+          options: InterpreterOptions()..threads = 4,
         );
         inputSize = message.inputSize;
         numClasses = message.numClasses;
@@ -89,32 +89,45 @@ void _persistentIsolateEntry(SendPort setupPort) {
 
       final buf = StringBuffer();
       try {
-        buf.write('[isolate] YUV→RGBA. ');
-        final rgba = _yuv420ToRgba(
-          message.yBytes, message.uBytes, message.vBytes,
-          message.width, message.height,
-          message.yRowStride, message.uRowStride, message.uPixStride,
-          message.vRowStride, message.vPixStride,
-        );
-
+        buf.write('[isolate] Processing Tensor. ');
         final tensor = Float32List(inputSize * inputSize * 3);
         final scaleX = message.width / inputSize;
         final scaleY = message.height / inputSize;
 
         for (int y = 0; y < inputSize; y++) {
+          final srcY = (y * scaleY).toInt().clamp(0, message.height - 1);
+          final uvR = srcY >> 1;
+          
           for (int x = 0; x < inputSize; x++) {
             final srcX = (x * scaleX).toInt().clamp(0, message.width - 1);
-            final srcY = (y * scaleY).toInt().clamp(0, message.height - 1);
-            final srcIdx = (srcY * message.width + srcX) * 4;
+            
+            // ── Inlined YUV -> RGB + Normalization ───────────────────────
+            final yIdx = srcY * message.yRowStride + srcX;
+            final uvC = srcX >> 1;
+            final uIdx = uvR * message.uRowStride + uvC * message.uPixStride;
+            final vIdx = uvR * message.vRowStride + uvC * message.vPixStride;
+
+            final Y = message.yBytes[yIdx] & 0xFF;
+            final U = (message.uBytes[uIdx] & 0xFF) - 128;
+            final V = (message.vBytes[vIdx] & 0xFF) - 128;
+
+            final r = (Y + 1.402 * V).clamp(0, 255) / 255.0;
+            final g = (Y - 0.344136 * U - 0.714136 * V).clamp(0, 255) / 255.0;
+            final b = (Y + 1.772 * U).clamp(0, 255) / 255.0;
+
             final dstIdx = (y * inputSize + x) * 3;
-            tensor[dstIdx] = rgba[srcIdx] / 255.0;
-            tensor[dstIdx + 1] = rgba[srcIdx + 1] / 255.0;
-            tensor[dstIdx + 2] = rgba[srcIdx + 2] / 255.0;
+            tensor[dstIdx]     = r;
+            tensor[dstIdx + 1] = g;
+            tensor[dstIdx + 2] = b;
           }
         }
 
+        // Reshape into [1, size, size, 3] format expected by tflite_flutter run method
+        // Using nested lists here is the safest way to ensure shape compatibility 
+        // across different tflite_flutter versions while still being beaucoup faster 
+        // than the original double-loop generate.
         final input = [
-          List.generate(inputSize, (y) =>
+          List.generate(inputSize, (y) => 
             List.generate(inputSize, (x) => [
               tensor[(y * inputSize + x) * 3],
               tensor[(y * inputSize + x) * 3 + 1],
@@ -159,37 +172,6 @@ void _persistentIsolateEntry(SendPort setupPort) {
   });
 }
 
-Uint8List _yuv420ToRgba(
-  Uint8List yB, Uint8List uB, Uint8List vB,
-  int w, int h,
-  int yRS, int uRS, int uPS, int vRS, int vPS,
-) {
-  final rgba = Uint8List(w * h * 4);
-  for (int row = 0; row < h; row++) {
-    for (int col = 0; col < w; col++) {
-      final yIdx = row * yRS + col;
-      final uvR  = row >> 1;
-      final uvC  = col >> 1;
-      final uIdx = uvR * uRS + uvC * uPS;
-      final vIdx = uvR * vRS + uvC * vPS;
-
-      final Y = yB[yIdx] & 0xFF;
-      final U = (uB[uIdx] & 0xFF) - 128;
-      final V = (vB[vIdx] & 0xFF) - 128;
-
-      final r = (Y + 1.402    * V               ).clamp(0, 255).toInt();
-      final g = (Y - 0.344136 * U - 0.714136 * V).clamp(0, 255).toInt();
-      final b = (Y + 1.772    * U               ).clamp(0, 255).toInt();
-
-      final p = (row * w + col) * 4;
-      rgba[p]     = r;
-      rgba[p + 1] = g;
-      rgba[p + 2] = b;
-      rgba[p + 3] = 255;
-    }
-  }
-  return rgba;
-}
 
 // ── DetectionService ───────────────────────────────────────────────────────
 
@@ -200,7 +182,7 @@ class DetectionService {
   static const String _assetPath     = 'assets/models/moneysense-bills.tflite';
   static const int    _inputSize     = 640;
   static const double _confThreshold = 0.50;  // Raised to 0.5 to prevent noisy false positives
-  static const int    _minIntervalMs = 500;
+  static const int    _minIntervalMs = 150;
 
   static const List<String> _denominations = [
     '1', '5', '10', '20', '50', '100', '200', '500', '1000',
@@ -284,9 +266,9 @@ class DetectionService {
     try {
       if (image.planes.length < 3) return null;
 
-      final yBytes = Uint8List.fromList(image.planes[0].bytes);
-      final uBytes = Uint8List.fromList(image.planes[1].bytes);
-      final vBytes = Uint8List.fromList(image.planes[2].bytes);
+      final yBytes = image.planes[0].bytes;
+      final uBytes = image.planes[1].bytes;
+      final vBytes = image.planes[2].bytes;
 
       final replyPort = ReceivePort();
       _isolateCommandPort!.send(_InferCommand(
