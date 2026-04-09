@@ -655,5 +655,6 @@ abstract final class EnStrings {
   static const String voiceConfirmSuffix = '? Yes or no?';
   static const String voiceActionSuccess = 'Got it!';
   static const String voiceActionCancelled = 'No problem. What shall I do instead?';
+  static const String voiceListeningFeedback = 'I am listening.';
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
 }

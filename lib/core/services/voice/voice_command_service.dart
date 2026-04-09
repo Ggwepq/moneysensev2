@@ -89,13 +89,24 @@ class VoiceCommandService {
 
   /// Triggers an active listening session.
   /// If [persistent] is true, it will auto-restart if it times out without a result.
-  Future<void> startActiveListening({bool persistent = false}) async {
+  /// If [withPrompt] is true, it will say "I'm listening" before starting the microphone.
+  Future<void> startActiveListening({bool persistent = false, bool withPrompt = false}) async {
     if (_isHardwareBusy) return;
     
     await _initIfNeeded();
     if (!_isInit) {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       return;
+    }
+
+    if (withPrompt) {
+      final settings = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(settings.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+        TtsMessage.result(l10n.voiceListeningFeedback, id: 'voice.listening_start'),
+        enabled: settings.ttsEnabled,
+        currentVerbosity: settings.ttsVerbosity,
+      );
     }
 
     // Stop passive if running and wait for it to clear

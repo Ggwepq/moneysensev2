@@ -146,7 +146,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           final now = DateTime.now();
           if (now.difference(_lastTap).inMilliseconds < 500) {
             // Two-finger double-tap detected!
-            ref.read(voiceCommandServiceProvider).startActiveListening();
+            ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
           }
           _lastTap = now;
         }
@@ -170,7 +170,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 onTap: () {
                   if (settings.voiceNavigation && !isFullyBlind) {
                     HapticFeedback.lightImpact();
-                    ref.read(voiceCommandServiceProvider).startActiveListening();
+                    ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
                   }
                 },
                 behavior: HitTestBehavior.opaque,

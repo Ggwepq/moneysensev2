@@ -653,5 +653,6 @@ abstract final class TlStrings {
   static const String voiceConfirmSuffix = '? Oo o hindi?';
   static const String voiceActionSuccess = 'Sige!';
   static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
+  static const String voiceListeningFeedback = 'Nakikinig ako.';
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
 }
