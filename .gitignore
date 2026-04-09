@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+debug_crop.jpg
+debug_full.jpg
+
 # IntelliJ related
 *.iml
 *.ipr

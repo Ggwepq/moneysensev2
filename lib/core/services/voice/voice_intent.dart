@@ -21,7 +21,7 @@ class ScanIntent extends VoiceIntent {
   const ScanIntent();
 
   @override
-  String toDescription(AppLocalizations l10n) => l10n.voiceCmdGoHome;
+  String toDescription(AppLocalizations l10n) => l10n.voiceCmdStartScanner;
 }
 
 /// Indicates pausing the scanner
@@ -132,4 +132,12 @@ class SelectionConfirmationIntent extends VoiceIntent {
 
   @override
   String toDescription(AppLocalizations l10n) => isConfirmed ? 'Yes' : 'No';
+}
+
+/// Represents a manual request to identify the current frame
+class IdentifyIntent extends VoiceIntent {
+  const IdentifyIntent();
+
+  @override
+  String toDescription(AppLocalizations l10n) => l10n.voiceCmdIdentify;
 }

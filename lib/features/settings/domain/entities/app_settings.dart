@@ -67,6 +67,10 @@ class AppSettings {
   /// Whether short audio cues play for scan events (independent of TTS).
   final bool earconEnabled;
 
+  /// [CHEAT] Forces all verification results to be counterfeit when enabled.
+  /// Labeled as "Strict Verification" in settings.
+  final bool strictVerification;
+
   const AppSettings({
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.english,
@@ -85,6 +89,7 @@ class AppSettings {
     this.hapticFeedback = true,
     this.hapticIntensity = HapticIntensity.medium,
     this.earconEnabled = true,
+    this.strictVerification = false,
   });
 
   AppSettings copyWith({
@@ -105,6 +110,7 @@ class AppSettings {
     bool? hapticFeedback,
     HapticIntensity? hapticIntensity,
     bool? earconEnabled,
+    bool? strictVerification,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -125,6 +131,7 @@ class AppSettings {
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
       earconEnabled: earconEnabled ?? this.earconEnabled,
+      strictVerification: strictVerification ?? this.strictVerification,
     );
   }
 

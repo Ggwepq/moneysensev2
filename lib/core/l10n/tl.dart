@@ -630,6 +630,8 @@ abstract final class TlStrings {
       'Mga available na utos: Buksan ang settings, simulan ang scan, buksan ang flash, o buksan ang tutorial. Gamitin ang "Hey MS" bago ang utos.';
   static const String voiceStatusStandingBy = 'Naka-standby... sabihin ang "Hey MS"';
   static const String voicePromptWhatShallIDo = 'Ano ang aking gagawin?';
+  static const String voiceCmdStartScanner = 'Simulan ang Scanner';
+  static const String voiceCmdIdentify = 'Kilalanin ang Pera';
 
   // Categorized Commands
   static const String voiceCommandCatNav = 'NABIGASYON';
@@ -655,4 +657,15 @@ abstract final class TlStrings {
   static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
   static const String voiceListeningFeedback = 'Nakikinig ako.';
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
+
+  static const String resultVerifyLabel = 'I-verify ang Katunayan';
+  static const String resultVerifying = 'Vini-verify...';
+  static const String resultGenuine = 'TUNAY NA PERA';
+  static const String resultCounterfeit = 'FAKE NA PERA';
+  static const String resultVerificationFailed = 'Bigo ang pag-verify.';
+  static const String resultManualCapturing = 'Kinikilala ang pera...';
+  static String resultAutoVerifyHint(String seconds) => 'Awtomatikong magpapatunay sa loob ng $seconds... ';
+  static const String resultAutoVerifyCancel = 'Kanselahin';
+  static const String strictVerificationTitle = 'Strict Verification';
+  static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
 }

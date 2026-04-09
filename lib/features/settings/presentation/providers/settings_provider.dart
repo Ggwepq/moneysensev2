@@ -137,6 +137,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void toggleEarcon(bool value) =>
       _update(state.copyWith(earconEnabled: value));
 
+  void toggleStrictVerification(bool value) =>
+      _update(state.copyWith(strictVerification: value));
+
   /// Resets every setting to the factory default (const AppSettings()).
   /// Persists immediately. Does NOT touch the onboarding-complete flag —
   /// the caller decides whether to re-run onboarding.

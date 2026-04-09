@@ -190,6 +190,21 @@ class VoiceIntentParser {
     }
 
     if (_matches(sanitized, [
+      'identify',
+      'read bill',
+      'what is this',
+      'what bill is this',
+      'what money is this',
+      'identifikahin',
+      'anong pera ito',
+      'ano ito',
+      'basahin ang bill',
+      'anong bill ito',
+    ])) {
+      return const IdentifyIntent();
+    }
+
+    if (_matches(sanitized, [
       'start scan',
       'begin scan',
       'read money',

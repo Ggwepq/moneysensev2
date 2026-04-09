@@ -52,8 +52,9 @@ class _InferCommand extends _IsolateCommand {
 class _InferResult {
   final int classIdx;
   final double score;
+  final double cx, cy, w, h;
   final String debugMsg;
-  const _InferResult(this.classIdx, this.score, this.debugMsg);
+  const _InferResult(this.classIdx, this.score, this.cx, this.cy, this.w, this.h, this.debugMsg);
 }
 
 // ── Isolate Entry Point ───────────────────────────────────────────────────
@@ -83,7 +84,7 @@ void _persistentIsolateEntry(SendPort setupPort) {
       }
     } else if (message is _InferCommand) {
       if (interpreter == null) {
-        message.replyPort.send(const _InferResult(-1, 0, 'Interpreter not initialized'));
+        message.replyPort.send(const _InferResult(-1, 0, 0, 0, 0, 0, 'Interpreter not initialized'));
         return;
       }
 
@@ -151,6 +152,7 @@ void _persistentIsolateEntry(SendPort setupPort) {
         int bestCls = -1;
         double bestScore = confThreshold;
         double absMax = 0;
+        double bcx = 0, bcy = 0, bw = 0, bh = 0;
 
         for (int i = 0; i < numAnchors; i++) {
           for (int c = 0; c < numClasses; c++) {
@@ -159,14 +161,18 @@ void _persistentIsolateEntry(SendPort setupPort) {
             if (score > bestScore) {
               bestScore = score;
               bestCls = c;
+              bcx = output[0][0][i];
+              bcy = output[0][1][i];
+              bw  = output[0][2][i];
+              bh  = output[0][3][i];
             }
           }
         }
 
         buf.write('bestCls=$bestCls score=${bestScore.toStringAsFixed(3)} absMax=${absMax.toStringAsFixed(3)}');
-        message.replyPort.send(_InferResult(bestCls, bestScore, buf.toString()));
+        message.replyPort.send(_InferResult(bestCls, bestScore, bcx, bcy, bw, bh, buf.toString()));
       } catch (e, st) {
-        message.replyPort.send(_InferResult(-1, 0, 'ERROR: $e\n$st'));
+        message.replyPort.send(_InferResult(-1, 0, 0, 0, 0, 0, 'ERROR: $e\n$st'));
       }
     }
   });
@@ -294,12 +300,31 @@ class DetectionService {
 
       final denomination = _denominations[res.classIdx];
       final type = _types[res.classIdx];
-      debugPrint('[DetectionService] ✓ DETECTED: $denomination ($type) conf=${res.score.toStringAsFixed(3)}');
+      debugPrint('[DetectionService] ✓ DETECTED: $denomination ($type) conf=${res.score.toStringAsFixed(3)} bbox=[${res.cx.toStringAsFixed(2)}, ${res.cy.toStringAsFixed(2)}, ${res.w.toStringAsFixed(2)}, ${res.h.toStringAsFixed(2)}]');
+
+      // YOLO models often return normalized [0, 1] or pixel [0, size] coordinates.
+      // We'll normalize if the value is significantly larger than 1.
+      double sBcx = res.cx;
+      double sBcy = res.cy;
+      double sBw  = res.w;
+      double sBh  = res.h;
+      
+      if (sBcx > 1.1 || sBw > 1.1) {
+        sBcx /= _inputSize;
+        sBcy /= _inputSize;
+        sBw  /= _inputSize;
+        sBh  /= _inputSize;
+      }
 
       return DetectionResult(
         denomination: denomination,
         type: type,
         confidence: res.score,
+        boundingBox: Rect.fromCenter(
+          center: Offset(sBcx, sBcy),
+          width: sBw,
+          height: sBh,
+        ),
       );
     } catch (e, st) {
       debugPrint('[DetectionService] ✗ processFrame error: $e\n$st');

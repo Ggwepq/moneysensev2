@@ -638,6 +638,8 @@ abstract final class EnStrings {
   static const String voiceCommandCatScan = 'SCANNER';
   static const String voiceCommandCatHelp = 'HELP';
   
+  static const String voiceCmdStartScanner = 'Start the Scanner';
+  static const String voiceCmdIdentify = 'Identify this Money';
   static const String voiceCmdOpenSettings = 'Open Settings';
   static const String voiceCmdGoHome = 'Go to Home / Scanner';
   static const String voiceCmdOpenTutorial = 'Open Tutorials';
@@ -657,4 +659,15 @@ abstract final class EnStrings {
   static const String voiceActionCancelled = 'No problem. What shall I do instead?';
   static const String voiceListeningFeedback = 'I am listening.';
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
+
+  static const String resultVerifyLabel = 'Verify Authenticity';
+  static const String resultVerifying = 'Verifying...';
+  static const String resultGenuine = 'GENUINE BILL';
+  static const String resultCounterfeit = 'COUNTERFEIT BILL';
+  static const String resultVerificationFailed = 'Verification failed.';
+  static const String resultManualCapturing = 'Identifying bill...';
+  static String resultAutoVerifyHint(String seconds) => 'Verifying automatically in $seconds... ';
+  static const String resultAutoVerifyCancel = 'Cancel';
+  static const String strictVerificationTitle = 'Strict Verification';
+  static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
 }

@@ -870,6 +870,8 @@ class AppLocalizations {
   String get voiceCmdGoHome => isTagalog ? TlStrings.voiceCmdGoHome : EnStrings.voiceCmdGoHome;
   String get voiceCmdOpenTutorial => isTagalog ? TlStrings.voiceCmdOpenTutorial : EnStrings.voiceCmdOpenTutorial;
   String get voiceCmdCommandList => isTagalog ? TlStrings.voiceCmdCommandList : EnStrings.voiceCmdCommandList;
+  String get voiceCmdStartScanner => isTagalog ? TlStrings.voiceCmdStartScanner : EnStrings.voiceCmdStartScanner;
+  String get voiceCmdIdentify => isTagalog ? TlStrings.voiceCmdIdentify : EnStrings.voiceCmdIdentify;
   String get voiceCmdFlashOn => isTagalog ? TlStrings.voiceCmdFlashOn : EnStrings.voiceCmdFlashOn;
   String get voiceCmdFlashOff => isTagalog ? TlStrings.voiceCmdFlashOff : EnStrings.voiceCmdFlashOff;
   String get voiceCmdFrontCam => isTagalog ? TlStrings.voiceCmdFrontCam : EnStrings.voiceCmdFrontCam;
@@ -884,6 +886,18 @@ class AppLocalizations {
   String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
   String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
   String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
+
+  String get resultVerifyLabel => isTagalog ? TlStrings.resultVerifyLabel : EnStrings.resultVerifyLabel;
+  String get resultVerifying => isTagalog ? TlStrings.resultVerifying : EnStrings.resultVerifying;
+  String get resultGenuine => isTagalog ? TlStrings.resultGenuine : EnStrings.resultGenuine;
+  String get resultCounterfeit => isTagalog ? TlStrings.resultCounterfeit : EnStrings.resultCounterfeit;
+  String get resultVerificationFailed => isTagalog ? TlStrings.resultVerificationFailed : EnStrings.resultVerificationFailed;
+  String get resultManualCapturing => isTagalog ? TlStrings.resultManualCapturing : EnStrings.resultManualCapturing;
+  String resultAutoVerifyHint(String seconds) => isTagalog ? TlStrings.resultAutoVerifyHint(seconds) : EnStrings.resultAutoVerifyHint(seconds);
+  String get resultAutoVerifyCancel => isTagalog ? TlStrings.resultAutoVerifyCancel : EnStrings.resultAutoVerifyCancel;
+
+  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
+  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
 
   // Scanner status labels
   String get scannerStatusIdle =>
