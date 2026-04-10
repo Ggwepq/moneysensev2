@@ -241,18 +241,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                         AppSpacing.md,
                       ),
                       child: Center(
-                        child: AspectRatio(
-                          aspectRatio: (result.boundingBox != null &&
-                                  result.boundingBox!.width > 0 &&
-                                  result.boundingBox!.height > 0)
-                              ? result.boundingBox!.width /
-                                  result.boundingBox!.height
-                              : (result.type == 'coin' ? 1.0 : 1.6),
-                          child: _CurrencyCard(
-                            isDark: isDark,
-                            borderColor: borderColor,
-                            result: result,
-                          ),
+                        child: const AspectRatio(
+                          aspectRatio: 1.6, // Fixed landscape ratio
+                          child: _CurrencyCardWrapper(),
                         ),
                       ),
                     ),
@@ -473,14 +464,29 @@ class _CurrencyCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
-          child: KeyedSubtree(
-            key: ValueKey(result.capturedImage == null ? 'placeholder' : 'image'),
-            child: content,
-          ),
-        ),
+        child: content,
       ),
+    );
+  }
+}
+
+class _CurrencyCardWrapper extends ConsumerWidget {
+  const _CurrencyCardWrapper();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final result = ref.watch(detectionResultProvider);
+    if (result == null) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isUncertain = result.isUncertain;
+    final borderColor = isUncertain ? AppColors.error : const Color(0xFF4CAF50);
+
+    return _CurrencyCard(
+      isDark: isDark,
+      borderColor: borderColor,
+      result: result,
     );
   }
 }

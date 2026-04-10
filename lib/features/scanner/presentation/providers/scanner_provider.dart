@@ -172,27 +172,22 @@ class ScannerNotifier extends Notifier<ScannerState> {
 
     if (shouldCommit) {
       _manualCapturePending = false;
-      if (_candidate!.type == 'bill') {
-        // High-res capture for verification
-        final copyY = Uint8List.fromList(frame.planes[0].bytes);
-        final copyU = Uint8List.fromList(frame.planes[1].bytes);
-        final copyV = Uint8List.fromList(frame.planes[2].bytes);
-        
-        final args = {
-          'y': copyY, 'u': copyU, 'v': copyV,
-          'w': frame.width, 'h': frame.height,
-          'yRS': frame.planes[0].bytesPerRow,
-          'uRS': frame.planes[1].bytesPerRow,
-          'uPS': frame.planes[1].bytesPerPixel ?? 1,
-          'vRS': frame.planes[2].bytesPerRow,
-          'vPS': frame.planes[2].bytesPerPixel ?? 1,
-        };
+      // High-res capture for all types
+      final copyY = Uint8List.fromList(frame.planes[0].bytes);
+      final copyU = Uint8List.fromList(frame.planes[1].bytes);
+      final copyV = Uint8List.fromList(frame.planes[2].bytes);
+      
+      final args = {
+        'y': copyY, 'u': copyU, 'v': copyV,
+        'w': frame.width, 'h': frame.height,
+        'yRS': frame.planes[0].bytesPerRow,
+        'uRS': frame.planes[1].bytesPerRow,
+        'uPS': frame.planes[1].bytesPerPixel ?? 1,
+        'vRS': frame.planes[2].bytesPerRow,
+        'vPS': frame.planes[2].bytesPerPixel ?? 1,
+      };
 
-        // We launch the JPEG conversion in the background
-        _captureFrame(args, _candidate!);
-      } else {
-        ref.read(detectionResultProvider.notifier).state = _candidate;
-      }
+      _captureFrame(args, _candidate!);
       state = ScannerState.result;
     }
   }
