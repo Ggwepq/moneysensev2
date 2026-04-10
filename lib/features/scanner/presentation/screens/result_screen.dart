@@ -38,6 +38,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   bool _isAutoVerifying = false;
   VerificationResult? _verificationResult;
 
+  /// OCR-derived denomination if available.
+  String? _ocrDenom;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +60,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     // Use a faster 3s timer for automated verification if it's a bill
     if (r.type == 'bill' && _verificationResult == null) {
+      _runInitialOCRBoss(); // Added OCR Boss check
       _isAutoVerifying = true;
       _secondsLeft = 3;
     } else {
@@ -65,6 +69,23 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     if (_secondsLeft > 0) {
       _startTimer();
+    }
+  }
+
+  /// OCR Boss: Checks if OCR identifies a different denomination than YOLO.
+  Future<void> _runInitialOCRBoss() async {
+    if (widget.result.capturedImage == null) return;
+    
+    final ocrD = await AuthenticityService.instance.getDenominationFromOCR(widget.result.capturedImage!);
+    if (ocrD != null && ocrD != widget.result.denomination) {
+      debugPrint('[ResultScreen/OCRBoss] OCR Identification override: $ocrD (was ${widget.result.denomination})');
+      if (mounted) {
+        setState(() {
+          _ocrDenom = ocrD;
+        });
+        // Re-announce with updated denomination
+        _announce();
+      }
     }
   }
 
@@ -78,6 +99,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) {
         t.cancel();
+        debugPrint('[ResultScreen] ⏰ Timer finished. AutoVerifying=$_isAutoVerifying');
         if (_isAutoVerifying) {
           final result = ref.read(detectionResultProvider) ?? widget.result;
           _verify(result);
@@ -111,11 +133,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final s    = ref.read(appSettingsProvider);
     final l10n = AppLocalizations.of(s.isTagalog);
     final r    = widget.result;
+    
+    // Use OCR denom if Boss detected it
+    final activeDenom = _ocrDenom ?? r.denomination;
+
     final msg  = r.isUncertain
         ? ScannerSpeech.scanFailed(l10n)
         : ScannerSpeech.denominationResult(
             l10n: l10n,
-            denomination: r.denomination,
+            denomination: activeDenom,
             type: r.type,
             confidence: r.confidence,
             verbosity: s.ttsVerbosity,
@@ -126,12 +152,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   }
 
   void _dismiss() {
+    debugPrint('[ResultScreen] 🔙 Dismissing result (returning to scanner). Status: Verf=$_verificationResult, Auto=$_isAutoVerifying');
     _autoTimer?.cancel();
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
 
   void _confirm() {
+    debugPrint('[ResultScreen] ✅ Confirming result. Verifying=$_isVerifying, VerfResult=$_verificationResult');
     _autoTimer?.cancel();
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
@@ -167,9 +195,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     try {
       final force = ref.read(inertialServiceProvider).isFlat || s.strictVerification;
+      
+      // We pass our current OCR denom if available for collaborative check
       final res = await AuthenticityService.instance.verify(
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,
+        yoloDenom: _ocrDenom ?? result.denomination,
         forceCounterfeit: force,
       );
 
@@ -178,6 +209,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() {
         _isVerifying = false;
         _verificationResult = res;
+        // If verification result has collaborativeDenom (final consensus), use it
+        if (res.collaborativeDenom != null) {
+          _ocrDenom = res.collaborativeDenom;
+        }
       });
 
       final msg = res.status == AuthenticityResult.genuine
@@ -206,7 +241,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   @override
   Widget build(BuildContext context) {
-    final result = ref.watch(detectionResultProvider) ?? widget.result;
+    final baseResult = ref.watch(detectionResultProvider) ?? widget.result;
+    // Apply OCR Boss override to base result for display
+    final result = baseResult.copyWithDenom(_ocrDenom ?? baseResult.denomination);
+
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cfg    = ref.watch(visionConfigProvider);
@@ -214,14 +252,19 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final l10n   = AppLocalizations.of(s.isTagalog);
 
     final isUncertain = widget.result.isUncertain;
-    final borderColor = isUncertain ? AppColors.error : const Color(0xFF4CAF50);
+    final borderColor = isUncertain 
+        ? AppColors.error 
+        : (_verificationResult != null 
+            ? (_verificationResult!.status == AuthenticityResult.genuine ? AppColors.success : AppColors.error)
+            : const Color(0xFF4CAF50));
+
     final bg    = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final onBg  = isDark ? AppColors.darkOnSurface  : AppColors.lightOnSurface;
     final yellow = cfg.accentYellow;
     final blue   = cfg.accentBlue;
 
     return Semantics(
-      label: _semanticLabel(l10n),
+      label: _semanticLabel(l10n, result),
       child: FadeTransition(
         opacity: _fade,
         child: SlideTransition(
@@ -241,9 +284,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                         AppSpacing.md,
                       ),
                       child: Center(
-                        child: const AspectRatio(
+                        child: AspectRatio(
                           aspectRatio: 1.6, // Fixed landscape ratio
-                          child: _CurrencyCardWrapper(),
+                          child: _CurrencyCard(
+                            isDark: isDark,
+                            borderColor: borderColor,
+                            result: result,
+                          ),
                         ),
                       ),
                     ),
@@ -261,7 +308,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           Text(
                             isUncertain
                                 ? l10n.resultUncertainLabel
-                                : widget.result.displayLabel,
+                                : result.displayLabel,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.displaySmall?.copyWith(
                               color: onBg,
@@ -380,7 +427,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     Expanded(child: _ActionButton(
                       icon: _isVerifying
                           ? Icons.hourglass_empty_rounded
-                          : _verificationResult != null || widget.result.type != 'bill'
+                          : _verificationResult != null || result.type != 'bill'
                               ? Icons.check_rounded
                               : Icons.verified_user_rounded,
                       color: blue,
@@ -399,15 +446,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
-  String _semanticLabel(AppLocalizations l10n) {
-    if (widget.result.isUncertain) return l10n.resultSemanticUncertain;
-    final levelLabel = switch (widget.result.confidenceLevel) {
+  String _semanticLabel(AppLocalizations l10n, DetectionResult result) {
+    if (result.isUncertain) return l10n.resultSemanticUncertain;
+    final levelLabel = switch (result.confidenceLevel) {
       ConfidenceLevel.veryConfident => l10n.confidenceVeryConfident,
       ConfidenceLevel.confident     => l10n.confidenceConfident,
       ConfidenceLevel.uncertain     => l10n.confidenceUncertain,
     };
     return l10n.resultSemanticConfident(
-      widget.result.denomination, widget.result.type, levelLabel,
+      result.denomination, result.type, levelLabel,
     );
   }
 }
@@ -442,6 +489,7 @@ class _CurrencyCard extends StatelessWidget {
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,
         borderColor: borderColor,
+        type: result.type,
       );
     } else if (result.type == 'coin') {
       content = _CoinRepresentation(denomination: result.denomination);
@@ -470,37 +518,18 @@ class _CurrencyCard extends StatelessWidget {
   }
 }
 
-class _CurrencyCardWrapper extends ConsumerWidget {
-  const _CurrencyCardWrapper();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final result = ref.watch(detectionResultProvider);
-    if (result == null) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final isUncertain = result.isUncertain;
-    final borderColor = isUncertain ? AppColors.error : const Color(0xFF4CAF50);
-
-    return _CurrencyCard(
-      isDark: isDark,
-      borderColor: borderColor,
-      result: result,
-    );
-  }
-}
-
 class _CapturedImagePreview extends StatelessWidget {
   const _CapturedImagePreview({
     required this.imageBytes,
     required this.boundingBox,
     required this.borderColor,
+    required this.type,
   });
 
   final Uint8List imageBytes;
   final Rect? boundingBox;
   final Color borderColor;
+  final String type;
 
   @override
   Widget build(BuildContext context) {
@@ -526,11 +555,11 @@ class _CapturedImagePreview extends StatelessWidget {
                 (boundingBox!.center.dy * 2) - 1,
               ),
               child: FractionallySizedBox(
-                widthFactor: 1 / boundingBox!.width,
-                heightFactor: 1 / boundingBox!.height,
+                widthFactor: 1 / boundingBox!.width.clamp(0.1, 1.0),
+                heightFactor: 1 / boundingBox!.height.clamp(0.1, 1.0),
                 child: Image.memory(
                   imageBytes,
-                  fit: BoxFit.contain,
+                  fit: type == 'coin' ? BoxFit.contain : BoxFit.contain,
                 ),
               ),
             ),
@@ -628,25 +657,19 @@ class _BillRepresentation extends StatelessWidget {
                   Text(
                     '₱',
                     style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
-                      ],
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     denomination,
-                    style: TextStyle(
-                      fontSize: 84,
+                    style: const TextStyle(
+                      fontSize: 72,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: -2,
-                      shadows: [
-                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
-                      ],
                     ),
                   ),
                 ],
@@ -665,12 +688,12 @@ class _CoinRepresentation extends StatelessWidget {
 
   List<Color> get _gradientColors {
     if (denomination == '20') {
-      return [const Color(0xFFFFD54F), const Color(0xFFFF8F00)]; // High contrast Gold/Bronze
+      return [const Color(0xFFFFCA28), const Color(0xFFF57F17)]; // Gold/Bronze
     } else if (denomination == '5') {
-      return [const Color(0xFFFFE082), const Color(0xFFFFCA28)]; // Bright Pale Gold
+      return [const Color(0xFFFFD54F), const Color(0xFFFFB300)]; // Pale Gold
     }
-    // Very bright Silver (10, 1)
-    return [const Color(0xFFFFFFFF), const Color(0xFFBDBDBD)];
+    // Silver (10, 1)
+    return [const Color(0xFFEEEEEE), const Color(0xFF9E9E9E)];
   }
 
   @override
@@ -710,13 +733,10 @@ class _CoinRepresentation extends StatelessWidget {
                 Text(
                   '₱$denomination',
                   style: TextStyle(
-                    fontSize: 64,
+                    fontSize: 56,
                     fontWeight: FontWeight.w900,
                     color: textColor,
                     height: 1.0,
-                    shadows: [
-                      Shadow(color: Colors.white.withValues(alpha: 0.8), blurRadius: 4, offset: const Offset(0, 2)),
-                    ],
                   ),
                 ),
               ],
@@ -758,10 +778,9 @@ class _ConfidenceSentence extends StatelessWidget {
       final kw = result.confidenceLevel == ConfidenceLevel.veryConfident
           ? l10n.confidenceVeryConfident
           : l10n.confidenceConfident;
-      final pct = (result.confidence * 100).toStringAsFixed(0);
       span = TextSpan(style: base, children: [
         TextSpan(text: l10n.resultConfidencePre),
-        TextSpan(text: '$kw ($pct%)', style: keyword),
+        TextSpan(text: kw, style: keyword),
         TextSpan(text: l10n.resultConfidentSuffix(
             result.denomination, result.type)),
       ]);
@@ -904,6 +923,18 @@ class _ActionButton extends StatelessWidget {
           child: Icon(icon, color: Colors.white, size: 32),
         ),
       ),
+    );
+  }
+}
+
+extension on DetectionResult {
+  DetectionResult copyWithDenom(String newDenom) {
+    return DetectionResult(
+      denomination: newDenom,
+      type: type,
+      confidence: confidence,
+      boundingBox: boundingBox,
+      capturedImage: capturedImage,
     );
   }
 }

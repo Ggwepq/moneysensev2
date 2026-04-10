@@ -83,7 +83,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
       case ScannerState.scanning:
         return AppColors.accentYellow;
       case ScannerState.processing:
-        return AppColors.accentBlue;
+        return AppColors.success;
       case ScannerState.result:
         return AppColors.success;
       default:
@@ -105,7 +105,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
         glowColor = AppColors.accentYellow;
         break;
       case ScannerState.processing:
-        glowColor = AppColors.accentBlue;
+        glowColor = AppColors.success;
         break;
       default:
         glowColor = null;
