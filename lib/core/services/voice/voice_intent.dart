@@ -142,6 +142,14 @@ class IdentifyIntent extends VoiceIntent {
   String toDescription(AppLocalizations l10n) => l10n.voiceCmdIdentify;
 }
 
+/// Represents a request to skip the current step
+class SkipIntent extends VoiceIntent {
+  const SkipIntent();
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Skip';
+}
+
 /// Represents a request to retry identification/verification on the Result Screen
 class RetryIntent extends VoiceIntent {
   const RetryIntent();

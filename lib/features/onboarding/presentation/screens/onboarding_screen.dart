@@ -17,9 +17,6 @@ import '../../../../core/services/voice/voice_command_service.dart';
 import '../../../../core/services/voice/voice_intent.dart';
 import '../widgets/voice_onboarding_orb.dart';
 
-// profile, language, and permissions before entering the app.
-// Accent colors update live as the profile is selected on page 1.
-
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key, required this.onComplete});
 
@@ -37,7 +34,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   VisionProfile _profile  = VisionProfile.lowVision;
   AppLanguage   _language = AppLanguage.english;
 
-  // ── Voice Setup Mode ──────────────────────────────────────────────────────
   bool _isVoiceActive = true;
   bool _isSpeaking    = false;
   bool _isListening   = false;
@@ -45,26 +41,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _launchFinalTutorial = false;
   StreamSubscription? _voiceSub;
 
-  // ── TTS ───────────────────────────────────────────────────────────────────
-
-  // TTS and Localization helpers are defined below.
-
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
-
   @override
   void initState() {
     super.initState();
-    
-    // Sync with speaker state for timing
     ref.read(ttsServiceProvider).isSpeakingNotifier.addListener(_onTtsStatusChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Always request mic on start for voice onboarding
       await Permission.microphone.request();
       _startVoiceMode();
     });
 
-    // Listen for intents
     _voiceSub = ref.read(voiceCommandServiceProvider).intentStream.listen(_onVoiceIntent);
   }
 
@@ -94,10 +80,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final speaking = ref.read(ttsServiceProvider).isSpeakingNotifier.value;
     if (mounted && _isSpeaking != speaking) {
       setState(() => _isSpeaking = speaking);
-      
-      // If we just finished speaking:
       if (!speaking) {
-        // 1. If we were waiting to move to the next step, do it now
         if (_isAdvancing) {
           _isAdvancing = false;
           if (_page == 4) {
@@ -107,8 +90,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           }
           return;
         }
-
-        // 2. Otherwise start listening for a response
         if (_isVoiceActive && !_isListening) {
           _startListening();
         }
@@ -121,13 +102,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _narrate(_page);
   }
 
-
   Future<void> _startListening() async {
     if (!_isVoiceActive || _isSpeaking || _isAdvancing) return;
     setState(() => _isListening = true);
     await ref.read(voiceCommandServiceProvider).startActiveListening(persistent: true);
     
-    // Safety timeout: if no response in 30s, gently re-prompt
     Future.delayed(const Duration(seconds: 30), () {
       if (mounted && _isListening && _isVoiceActive && !_isSpeaking && !_isAdvancing) {
         _isListening = false;
@@ -140,6 +119,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (!_isVoiceActive) return;
 
     setState(() => _isListening = false);
+
+    if (intent is SkipIntent) {
+      _skip();
+      return;
+    }
 
     if (intent is SelectionConfirmationIntent) {
       if (intent.isConfirmed) {
@@ -178,7 +162,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     
     if (intent is StopSpeakingIntent) {
-      _say(TtsMessage.ambient('Manual mode is disabled for this test. Please continue using voice commands.'));
+      _say(TtsMessage.ambient('Stop command recognized. Switching to manual mode.'));
+      setState(() => _isVoiceActive = false);
       return;
     }
     
@@ -198,7 +183,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 'tagalog': setState(() => _language = AppLanguage.tagalog);
     }
     
-    // Confirm the choice then move on
     _isAdvancing = true;
     final confirmMsg = _page == 1 
         ? l10n.onboardingConfirmVision 
@@ -213,8 +197,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  // ── Page navigation ───────────────────────────────────────────────────────
-
   void _goTo(int page) {
     if (page < 0 || page >= _total) return;
     setState(() => _page = page);
@@ -224,6 +206,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _next() {
     EarconService.instance.play(EarconEvent.onboardingNext);
     _goTo(_page + 1);
+  }
+
+  void _skip() {
+    _voiceSub?.cancel();
+    EarconService.instance.play(EarconEvent.actionDisabled);
+    
+    final n = ref.read(appSettingsProvider.notifier);
+    n.setVisionProfile(VisionProfile.partiallyBlind);
+    n.toggleGesturalNavigation(true);
+    n.toggleVoiceNavigation(false);
+    
+    _profile = VisionProfile.partiallyBlind;
+    
+    widget.onComplete(launchTutorial: false);
   }
 
   void _finish({required bool launchTutorial}) {
@@ -238,8 +234,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     widget.onComplete(launchTutorial: launchTutorial);
   }
-
-  // ── Camera permission ─────────────────────────────────────────────────────
 
   Future<bool> _requestPerm() async {
     final cameraStatus = await Permission.camera.status;
@@ -256,8 +250,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return false;
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final cfg    = VisionConfig.from(_profile);
@@ -269,82 +261,178 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Step Indicator
-                Text(
-                  'Step ${_page + 1} of $_total',
-                  style: TextStyle(
-                    color: accent.withValues(alpha: 0.8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                  ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Semantics(
+                label: 'Skip onboarding and use default settings',
+                button: true,
+                child: TextButton(
+                  onPressed: _skip,
+                  style: TextButton.styleFrom(foregroundColor: onBg.withValues(alpha: 0.6)),
+                  child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w700)),
                 ),
-                const SizedBox(height: 12),
-                
-                // Active Title
-                Text(
-                  _getStepTitle(),
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: onBg,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 60),
-
-                // Central Voice Orb
-                VoiceOnboardingOrb(
-                  isListening: _isListening,
-                  isSpeaking: _isSpeaking,
-                ),
-                
-                const SizedBox(height: 60),
-
-                // Status Text
-                SizedBox(
-                  height: 32,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      _isSpeaking 
-                          ? 'MoneySense is speaking...' 
-                          : (_isListening ? 'Listening for your response...' : 'Thinking...'),
-                      key: ValueKey(_isSpeaking ? 1 : (_isListening ? 2 : 3)),
-                      style: TextStyle(
-                        color: onBg,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 12),
-                
-                SizedBox(
-                  height: 48,
-                  child: Text(
-                    _getStepPrompt(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54,
-                      fontSize: 15,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Step ${_page + 1} of $_total',
+                        style: TextStyle(
+                          color: accent.withValues(alpha: 0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      Text(
+                        _getStepTitle(),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: onBg,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+
+                      VoiceOnboardingOrb(
+                        isListening: _isListening,
+                        isSpeaking: _isSpeaking,
+                      ),
+                      
+                      const SizedBox(height: 48),
+
+                      SizedBox(
+                        height: 32,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Text(
+                            _isSpeaking 
+                                ? 'MoneySense is speaking...' 
+                                : (_isListening ? 'Listening for your response...' : 'Thinking...'),
+                            key: ValueKey(_isSpeaking ? 1 : (_isListening ? 2 : 3)),
+                            style: TextStyle(
+                              color: onBg,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      SizedBox(
+                        height: 54,
+                        child: Text(
+                          _getStepPrompt(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      _buildChoiceButtons(accent, onBg),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildChoiceButtons(Color accent, Color onBg) {
+    final List<Widget> buttons = [];
+    
+    switch (_page) {
+      case 0:
+        buttons.add(_OnboardingButton(
+          label: 'Proceed',
+          onPressed: () {
+            _isAdvancing = true;
+            _say(TtsMessage.navigation(l10n.onboardingWelcomeConfirm));
+          },
+          accent: accent,
+        ));
+      case 1:
+        for (final p in VisionProfile.values) {
+          buttons.add(_OnboardingButton(
+            label: _getProfileLabel(p),
+            isSelected: _profile == p,
+            onPressed: () => _handleSelection(p.name),
+            accent: accent,
+          ));
+        }
+      case 2:
+        buttons.add(_OnboardingButton(
+          label: 'English',
+          isSelected: _language == AppLanguage.english,
+          onPressed: () => _handleSelection('english'),
+          accent: accent,
+        ));
+        buttons.add(_OnboardingButton(
+          label: 'Tagalog',
+          isSelected: _language == AppLanguage.tagalog,
+          onPressed: () => _handleSelection('tagalog'),
+          accent: accent,
+        ));
+      case 3:
+        buttons.add(_OnboardingButton(
+          label: 'Grant Permissions',
+          onPressed: () => _requestPerm().then((alreadyGranted) {
+            _isAdvancing = true;
+            if (alreadyGranted) {
+               _say(TtsMessage.navigation(l10n.onboardingConfirmPermAlready));
+            } else {
+               _say(TtsMessage.navigation(l10n.onboardingConfirmPerm));
+            }
+          }),
+          accent: accent,
+        ));
+      case 4:
+        buttons.add(_OnboardingButton(
+          label: 'Start Now',
+          onPressed: () {
+            _isAdvancing = true;
+            _launchFinalTutorial = false;
+            _say(OnboardingSpeech.exitToScanner(l10n));
+          },
+          accent: accent,
+        ));
+    }
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      alignment: WrapAlignment.center,
+      children: buttons,
+    );
+  }
+
+  String _getProfileLabel(VisionProfile p) {
+    switch (p) {
+      case VisionProfile.lowVision: return 'Low Vision';
+      case VisionProfile.partiallyBlind: return 'Partially Blind';
+      case VisionProfile.fullyBlind: return 'Fully Blind';
+    }
   }
 
   String _getStepTitle() {
@@ -371,6 +459,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
+class _OnboardingButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  final Color accent;
+  final bool isSelected;
 
+  const _OnboardingButton({
+    required this.label,
+    required this.onPressed,
+    required this.accent,
+    this.isSelected = false,
+  });
 
-// Private widgets for manual onboarding removed as this is now voice-only.
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: isSelected ? 'Selected: $label' : label,
+      button: true,
+      selected: isSelected,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: isSelected ? Colors.black : accent,
+          backgroundColor: isSelected ? accent : Colors.transparent,
+          side: BorderSide(color: accent, width: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+      ),
+    );
+  }
+}

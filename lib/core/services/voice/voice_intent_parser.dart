@@ -190,6 +190,16 @@ class VoiceIntentParser {
     }
 
     if (_matches(sanitized, [
+      'skip',
+      'bypass',
+      'next',
+      'jump',
+      'proceed anyway',
+    ])) {
+      return const SkipIntent();
+    }
+
+    if (_matches(sanitized, [
       'retry',
       'try again',
       'one more time',
