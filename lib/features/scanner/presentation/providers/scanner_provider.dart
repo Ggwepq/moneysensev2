@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +8,7 @@ import '../../domain/entities/scanner_state.dart';
 import 'package:moneysensev2/core/l10n/app_localizations.dart';
 import 'package:moneysensev2/core/services/tts_service.dart';
 import 'package:moneysensev2/features/settings/presentation/providers/settings_provider.dart';
+import '../../data/datasources/authenticity_service.dart';
 
 
 export '../../data/datasources/camera_service.dart';
@@ -19,6 +19,9 @@ final cameraOpenProvider = StateProvider<bool>((ref) => false);
 
 final scannerStateProvider =
     NotifierProvider<ScannerNotifier, ScannerState>(ScannerNotifier.new);
+
+final verificationResultProvider =
+    StateProvider<VerificationResult?>((ref) => null);
 
 class ScannerNotifier extends Notifier<ScannerState> {
   @override
@@ -110,6 +113,7 @@ class ScannerNotifier extends Notifier<ScannerState> {
     _candidate = null;
     _manualCapturePending = false;
     ref.read(detectionResultProvider.notifier).state = null;
+    ref.read(verificationResultProvider.notifier).state = null;
     // Go back to scanning immediately after dismissing a result
     state = ScannerState.scanning;
   }
@@ -137,7 +141,9 @@ class ScannerNotifier extends Notifier<ScannerState> {
   // ── Real-time detection ───────────────────────────────────────────────────
 
   Future<void> processFrame(CameraImage frame) async {
-    if (state != ScannerState.scanning && state != ScannerState.processing) {
+    // LOCK: Only process frames if we are actively scanning.
+    // This prevents the "delusion" where multiple captures happen during transitions.
+    if (state != ScannerState.scanning) {
       return;
     }
     if (!DetectionService.instance.isReady) return;
@@ -145,14 +151,13 @@ class ScannerNotifier extends Notifier<ScannerState> {
     // Rate limiting is handled inside DetectionService
     final result = await DetectionService.instance.processFrame(frame);
 
-    if (state != ScannerState.scanning && state != ScannerState.processing) {
+    if (state != ScannerState.scanning) {
       return;
     }
 
     if (result == null) {
       _consecutiveFrames = 0;
       _candidate = null;
-      if (state == ScannerState.processing) state = ScannerState.scanning;
       return;
     }
 
@@ -165,13 +170,16 @@ class ScannerNotifier extends Notifier<ScannerState> {
     } else {
       _consecutiveFrames = 1;
       _candidate = result;
-      if (state == ScannerState.scanning) state = ScannerState.processing;
     }
 
     final shouldCommit = _manualCapturePending || (_consecutiveFrames >= _requiredFrames);
 
     if (shouldCommit) {
       _manualCapturePending = false;
+      
+      // LOCK: Move to processing state immediately to stop processFrame from re-entering.
+      state = ScannerState.processing;
+
       // High-res capture for all types
       final copyY = Uint8List.fromList(frame.planes[0].bytes);
       final copyU = Uint8List.fromList(frame.planes[1].bytes);
@@ -188,21 +196,43 @@ class ScannerNotifier extends Notifier<ScannerState> {
       };
 
       _captureFrame(args, _candidate!);
-      state = ScannerState.result;
     }
   }
 
   Future<void> _captureFrame(Map<String, dynamic> args, DetectionResult base) async {
+    debugPrint('[ScannerProvider] 📸 Captured frame. Starting high-res OCR check...');
+    
+    // 1. JPEG Conversion
     final jpeg = await compute(_yuvToJpegTask, args);
+    
+    // 2. OCR Correction (Parallel to the 1s delay)
+    // Run OCR identification immediately to catch things like "REPRODUCTION" or Tagalog words
+    final ocrFuture = AuthenticityService.instance.getDenominationFromOCR(jpeg);
+    final delayFuture = Future.delayed(const Duration(seconds: 1));
+
+    // 3. Wait for BOTH the 1s "chill" delay and the OCR pass to finish
+    final results = await Future.wait([ocrFuture, delayFuture]);
+    final ocrDenom = results[0] as String?;
+
+    if (ocrDenom != null && ocrDenom != base.denomination) {
+       debugPrint('[ScannerProvider] 🎯 OCR Corrected denomination: $ocrDenom (was ${base.denomination})');
+    }
+
     final finalResult = DetectionResult(
-      denomination:  base.denomination,
+      denomination:  ocrDenom ?? base.denomination,
       type:          base.type,
-      confidence:    base.confidence,
+      confidence:    ocrDenom != null ? 0.99 : base.confidence,
       boundingBox:    base.boundingBox,
       capturedImage: jpeg,
     );
-    // Update the result provider once the high-res frame is ready
+
+    if (state != ScannerState.processing) return; // Guard against reset during delay
+
+    // 4. Update Providers & Transition
     ref.read(detectionResultProvider.notifier).state = finalResult;
+    ref.read(verificationResultProvider.notifier).state = null; // Reset verification
+    
+    state = ScannerState.result;
   }
 }
 

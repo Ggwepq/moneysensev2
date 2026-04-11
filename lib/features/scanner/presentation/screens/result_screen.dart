@@ -38,36 +38,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   bool _isAutoVerifying = false;
   VerificationResult? _verificationResult;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 380));
-    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _slide = Tween<Offset>(begin: const Offset(0, 0.10), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
-    _ctrl.forward();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => _announce());
-    HapticFeedback.mediumImpact();
-
-    final s = ref.read(appSettingsProvider);
-    final r = widget.result;
-
-    // Use a faster 3s timer for automated verification if it's a bill
-    if (r.type == 'bill' && _verificationResult == null) {
-      _isAutoVerifying = true;
-      _secondsLeft = 3;
-    } else {
-      _secondsLeft = s.goBackTimerSeconds;
-    }
-
-    if (_secondsLeft > 0) {
-      _startTimer();
-    }
-  }
-
   void _startTimer() {
     _autoTimer?.cancel();
     _autoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -78,6 +48,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) {
         t.cancel();
+        debugPrint('[ResultScreen] ⏰ Timer finished. AutoVerifying=$_isAutoVerifying');
         if (_isAutoVerifying) {
           final result = ref.read(detectionResultProvider) ?? widget.result;
           _verify(result);
@@ -111,6 +82,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final s    = ref.read(appSettingsProvider);
     final l10n = AppLocalizations.of(s.isTagalog);
     final r    = widget.result;
+    
     final msg  = r.isUncertain
         ? ScannerSpeech.scanFailed(l10n)
         : ScannerSpeech.denominationResult(
@@ -126,16 +98,17 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   }
 
   void _dismiss() {
+    debugPrint('[ResultScreen] 🔙 Dismissing result. Verf=$_verificationResult');
     _autoTimer?.cancel();
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
 
   void _confirm() {
+    debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
-    // If it's a bill and we haven't verified yet, trigger verification
     if (result.type == 'bill' && _verificationResult == null && !_isVerifying) {
       _verify(result);
       return;
@@ -153,7 +126,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     setState(() {
       _isVerifying = true;
-      _autoTimer?.cancel(); // Stop auto-return timer during verification
+      _autoTimer?.cancel();
     });
 
     final s = ref.read(appSettingsProvider);
@@ -167,9 +140,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     try {
       final force = ref.read(inertialServiceProvider).isFlat || s.strictVerification;
+      
       final res = await AuthenticityService.instance.verify(
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,
+        yoloDenom: result.denomination,
         forceCounterfeit: force,
       );
 
@@ -178,7 +153,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() {
         _isVerifying = false;
         _verificationResult = res;
+        _secondsLeft = s.goBackTimerSeconds; // Reset timer after verification
       });
+
+      if (_secondsLeft > 0) _startTimer(); // Restart timer after result shown
 
       final msg = res.status == AuthenticityResult.genuine
           ? l10n.resultGenuine
@@ -205,23 +183,65 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 380));
+    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(begin: const Offset(0, 0.10), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _ctrl.forward();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _announce());
+    HapticFeedback.mediumImpact();
+
+    final s = ref.read(appSettingsProvider);
+    final r = widget.result;
+
+    // Use a faster 3s timer for automated verification IF NOT UNCERTAIN
+    if (r.type == 'bill' && _verificationResult == null && !r.isUncertain) {
+      _isAutoVerifying = true;
+      _secondsLeft = 3;
+    } else {
+      _secondsLeft = s.goBackTimerSeconds;
+    }
+
+    if (_secondsLeft > 0) {
+      _startTimer();
+    }
+
+    // Initialize Tilt-to-Dismiss (Shake)
+    ref.read(inertialServiceProvider).start(
+      onTiltLeft: _dismiss,
+      onTiltRight: _dismiss,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final result = ref.watch(detectionResultProvider) ?? widget.result;
+
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cfg    = ref.watch(visionConfigProvider);
     final s      = ref.watch(appSettingsProvider);
     final l10n   = AppLocalizations.of(s.isTagalog);
 
-    final isUncertain = widget.result.isUncertain;
-    final borderColor = isUncertain ? AppColors.error : const Color(0xFF4CAF50);
+    final isUncertain = result.isUncertain;
+    final borderColor = isUncertain 
+        ? AppColors.error 
+        : (_verificationResult != null 
+            ? (_verificationResult!.status == AuthenticityResult.genuine ? AppColors.success : AppColors.error)
+            : const Color(0xFF4CAF50));
+
     final bg    = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final onBg  = isDark ? AppColors.darkOnSurface  : AppColors.lightOnSurface;
     final yellow = cfg.accentYellow;
     final blue   = cfg.accentBlue;
 
     return Semantics(
-      label: _semanticLabel(l10n),
+      label: _semanticLabel(l10n, result),
       child: FadeTransition(
         opacity: _fade,
         child: SlideTransition(
@@ -241,15 +261,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                         AppSpacing.md,
                       ),
                       child: Center(
-                        child: const AspectRatio(
-                          aspectRatio: 1.6, // Fixed landscape ratio
-                          child: _CurrencyCardWrapper(),
+                        child: AspectRatio(
+                          aspectRatio: 1.6,
+                          child: _CurrencyCard(
+                            isDark: isDark,
+                            borderColor: borderColor,
+                            result: result,
+                          ),
                         ),
                       ),
                     ),
                   ),
 
-                  // ── Text zone ────────────────────────────────────
                   Expanded(
                     flex: 4,
                     child: Padding(
@@ -261,7 +284,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           Text(
                             isUncertain
                                 ? l10n.resultUncertainLabel
-                                : widget.result.displayLabel,
+                                : result.displayLabel,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.displaySmall?.copyWith(
                               color: onBg,
@@ -380,7 +403,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     Expanded(child: _ActionButton(
                       icon: _isVerifying
                           ? Icons.hourglass_empty_rounded
-                          : _verificationResult != null || widget.result.type != 'bill'
+                          : _verificationResult != null || result.type != 'bill'
                               ? Icons.check_rounded
                               : Icons.verified_user_rounded,
                       color: blue,
@@ -399,15 +422,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
-  String _semanticLabel(AppLocalizations l10n) {
-    if (widget.result.isUncertain) return l10n.resultSemanticUncertain;
-    final levelLabel = switch (widget.result.confidenceLevel) {
+  String _semanticLabel(AppLocalizations l10n, DetectionResult result) {
+    if (result.isUncertain) return l10n.resultSemanticUncertain;
+    final levelLabel = switch (result.confidenceLevel) {
       ConfidenceLevel.veryConfident => l10n.confidenceVeryConfident,
       ConfidenceLevel.confident     => l10n.confidenceConfident,
       ConfidenceLevel.uncertain     => l10n.confidenceUncertain,
     };
     return l10n.resultSemanticConfident(
-      widget.result.denomination, widget.result.type, levelLabel,
+      result.denomination, result.type, levelLabel,
     );
   }
 }
@@ -441,7 +464,7 @@ class _CurrencyCard extends StatelessWidget {
       content = _CapturedImagePreview(
         imageBytes: result.capturedImage!,
         boundingBox: result.boundingBox,
-        borderColor: borderColor,
+        type: result.type,
       );
     } else if (result.type == 'coin') {
       content = _CoinRepresentation(denomination: result.denomination);
@@ -470,80 +493,62 @@ class _CurrencyCard extends StatelessWidget {
   }
 }
 
-class _CurrencyCardWrapper extends ConsumerWidget {
-  const _CurrencyCardWrapper();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final result = ref.watch(detectionResultProvider);
-    if (result == null) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final isUncertain = result.isUncertain;
-    final borderColor = isUncertain ? AppColors.error : const Color(0xFF4CAF50);
-
-    return _CurrencyCard(
-      isDark: isDark,
-      borderColor: borderColor,
-      result: result,
-    );
-  }
-}
-
 class _CapturedImagePreview extends StatelessWidget {
   const _CapturedImagePreview({
     required this.imageBytes,
     required this.boundingBox,
-    required this.borderColor,
+    required this.type,
   });
 
   final Uint8List imageBytes;
   final Rect? boundingBox;
-  final Color borderColor;
+  final String type;
 
   @override
   Widget build(BuildContext context) {
-    if (boundingBox == null) {
+    debugPrint('[ResultScreen] Rendering preview. ImageSize=${imageBytes.length}, BBox=$boundingBox');
+    
+    if (boundingBox == null || imageBytes.isEmpty) {
       return Image.memory(
         imageBytes,
         fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
+        errorBuilder: (c, e, s) => const Center(child: Icon(Icons.error_outline, size: 48)),
       );
     }
 
-    // Visual cropping using Align + Fractional factors
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Inverse scaling: if bill is 50% width, scale image to 200%.
+        final widthFactor = 1 / boundingBox!.width.clamp(0.05, 1.0);
+        final heightFactor = 1 / boundingBox!.height.clamp(0.05, 1.0);
+
         return Stack(
           fit: StackFit.expand,
           children: [
-            // The actual cropped image
             Align(
               alignment: Alignment(
                 (boundingBox!.center.dx * 2) - 1,
                 (boundingBox!.center.dy * 2) - 1,
               ),
               child: FractionallySizedBox(
-                widthFactor: 1 / boundingBox!.width,
-                heightFactor: 1 / boundingBox!.height,
+                widthFactor: widthFactor,
+                heightFactor: heightFactor,
                 child: Image.memory(
                   imageBytes,
-                  fit: BoxFit.contain,
+                  fit: BoxFit.fill, // Strictly fills the scaled box
+                  gaplessPlayback: true,
                 ),
               ),
             ),
-            // Subtle premium overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.15),
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.25),
                   ],
                 ),
               ),
@@ -561,12 +566,12 @@ class _BillRepresentation extends StatelessWidget {
 
   Color get _dominantColor {
     switch (denomination) {
-      case '1000': return const Color(0xFF007BFF); // Vivid Blue
-      case '500':  return const Color(0xFFFFC107); // Vivid Amber
-      case '200':  return const Color(0xFF28A745); // Vivid Green
-      case '100':  return const Color(0xFF9C27B0); // Vivid Purple
-      case '50':   return const Color(0xFFDC3545); // Vivid Red
-      case '20':   return const Color(0xFFFF5722); // Vivid Deep Orange
+      case '1000': return const Color(0xFF007BFF);
+      case '500':  return const Color(0xFFFFC107);
+      case '200':  return const Color(0xFF28A745);
+      case '100':  return const Color(0xFF9C27B0);
+      case '50':   return const Color(0xFFDC3545);
+      case '20':   return const Color(0xFFFF5722);
       default:     return Colors.grey.shade700;
     }
   }
@@ -577,83 +582,29 @@ class _BillRepresentation extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
         gradient: LinearGradient(
           colors: [color.withValues(alpha: 0.8), color],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // Watermark circle
-            Positioned(
-              right: -30,
-              top: -30,
-              child: Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.15),
-                ),
-              ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -30, top: -30,
+            child: Container(width: 150, height: 150, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.1))),
+          ),
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('₱', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white.withValues(alpha: 0.9))),
+                const SizedBox(width: 4),
+                Text(denomination, style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2)),
+              ],
             ),
-            // Security thread
-            Positioned(
-              left: 40,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 12,
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
-            ),
-            // Denomination Text
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    '₱',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    denomination,
-                    style: TextStyle(
-                      fontSize: 84,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -2,
-                      shadows: [
-                        Shadow(color: Colors.black.withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 4)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -663,65 +614,23 @@ class _CoinRepresentation extends StatelessWidget {
   const _CoinRepresentation({required this.denomination});
   final String denomination;
 
-  List<Color> get _gradientColors {
-    if (denomination == '20') {
-      return [const Color(0xFFFFD54F), const Color(0xFFFF8F00)]; // High contrast Gold/Bronze
-    } else if (denomination == '5') {
-      return [const Color(0xFFFFE082), const Color(0xFFFFCA28)]; // Bright Pale Gold
-    }
-    // Very bright Silver (10, 1)
-    return [const Color(0xFFFFFFFF), const Color(0xFFBDBDBD)];
-  }
-
   @override
   Widget build(BuildContext context) {
-    final colors = _gradientColors;
     final isSilver = denomination != '20' && denomination != '5';
-    final textColor = isSilver ? Colors.grey.shade800 : Colors.brown.shade900;
+    final colors = isSilver 
+      ? [const Color(0xFFEEEEEE), const Color(0xFF9E9E9E)]
+      : (denomination == '20' ? [const Color(0xFFFFCA28), const Color(0xFFF57F17)] : [const Color(0xFFFFD54F), const Color(0xFFFFB300)]);
     
     return Center(
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: colors.last.withValues(alpha: 0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            gradient: RadialGradient(
-              colors: colors,
-              center: const Alignment(-0.2, -0.3),
-              radius: 0.8,
-            ),
-            border: Border.all(
-              color: isSilver ? Colors.grey.shade400 : Colors.orange.shade300,
-              width: 8,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '₱$denomination',
-                  style: TextStyle(
-                    fontSize: 64,
-                    fontWeight: FontWeight.w900,
-                    color: textColor,
-                    height: 1.0,
-                    shadows: [
-                      Shadow(color: Colors.white.withValues(alpha: 0.8), blurRadius: 4, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+      child: Container(
+        width: 180, height: 180,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: colors, radius: 0.8, center: const Alignment(-0.2, -0.3)),
+          border: Border.all(color: isSilver ? Colors.grey.shade300 : Colors.orange.shade200, width: 6),
+        ),
+        child: Center(
+          child: Text('₱$denomination', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.black.withValues(alpha: 0.75))),
         ),
       ),
     );
@@ -729,178 +638,89 @@ class _CoinRepresentation extends StatelessWidget {
 }
 
 class _ConfidenceSentence extends StatelessWidget {
-  const _ConfidenceSentence({
-    required this.result,
-    required this.l10n,
-    required this.theme,
-    required this.onBg,
-    required this.accentColor,
-  });
-  final DetectionResult  result;
+  const _ConfidenceSentence({required this.result, required this.l10n, required this.theme, required this.onBg, required this.accentColor});
+  final DetectionResult result;
   final AppLocalizations l10n;
-  final ThemeData        theme;
-  final Color            onBg;
-  final Color            accentColor;
+  final ThemeData theme;
+  final Color onBg;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
-    final base    = theme.textTheme.bodyLarge?.copyWith(color: onBg, height: 1.5);
-    final keyword = base?.copyWith(color: accentColor, fontWeight: FontWeight.w700);
+    final base = theme.textTheme.bodyLarge?.copyWith(color: onBg);
+    final keyword = base?.copyWith(color: accentColor, fontWeight: FontWeight.bold);
 
-    final TextSpan span;
     if (result.isUncertain) {
-      span = TextSpan(style: base, children: [
+      return Text.rich(TextSpan(style: base, children: [
         TextSpan(text: l10n.resultConfidencePre),
         TextSpan(text: l10n.confidenceUncertain, style: keyword),
         TextSpan(text: l10n.resultUncertainSuffix),
-      ]);
-    } else {
-      final kw = result.confidenceLevel == ConfidenceLevel.veryConfident
-          ? l10n.confidenceVeryConfident
-          : l10n.confidenceConfident;
-      final pct = (result.confidence * 100).toStringAsFixed(0);
-      span = TextSpan(style: base, children: [
-        TextSpan(text: l10n.resultConfidencePre),
-        TextSpan(text: '$kw ($pct%)', style: keyword),
-        TextSpan(text: l10n.resultConfidentSuffix(
-            result.denomination, result.type)),
-      ]);
+      ]), textAlign: TextAlign.center);
     }
-    return Text.rich(span, textAlign: TextAlign.center);
+    
+    final level = result.confidenceLevel == ConfidenceLevel.veryConfident ? l10n.confidenceVeryConfident : l10n.confidenceConfident;
+    return Text.rich(TextSpan(style: base, children: [
+      TextSpan(text: l10n.resultConfidencePre),
+      TextSpan(text: level, style: keyword),
+      TextSpan(text: l10n.resultConfidentSuffix(result.denomination, result.type)),
+    ]), textAlign: TextAlign.center);
   }
 }
 
 class _AutoVerifyHint extends StatelessWidget {
-  const _AutoVerifyHint({
-    required this.secondsLeft,
-    required this.l10n,
-    required this.accentColor,
-    required this.onCancel,
-  });
-  final int              secondsLeft;
+  const _AutoVerifyHint({required this.secondsLeft, required this.l10n, required this.accentColor, required this.onCancel});
+  final int secondsLeft;
   final AppLocalizations l10n;
-  final Color            accentColor;
-  final VoidCallback     onCancel;
+  final Color accentColor;
+  final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final subtle = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
-
-    return Semantics(
-      label: l10n.resultAutoVerifyHint(secondsLeft.toString()),
-      child: GestureDetector(
-        onTap: onCancel,
-        child: Text.rich(
-          TextSpan(
-            style: theme.textTheme.bodySmall?.copyWith(color: subtle),
-            children: [
-              TextSpan(text: l10n.resultAutoVerifyHint(secondsLeft.toString())),
-              TextSpan(
-                text: l10n.resultAutoVerifyCancel,
-                style: TextStyle(
-                  color: accentColor,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                  decorationColor: accentColor,
-                ),
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onCancel,
+      child: Text.rich(TextSpan(style: theme.textTheme.bodySmall, children: [
+        TextSpan(text: l10n.resultAutoVerifyHint(secondsLeft.toString())),
+        TextSpan(text: l10n.resultAutoVerifyCancel, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+      ]), textAlign: TextAlign.center),
     );
   }
 }
 
 class _GoBackHint extends StatelessWidget {
-  const _GoBackHint({
-    required this.secondsLeft,
-    required this.l10n,
-    required this.accentColor,
-    required this.onTap,
-  });
-  final int              secondsLeft;
+  const _GoBackHint({required this.secondsLeft, required this.l10n, required this.accentColor, required this.onTap});
+  final int secondsLeft;
   final AppLocalizations l10n;
-  final Color            accentColor;
-  final VoidCallback     onTap;
+  final Color accentColor;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme  = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final subtle = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.lightOnSurfaceVariant;
-
-    return Semantics(
-      label: l10n.resultGoBackHintSemantic(secondsLeft.toString()),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Text.rich(
-          TextSpan(
-            style: theme.textTheme.bodySmall?.copyWith(color: subtle),
-            children: [
-              TextSpan(text: l10n.resultGoBackHintPre(secondsLeft.toString())),
-              TextSpan(
-                text: l10n.resultGoBackLink,
-                style: TextStyle(
-                  color: accentColor,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                  decorationColor: accentColor,
-                ),
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Text.rich(TextSpan(style: theme.textTheme.bodySmall, children: [
+        TextSpan(text: l10n.resultGoBackHintPre(secondsLeft.toString())),
+        TextSpan(text: l10n.resultGoBackLink, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+      ]), textAlign: TextAlign.center),
     );
   }
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.color,
-    required this.semanticLabel,
-    required this.onTap,
-  });
-  final IconData     icon;
-  final Color        color;
-  final String       semanticLabel;
+  const _ActionButton({required this.icon, required this.color, required this.semanticLabel, required this.onTap});
+  final IconData icon;
+  final Color color;
+  final String semanticLabel;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: semanticLabel,
-      button: true,
-      excludeSemantics: true,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.mediumImpact();
-          onTap();
-        },
+      label: semanticLabel, button: true, child: GestureDetector(
+        onTap: () { HapticFeedback.mediumImpact(); onTap(); },
         child: Container(
-          height: 72,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.35),
-                blurRadius: 16,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          height: 72, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
           child: Icon(icon, color: Colors.white, size: 32),
         ),
       ),
