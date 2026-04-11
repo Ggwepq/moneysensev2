@@ -122,15 +122,6 @@ class AuthenticityService {
       debugPrint('[AuthenticityService] ✗ Failed to save full frame: $e');
     }
 
-    // Cache the full frame image for debugging
-    try {
-      final fullFrameFile = File('$debugPath/debug_full_frame.jpg');
-      await fullFrameFile.writeAsBytes(imageBytes);
-      debugPrint('[AuthenticityService] 💾 Saved debug_full_frame.jpg');
-    } catch (e) {
-      debugPrint('[AuthenticityService] ✗ Failed to save full frame: $e');
-    }
-
     // 1. Parallel Task: ResNet-18 (Physical Authenticity)
     debugPrint('[AuthenticityService] → Spawning ResNet task...');
     final resNetTask = compute(_processAndPredict, {
@@ -144,7 +135,7 @@ class AuthenticityService {
 
     // 2. Parallel Task: OCR (Collaborative Identification)
     debugPrint('[AuthenticityService] → Starting OCR pass...');
-    final ocrTask = _runOCR(imageBytes, debugPath);
+    final ocrTask = _runOCR(imageBytes, debugPath, boundingBox);
 
     final results = await Future.wait([resNetTask, ocrTask]);
     final resNetResult = results[0] as VerificationResult;
@@ -184,13 +175,45 @@ class AuthenticityService {
     );
   }
 
-  Future<_OCRResult> _runOCR(Uint8List imageBytes, String debugPath) async {
+  Future<_OCRResult> _runOCR(Uint8List imageBytes, String debugPath, [Rect? boundingBox]) async {
     try {
-      final tempFile = File('$debugPath/ocr_input.jpg');
-      await tempFile.writeAsBytes(imageBytes);
+      
+      InputImage input;
+      
+      // If we have a bounding box, crop the image first to improve OCR accuracy
+      if (boundingBox != null) {
+        final decoded = img.decodeImage(imageBytes);
+        if (decoded != null) {
+          final cropped = img.copyCrop(decoded,
+            x: (boundingBox.left * decoded.width).toInt(),
+            y: (boundingBox.top * decoded.height).toInt(),
+            width: (boundingBox.width * decoded.width).toInt(),
+            height: (boundingBox.height * decoded.height).toInt(),
+          );
+          
+          final croppedBytes = Uint8List.fromList(img.encodeJpg(cropped));
+          
+          // Debug cache the OCR input
+          try {
+            final ocrFile = File('$debugPath/debug_ocr_input.jpg');
+            await ocrFile.writeAsBytes(croppedBytes);
+          } catch (_) {}
 
-      final inputImage = InputImage.fromFile(tempFile);
-      final recognizedText = await _textRecognizer.processImage(inputImage);
+          final tempDir = await getTemporaryDirectory();
+          final tempFile = File('${tempDir.path}/ocr_temp.jpg');
+          await tempFile.writeAsBytes(croppedBytes);
+          input = InputImage.fromFilePath(tempFile.path);
+        } else {
+          input = InputImage.fromBytes(bytes: imageBytes, metadata: InputImageMetadata(
+            size: Size.zero, rotation: InputImageRotation.rotation0deg, format: InputImageFormat.bgra8888, bytesPerRow: 0)); // Fallback placeholder
+        }
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/ocr_temp.jpg');
+        await tempFile.writeAsBytes(imageBytes);
+        input = InputImage.fromFilePath(tempFile.path);
+      }
+      final recognizedText = await _textRecognizer.processImage(input);
       final text = recognizedText.text.toUpperCase();
       
       debugPrint('[AuthenticityService/OCR] Raw Recognized Text: "${text.replaceAll("\n", " ")}"');

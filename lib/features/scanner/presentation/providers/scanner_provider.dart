@@ -23,6 +23,8 @@ final scannerStateProvider =
 final verificationResultProvider =
     StateProvider<VerificationResult?>((ref) => null);
 
+final retryTriggerProvider = StateProvider<int>((ref) => 0);
+
 class ScannerNotifier extends Notifier<ScannerState> {
   @override
   ScannerState build() {

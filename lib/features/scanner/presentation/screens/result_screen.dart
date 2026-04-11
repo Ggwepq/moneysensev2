@@ -218,9 +218,30 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
+  void _retry() {
+    if (_isVerifying) return;
+    debugPrint('[ResultScreen] 🔄 Retrying detection.');
+    HapticFeedback.mediumImpact();
+    
+    // Clear existing result to show loading again
+    setState(() {
+      _verificationResult = null;
+    });
+
+    final result = ref.read(detectionResultProvider) ?? widget.result;
+    _verify(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     final result = ref.watch(detectionResultProvider) ?? widget.result;
+
+    // Listen for voice retry commands
+    ref.listen(retryTriggerProvider, (prev, next) {
+      if (next > 0 && mounted && !_isVerifying) {
+        _retry();
+      }
+    });
 
     final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -403,14 +424,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     Expanded(child: _ActionButton(
                       icon: _isVerifying
                           ? Icons.hourglass_empty_rounded
-                          : _verificationResult != null || result.type != 'bill'
-                              ? Icons.check_rounded
-                              : Icons.verified_user_rounded,
+                          : _verificationResult != null
+                              ? Icons.refresh_rounded
+                              : result.type != 'bill' 
+                                  ? Icons.check_rounded
+                                  : Icons.verified_user_rounded,
                       color: blue,
-                      semanticLabel: result.type == 'bill' && _verificationResult == null
-                          ? l10n.resultVerifyLabel
-                          : l10n.resultConfirmLabel,
-                      onTap: _isVerifying ? () {} : _confirm,
+                      semanticLabel: _verificationResult != null
+                          ? 'Retry detection'
+                          : result.type == 'bill'
+                              ? l10n.resultVerifyLabel
+                              : l10n.resultConfirmLabel,
+                      onTap: _isVerifying ? () {} : (_verificationResult != null ? _retry : _confirm),
                     )),
                   ],
                 ),

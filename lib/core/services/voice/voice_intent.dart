@@ -141,3 +141,11 @@ class IdentifyIntent extends VoiceIntent {
   @override
   String toDescription(AppLocalizations l10n) => l10n.voiceCmdIdentify;
 }
+
+/// Represents a request to retry identification/verification on the Result Screen
+class RetryIntent extends VoiceIntent {
+  const RetryIntent();
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Retry last detection';
+}
