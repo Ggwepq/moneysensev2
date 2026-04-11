@@ -661,6 +661,8 @@ abstract final class EnStrings {
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
 
   static const String resultVerifyLabel = 'Verify Authenticity';
+  static const String resultRetryLabel = 'Retry';
+  static const String resultTitle = 'Detection Result';
   static const String resultVerifying = 'Verifying...';
   static const String resultGenuine = 'GENUINE BILL';
   static const String resultCounterfeit = 'COUNTERFEIT BILL';

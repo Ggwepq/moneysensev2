@@ -510,7 +510,7 @@ abstract final class TlStrings {
       'Maaari kang mag-scroll pababa para subukan ang shake detector ngayon.';
 
   static const String ttsHapticGuide =
-      'Maligayang pagdating sa Tutorial ng Denomination Vibration. Ang feature na ito ay nagpe-play ng natatanging pattern ng vibration tuwing may makikilala akong pera para sa iyo. '
+      'Maligayang pagdating sa Tutorial ng Denomination Vibration. Ang feature na ito ay nagpe-play ng natatanging pattern ng vibration tuwing may makikilala akong pera para sa ito. '
       'Ang mga barya ay gumagamit ng isang mahabang pulse na sinusundan ng mas maikling mga pulse, habang ang mga papel na pera naman ay gumagamit lamang ng mga maikling pulse. '
       'Ang bilang ng mga pulse ay tutugma sa halaga ng pera. '
       'Mag-scroll pababa para maramdaman ang bawat pattern.';
@@ -659,6 +659,8 @@ abstract final class TlStrings {
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
 
   static const String resultVerifyLabel = 'I-verify ang Katunayan';
+  static const String resultRetryLabel = 'Ulitin';
+  static const String resultTitle = 'Resulta ng Pag-scan';
   static const String resultVerifying = 'Vini-verify...';
   static const String resultGenuine = 'TUNAY NA PERA';
   static const String resultCounterfeit = 'FAKE NA PERA';

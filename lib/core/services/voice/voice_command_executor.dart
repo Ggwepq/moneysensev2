@@ -185,6 +185,21 @@ class VoiceCommandExecutor {
         say(TtsMessage.ambient('Command not recognized', id: 'voice.unknown'));
         return false;
 
+      case SkipIntent():
+        // Skip is primarily handled locally in OnboardingScreen.
+        // We just return success here so the executor doesn't complain.
+        return true;
+
+      case RetryIntent():
+        final scannerState = ref.read(scannerStateProvider);
+        if (scannerState == ScannerState.result) {
+          ref.read(retryTriggerProvider.notifier).state++;
+          say(TtsMessage.ambient('Retrying detection', id: 'voice.retry'));
+          return true;
+        }
+        say(TtsMessage.ambient('I can only retry on the result screen', id: 'voice.retry_error'));
+        return false;
+
       case IdentifyIntent():
         final cameraOpen = ref.read(cameraOpenProvider);
         if (!cameraOpen) {

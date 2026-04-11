@@ -129,7 +129,7 @@ class _AppRootState extends ConsumerState<_AppRoot> {
           
           if (isFullyBlind)
             const BlindVoiceUi(),
-          if (settings.voiceNavigation && !isFullyBlind)
+          if (!isFullyBlind)
             const VoiceCommandOverlay(),
         ],
       ),

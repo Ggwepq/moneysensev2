@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
@@ -14,11 +15,15 @@ class VerificationResult {
   final AuthenticityResult status;
   final double confidence;
   final String label;
+  final String? collaborativeDenom;
+  final String? reason;
 
   VerificationResult({
     required this.status,
     required this.confidence,
     required this.label,
+    this.collaborativeDenom,
+    this.reason,
   });
 }
 
@@ -26,6 +31,7 @@ class AuthenticityService {
   AuthenticityService._();
   static final AuthenticityService instance = AuthenticityService._();
 
+  final TextRecognizer _textRecognizer = TextRecognizer();
   Uint8List? _modelBytes;
   bool _isInit = false;
 
@@ -58,17 +64,35 @@ class AuthenticityService {
       _isInit = true;
       debugPrint('[AuthenticityService] ResNet-18 model bytes loaded.');
     } catch (e) {
-      debugPrint('[AuthenticityService] Error loading model: $e');
+      debugPrint('[AuthenticityService] ✗ Error loading model: $e');
     }
   }
 
-  /// Verifies a bill from a byte array (JPEG/PNG) and a bounding box.
+  void dispose() {
+    _textRecognizer.close();
+  }
+
+  /// Extracts denomination text from the image using OCR.
+  /// Used for early identification before the authentication delay.
+  Future<String?> getDenominationFromOCR(Uint8List imageBytes) async {
+    final debugDir = await getExternalStorageDirectory();
+    final debugPath = debugDir?.path ?? (await getTemporaryDirectory()).path;
+    final ocrResult = await _runOCR(imageBytes, debugPath);
+    return ocrResult.detectedDenom;
+  }
+
+  /// Verifies a bill using both physical feature modeling (ResNet) 
+  /// and collaborative text analysis (OCR).
   Future<VerificationResult> verify({
     required Uint8List imageBytes,
     required Rect? boundingBox,
+    required String yoloDenom,
     bool forceCounterfeit = false,
   }) async {
+    debugPrint('[AuthenticityService] 🔍 Starting Verification for YOLO=$yoloDenom');
+    
     if (forceCounterfeit) {
+      debugPrint('[AuthenticityService] ! Force Counterfeit enabled.');
       return VerificationResult(
         status: AuthenticityResult.counterfeit,
         confidence: 0.999,
@@ -78,6 +102,7 @@ class AuthenticityService {
 
     if (!_isInit) await init();
     if (_modelBytes == null) {
+      debugPrint('[AuthenticityService] ⚠ Model not loaded.');
       return VerificationResult(
         status: AuthenticityResult.unknown,
         confidence: 0,
@@ -85,146 +110,272 @@ class AuthenticityService {
       );
     }
 
-    // Get external directory for debug logging (easier to access via ADB)
     final debugDir = await getExternalStorageDirectory();
     final debugPath = debugDir?.path ?? (await getTemporaryDirectory()).path;
 
-    // Run heavy processing in compute
-    return await compute(_processAndPredict, {
+    // Cache the full frame image for debugging
+    try {
+      final fullFrameFile = File('$debugPath/debug_full_frame.jpg');
+      await fullFrameFile.writeAsBytes(imageBytes);
+      debugPrint('[AuthenticityService] 💾 Saved debug_full_frame.jpg');
+    } catch (e) {
+      debugPrint('[AuthenticityService] ✗ Failed to save full frame: $e');
+    }
+
+    // 1. Parallel Task: ResNet-18 (Physical Authenticity)
+    debugPrint('[AuthenticityService] → Spawning ResNet task...');
+    final resNetTask = compute(_processAndPredict, {
       'imageBytes': imageBytes,
       'boundingBox': boundingBox != null
-          ? [
-              boundingBox.left,
-              boundingBox.top,
-              boundingBox.width,
-              boundingBox.height,
-            ]
+          ? [boundingBox.left, boundingBox.top, boundingBox.width, boundingBox.height]
           : null,
       'modelBytes': _modelBytes,
       'debugPath': debugPath,
     });
+
+    // 2. Parallel Task: OCR (Collaborative Identification)
+    debugPrint('[AuthenticityService] → Starting OCR pass...');
+    final ocrTask = _runOCR(imageBytes, debugPath, boundingBox);
+
+    final results = await Future.wait([resNetTask, ocrTask]);
+    final resNetResult = results[0] as VerificationResult;
+    final ocrResult = results[1] as _OCRResult;
+
+    debugPrint('[AuthenticityService] ✓ Model Tasks Complete.');
+    debugPrint('[AuthenticityService]   • ResNet status: ${resNetResult.status.name} (${(resNetResult.confidence * 100).toStringAsFixed(1)}%)');
+    debugPrint('[AuthenticityService]   • OCR detected denomination: ${ocrResult.detectedDenom ?? "None"}');
+    
+    // 4. Consensus & Decision (THE FINAL BOSS RULE)
+    
+    AuthenticityResult finalStatus = resNetResult.status;
+    String? finalDenom = ocrResult.detectedDenom ?? yoloDenom;
+    String? reason;
+    
+    // AUTHENTICITY: OCR Keywords override EVERYTHING
+    if (ocrResult.hasSecurityAlert) {
+      finalStatus = AuthenticityResult.counterfeit;
+      final alerts = ocrResult.alerts.join(", ");
+      reason = 'OCR Keyword detected: $alerts';
+      debugPrint('[AuthenticityService] ‼ FINAL BOSS: OCR DETECTED COUNTERFEIT KEYWORD: $alerts');
+    } 
+    // If no OCR override, check for denomination mismatch if ResNet thought it was genuine
+    else if (resNetResult.status == AuthenticityResult.genuine) {
+      if (ocrResult.detectedDenom != null && ocrResult.detectedDenom != yoloDenom) {
+         debugPrint('[AuthenticityService] ⚠ Warning: Denomination Mismatch (YOLO=$yoloDenom vs OCR=${ocrResult.detectedDenom})');
+         // We might want to be suspicious, but for now we trust OCR for the denomination
+      }
+    }
+
+    return VerificationResult(
+      status: finalStatus,
+      confidence: resNetResult.confidence,
+      label: resNetResult.label,
+      collaborativeDenom: finalDenom,
+      reason: reason,
+    );
   }
 
-  static Future<VerificationResult> _processAndPredict(
-    Map<String, dynamic> args,
-  ) async {
+  Future<_OCRResult> _runOCR(Uint8List imageBytes, String debugPath, [Rect? boundingBox]) async {
+    try {
+      
+      InputImage input;
+      
+      // If we have a bounding box, crop the image first to improve OCR accuracy
+      if (boundingBox != null) {
+        final decoded = img.decodeImage(imageBytes);
+        if (decoded != null) {
+          final cropped = img.copyCrop(decoded,
+            x: (boundingBox.left * decoded.width).toInt(),
+            y: (boundingBox.top * decoded.height).toInt(),
+            width: (boundingBox.width * decoded.width).toInt(),
+            height: (boundingBox.height * decoded.height).toInt(),
+          );
+          
+          final croppedBytes = Uint8List.fromList(img.encodeJpg(cropped));
+          
+          // Debug cache the OCR input
+          try {
+            final ocrFile = File('$debugPath/debug_ocr_input.jpg');
+            await ocrFile.writeAsBytes(croppedBytes);
+          } catch (_) {}
+
+          final tempDir = await getTemporaryDirectory();
+          final tempFile = File('${tempDir.path}/ocr_temp.jpg');
+          await tempFile.writeAsBytes(croppedBytes);
+          input = InputImage.fromFilePath(tempFile.path);
+        } else {
+          input = InputImage.fromBytes(bytes: imageBytes, metadata: InputImageMetadata(
+            size: Size.zero, rotation: InputImageRotation.rotation0deg, format: InputImageFormat.bgra8888, bytesPerRow: 0)); // Fallback placeholder
+        }
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/ocr_temp.jpg');
+        await tempFile.writeAsBytes(imageBytes);
+        input = InputImage.fromFilePath(tempFile.path);
+      }
+      final recognizedText = await _textRecognizer.processImage(input);
+      final text = recognizedText.text.toUpperCase();
+      
+      debugPrint('[AuthenticityService/OCR] Raw Recognized Text: "${text.replaceAll("\n", " ")}"');
+      
+      final alerts = <String>[];
+      // Intelligent Fragment Detection
+      const alertKeys = [
+        'PLAY MONEY', 'SPECIMEN', 'SAMPOL', 'NOT FOR CIRCULATION', 
+        'TOY MONEY', 'VALUABLE ONLY AS A TOY', 'REPLICA', 'NO VALUE',
+        'FAKE', 'IMITATION', 'TRAINING ONLY'
+      ];
+      
+      for (var k in alertKeys) {
+        if (text.contains(k)) {
+          alerts.add(k);
+        } else if (k.length >= 6) {
+          final prefix = k.substring(0, 5);
+          if (text.contains(prefix)) alerts.add('$prefix...');
+        }
+      }
+
+      String? detectedDenom;
+      
+      // TAGALOG WORD DICTIONARY (High Trust)
+      final tagalogMap = {
+        'DALAWAMPUNG': '20',
+        'LIMAMPUNG': '50',
+        'SANDAAN': '100',
+        'DALAWANG DAAN': '200',
+        'LIMANG DAAN': '500',
+        'SANG LIBO': '1000',
+        'ISANG LIBO': '1000',
+      };
+      
+      for (var entry in tagalogMap.entries) {
+        if (text.contains(entry.key)) {
+          debugPrint('[AuthenticityService/OCR] Tagalog word matched: ${entry.key} → ${entry.value}');
+          detectedDenom = entry.value;
+          break;
+        }
+      }
+
+      // NUMERIC CROSS-CHECK
+      if (detectedDenom == null) {
+        final nums = ['1000', '500', '200', '100', '50', '20'];
+        for (var n in nums) {
+          if (text.contains(n)) {
+            debugPrint('[AuthenticityService/OCR] Numeric match: $n');
+            detectedDenom = n;
+            break; 
+          }
+        }
+      }
+
+      return _OCRResult(
+        hasSecurityAlert: alerts.isNotEmpty,
+        alerts: alerts,
+        detectedDenom: detectedDenom,
+      );
+    } catch (e) {
+      debugPrint('[AuthenticityService/OCR] ✗ Pass failed: $e');
+      return const _OCRResult();
+    }
+  }
+
+  static Future<VerificationResult> _processAndPredict(Map<String, dynamic> args) async {
     final Uint8List imageBytes = args['imageBytes'];
     final List<double>? bbox = args['boundingBox'];
     final Uint8List modelBytes = args['modelBytes'];
-    final String debugPath = args['debugPath'];
-
-    // DEBUG: Save full frame
-    try {
-      File('$debugPath/debug_full_frame.jpg').writeAsBytesSync(imageBytes);
-    } catch (e) {
-      debugPrint('[AuthenticityService] Debug logging error: $e');
-    }
-
-    // 1. Decode
-    img.Image? image = img.decodeImage(imageBytes);
-    if (image == null) {
-      return VerificationResult(
-        status: AuthenticityResult.unknown,
-        confidence: 0,
-        label: 'Decode Error',
-      );
-    }
-
-    // 2. Crop if bbox available
-    if (bbox != null) {
-      final left = (bbox[0] * image.width).toInt();
-      final top = (bbox[1] * image.height).toInt();
-      final width = (bbox[2] * image.width).toInt();
-      final height = (bbox[3] * image.height).toInt();
-
-      image = img.copyCrop(
-        image,
-        x: left,
-        y: top,
-        width: width,
-        height: height,
-      );
-    }
-
-    // DEBUG: Save high-res processed input BEFORE model resizing
-    try {
-      final debugImage = img.copyResize(
-        image,
-        width: 640,
-        interpolation: img.Interpolation.linear,
-      );
-      File('$debugPath/debug_processed_input.jpg')
-          .writeAsBytesSync(img.encodeJpg(debugImage));
-    } catch (e) {
-      debugPrint('[AuthenticityService] Debug logging error: $e');
-    }
-
-    // 3. Resize to ResNet size (224x224) with PADDING to avoid squeezing
-    // We resize the largest side to 224 and pad the rest with black.
-    final canvas = img.Image(width: 224, height: 224);
-    final resized = img.copyResize(
-      image,
-      width: image.width > image.height ? 224 : null,
-      height: image.height >= image.width ? 224 : null,
-      interpolation: img.Interpolation.linear,
-    );
     
-    // Center the resized image on the 224x224 canvas
-    final dx = (224 - resized.width) ~/ 2;
-    final dy = (224 - resized.height) ~/ 2;
-    img.compositeImage(canvas, resized, dstX: dx, dstY: dy);
-    image = canvas;
+    img.Image? image = img.decodeImage(imageBytes);
+    if (image == null) return VerificationResult(status: AuthenticityResult.unknown, confidence: 0, label: 'err');
 
-    // 4. Preprocess (Normalized Float32)
-    final input = Float32List(1 * 224 * 224 * 3);
-    int pIdx = 0;
-    for (var pixel in image) {
-      final r = pixel.r / 255.0;
-      final g = pixel.g / 255.0;
-      final b = pixel.b / 255.0;
-
-      input[pIdx++] = (r - _mean[0]) / _std[0];
-      input[pIdx++] = (g - _mean[1]) / _std[1];
-      input[pIdx++] = (b - _mean[2]) / _std[2];
+    if (bbox != null) {
+      image = img.copyCrop(image, 
+        x: (bbox[0] * image.width).toInt(), 
+        y: (bbox[1] * image.height).toInt(), 
+        width: (bbox[2] * image.width).toInt(), 
+        height: (bbox[3] * image.height).toInt());
     }
 
-    // 5. Load interpreter for this compute task (using bytes)
-    final interpreter = Interpreter.fromBuffer(modelBytes);
-    final output = List<double>.filled(
-      _labels.length,
-      0,
-    ).reshape([1, _labels.length]);
+    final canvas = img.Image(width: 224, height: 224);
+    final resized = img.copyResize(image, 
+      width: image.width > image.height ? 224 : null, 
+      height: image.height >= image.width ? 224 : null);
+    img.compositeImage(canvas, resized, dstX: (224 - resized.width) ~/ 2, dstY: (224 - resized.height) ~/ 2);
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    final input = Float32List(224 * 224 * 3);
+    int p = 0;
+    for (var pix in canvas) {
+      input[p++] = (pix.r / 255.0 - _mean[0]) / _std[0];
+      input[p++] = (pix.g / 255.0 - _mean[1]) / _std[1];
+      input[p++] = (pix.b / 255.0 - _mean[2]) / _std[2];
+    }
 
+    final interpreter = Interpreter.fromBuffer(modelBytes);
+    final output = List<double>.filled(_labels.length, 0).reshape([1, _labels.length]);
     interpreter.run(input.buffer.asUint8List(), output);
     interpreter.close();
 
     final probs = _softmax(List<double>.from(output[0]));
-
     int maxIdx = 0;
-    double maxScore = probs[0];
-    for (int i = 1; i < probs.length; i++) {
-      if (probs[i] > maxScore) {
-        maxScore = probs[i];
-        maxIdx = i;
-      }
-    }
+    for (int i=1; i<probs.length; i++) if (probs[i] > probs[maxIdx]) maxIdx = i;
 
     final label = _labels[maxIdx];
-    final isCounterfeit = label.contains('counterfeit');
-
     return VerificationResult(
-      status: isCounterfeit
-          ? AuthenticityResult.counterfeit
-          : AuthenticityResult.genuine,
-      confidence: maxScore,
+      status: label.contains('counterfeit') ? AuthenticityResult.counterfeit : AuthenticityResult.genuine,
+      confidence: probs[maxIdx],
       label: label,
     );
   }
 
   static List<double> _softmax(List<double> logits) {
-    double maxLogit = logits.reduce(max);
-    final exps = logits.map((v) => exp(v - maxLogit)).toList();
+    double m = logits.reduce(max);
+    final exps = logits.map((v) => exp(v - m)).toList();
     final sum = exps.reduce((a, b) => a + b);
     return exps.map((v) => v / sum).toList();
   }
+}
+
+class _OCRResult {
+  final bool hasSecurityAlert;
+  final List<String> alerts;
+  final String? detectedDenom;
+  const _OCRResult({this.hasSecurityAlert = false, this.alerts = const [], this.detectedDenom});
 }

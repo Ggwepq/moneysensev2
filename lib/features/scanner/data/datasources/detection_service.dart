@@ -1,5 +1,7 @@
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'dart:ui';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -21,7 +23,7 @@ class _InitCommand extends _IsolateCommand {
 
   _InitCommand({
     required this.modelBytes,
-    required this.inputSize,
+    required this.inputSize, // Just in case, though we detect it now
     required this.numClasses,
     required this.confThreshold,
     required this.replyPort,
@@ -53,8 +55,9 @@ class _InferResult {
   final int classIdx;
   final double score;
   final double cx, cy, w, h;
+  final int inSize;
   final String debugMsg;
-  const _InferResult(this.classIdx, this.score, this.cx, this.cy, this.w, this.h, this.debugMsg);
+  const _InferResult(this.classIdx, this.score, this.cx, this.cy, this.w, this.h, this.inSize, this.debugMsg);
 }
 
 // ── Isolate Entry Point ───────────────────────────────────────────────────
@@ -64,115 +67,156 @@ void _persistentIsolateEntry(SendPort setupPort) {
   setupPort.send(receivePort.sendPort);
 
   Interpreter? interpreter;
-  int inputSize = 640;
   int numClasses = 9;
   double confThreshold = 0.25;
+  int inputSize = 640;
 
   receivePort.listen((message) {
     if (message is _InitCommand) {
       try {
+        final options = InterpreterOptions()..threads = 4;
+        
+        if (Platform.isAndroid) {
+          options.addDelegate(GpuDelegateV2());
+        } else if (Platform.isIOS) {
+          options.addDelegate(CoreMlDelegate());
+        }
+
         interpreter = Interpreter.fromBuffer(
           message.modelBytes,
-          options: InterpreterOptions()..threads = 4,
+          options: options,
         );
-        inputSize = message.inputSize;
         numClasses = message.numClasses;
         confThreshold = message.confThreshold;
+        inputSize = message.inputSize;
+        
+        interpreter!.allocateTensors();
         message.replyPort.send(true);
       } catch (e) {
-        message.replyPort.send(false);
+        try {
+          interpreter = Interpreter.fromBuffer(
+            message.modelBytes,
+            options: InterpreterOptions()..threads = 4,
+          );
+          interpreter!.allocateTensors();
+          message.replyPort.send(true);
+        } catch (e2) {
+          message.replyPort.send(false);
+        }
       }
     } else if (message is _InferCommand) {
       if (interpreter == null) {
-        message.replyPort.send(const _InferResult(-1, 0, 0, 0, 0, 0, 'Interpreter not initialized'));
+        message.replyPort.send(const _InferResult(-1, 0, 0, 0, 0, 0, 0, 'Interpreter not initialized'));
         return;
       }
 
-      final buf = StringBuffer();
+      final sw = Stopwatch()..start();
       try {
-        buf.write('[isolate] Processing Tensor. ');
-        final tensor = Float32List(inputSize * inputSize * 3);
-        final scaleX = message.width / inputSize;
-        final scaleY = message.height / inputSize;
+        final inputT = interpreter!.getInputTensor(0);
+        final outT = interpreter!.getOutputTensor(0);
 
-        for (int y = 0; y < inputSize; y++) {
+        // ── 1. Dynamic Shape & Type Detection ───────────────────────────
+        final shape = inputT.shape;
+        final type = inputT.type;
+        int inSize = inputSize;
+        bool isNCHW = false;
+        bool isQuantized = type == TensorType.uint8;
+
+        if (shape[1] == 3) {
+          isNCHW = true;
+          inSize = shape[2];
+        } else {
+          inSize = shape[1];
+        }
+
+        // Use a generic List to allow both Uint8List and Float32List
+        final List tensor = isQuantized ? Uint8List(inSize * inSize * 3) : Float32List(inSize * inSize * 3);
+        final scaleX = message.width / inSize;
+        final scaleY = message.height / inSize;
+
+        for (int y = 0; y < inSize; y++) {
           final srcY = (y * scaleY).toInt().clamp(0, message.height - 1);
           final uvR = srcY >> 1;
+          final yRowOffset = srcY * message.yRowStride;
+          final uvRowOffset = uvR * message.uRowStride;
           
-          for (int x = 0; x < inputSize; x++) {
+          for (int x = 0; x < inSize; x++) {
             final srcX = (x * scaleX).toInt().clamp(0, message.width - 1);
             
-            // ── Inlined YUV -> RGB + Normalization ───────────────────────
-            final yIdx = srcY * message.yRowStride + srcX;
+            final yIdx = yRowOffset + srcX;
             final uvC = srcX >> 1;
-            final uIdx = uvR * message.uRowStride + uvC * message.uPixStride;
-            final vIdx = uvR * message.vRowStride + uvC * message.vPixStride;
+            final uIdx = uvRowOffset + (uvC * message.uPixStride);
+            final vIdx = uvRowOffset + (uvC * message.vPixStride);
 
             final Y = message.yBytes[yIdx] & 0xFF;
             final U = (message.uBytes[uIdx] & 0xFF) - 128;
             final V = (message.vBytes[vIdx] & 0xFF) - 128;
 
-            final r = (Y + 1.402 * V).clamp(0, 255) / 255.0;
-            final g = (Y - 0.344136 * U - 0.714136 * V).clamp(0, 255) / 255.0;
-            final b = (Y + 1.772 * U).clamp(0, 255) / 255.0;
+            double r_v = (Y + 1.402 * V).clamp(0.0, 255.0);
+            double g_v = (Y - 0.344136 * U - 0.714136 * V).clamp(0.0, 255.0);
+            double b_v = (Y + 1.772 * U).clamp(0.0, 255.0);
 
-            final dstIdx = (y * inputSize + x) * 3;
-            tensor[dstIdx]     = r;
-            tensor[dstIdx + 1] = g;
-            tensor[dstIdx + 2] = b;
-          }
-        }
+            if (!isQuantized) {
+              r_v /= 255.0;
+              g_v /= 255.0;
+              b_v /= 255.0;
+            }
 
-        // Reshape into [1, size, size, 3] format expected by tflite_flutter run method
-        // Using nested lists here is the safest way to ensure shape compatibility 
-        // across different tflite_flutter versions while still being beaucoup faster 
-        // than the original double-loop generate.
-        final input = [
-          List.generate(inputSize, (y) => 
-            List.generate(inputSize, (x) => [
-              tensor[(y * inputSize + x) * 3],
-              tensor[(y * inputSize + x) * 3 + 1],
-              tensor[(y * inputSize + x) * 3 + 2],
-            ]),
-          ),
-        ];
-
-        final outShape = interpreter!.getOutputTensor(0).shape;
-        final output = List.generate(
-          outShape[0],
-          (_) => List.generate(
-            outShape[1],
-            (_) => List<double>.filled(outShape[2], 0.0),
-          ),
-        );
-
-        interpreter!.run(input, output);
-
-        final numAnchors = output[0][0].length;
-        int bestCls = -1;
-        double bestScore = confThreshold;
-        double absMax = 0;
-        double bcx = 0, bcy = 0, bw = 0, bh = 0;
-
-        for (int i = 0; i < numAnchors; i++) {
-          for (int c = 0; c < numClasses; c++) {
-            final score = output[0][4 + c][i];
-            if (score > absMax) absMax = score;
-            if (score > bestScore) {
-              bestScore = score;
-              bestCls = c;
-              bcx = output[0][0][i];
-              bcy = output[0][1][i];
-              bw  = output[0][2][i];
-              bh  = output[0][3][i];
+            if (isNCHW) {
+              tensor[(0 * inSize * inSize) + (y * inSize + x)] = isQuantized ? r_v.toInt() : r_v;
+              tensor[(1 * inSize * inSize) + (y * inSize + x)] = isQuantized ? g_v.toInt() : g_v;
+              tensor[(2 * inSize * inSize) + (y * inSize + x)] = isQuantized ? b_v.toInt() : b_v;
+            } else {
+              final dstIdx = (y * inSize + x) * 3;
+              tensor[dstIdx]     = isQuantized ? r_v.toInt() : r_v;
+              tensor[dstIdx + 1] = isQuantized ? g_v.toInt() : g_v;
+              tensor[dstIdx + 2] = isQuantized ? b_v.toInt() : b_v;
             }
           }
         }
+        final preTime = sw.elapsedMilliseconds;
 
-        buf.write('bestCls=$bestCls score=${bestScore.toStringAsFixed(3)} absMax=${absMax.toStringAsFixed(3)}');
-        message.replyPort.send(_InferResult(bestCls, bestScore, bcx, bcy, bw, bh, buf.toString()));
+        // ── 2. TFLite Execution ──────────────────────────────────────────
+        if (isQuantized) {
+          inputT.setTo(tensor as Uint8List);
+        } else {
+          inputT.setTo((tensor as Float32List).buffer.asUint8List());
+        }
+        
+        interpreter!.invoke();
+        
+        final outShape = outT.shape;
+        final rows = outShape[1];
+        final cols = outShape[2];
+        
+        final output = Float32List(rows * cols);
+        outT.copyTo(output.buffer.asUint8List());
+        final inferTime = sw.elapsedMilliseconds - preTime;
+
+        // ── 3. Post-processing (Fast Parsing) ──────────────────────────────
+        int bestCls = -1;
+        double bestScore = confThreshold;
+        double bcx = 0, bcy = 0, bw = 0, bh = 0;
+
+        for (int i = 0; i < cols; i++) {
+          for (int c = 0; c < numClasses; c++) {
+            final score = output[(4 + c) * cols + i];
+            if (score > bestScore) {
+              bestScore = score;
+              bestCls = c;
+              bcx = output[0 * cols + i];
+              bcy = output[1 * cols + i];
+              bw  = output[2 * cols + i];
+              bh  = output[3 * cols + i];
+            }
+          }
+        }
+        final postTime = sw.elapsedMilliseconds - preTime - inferTime;
+
+        final debugMsg = '[Isolate] Model:${inSize}px isNCHW:$isNCHW | Done: ${preTime}ms pre, ${inferTime}ms infer, ${postTime}ms post.';
+        message.replyPort.send(_InferResult(bestCls, bestScore, bcx, bcy, bw, bh, inSize, debugMsg));
       } catch (e, st) {
-        message.replyPort.send(_InferResult(-1, 0, 0, 0, 0, 0, 'ERROR: $e\n$st'));
+        message.replyPort.send(_InferResult(-1, 0, 0, 0, 0, 0, 0, 'ERROR: $e\n$st'));
       }
     }
   });
@@ -187,8 +231,8 @@ class DetectionService {
 
   static const String _assetPath     = 'assets/models/moneysense-bills.tflite';
   static const int    _inputSize     = 640;
-  static const double _confThreshold = 0.50;  // Raised to 0.5 to prevent noisy false positives
-  static const int    _minIntervalMs = 150;
+  static const double _confThreshold = 0.50;
+  static const int    _minIntervalMs = 120;
 
   static const List<String> _denominations = [
     '1', '5', '10', '20', '50', '100', '200', '500', '1000',
@@ -206,8 +250,6 @@ class DetectionService {
   bool _isInit = false;
   bool _isRunning = false;
   int _lastInferMs = 0;
-  int _frameCount = 0;
-  int _inferCount = 0;
 
   bool get isReady => _isInit && _isolateCommandPort != null;
 
@@ -218,12 +260,10 @@ class DetectionService {
       final data = await rootBundle.load(_assetPath);
       final modelBytes = data.buffer.asUint8List();
 
-      // Spin up the persistent isolate
       _isolateSetupPort = ReceivePort();
       _isolate = await Isolate.spawn(_persistentIsolateEntry, _isolateSetupPort!.sendPort);
       _isolateCommandPort = await _isolateSetupPort!.first as SendPort;
 
-      // Initialize interpreter in isolate
       final initReplyPort = ReceivePort();
       _isolateCommandPort!.send(_InitCommand(
         modelBytes: modelBytes,
@@ -238,9 +278,7 @@ class DetectionService {
 
       if (success) {
         _isInit = true;
-        debugPrint('[DetectionService] ✓ persistent isolate ready.');
-      } else {
-        debugPrint('[DetectionService] ✗ persistent isolate init failed.');
+        debugPrint('[DetectionService] ✓ Universal isolate ready.');
       }
     } catch (e) {
       debugPrint('[DetectionService] ✗ init FAILED: $e');
@@ -252,12 +290,9 @@ class DetectionService {
     _isolateSetupPort?.close();
     _isInit = false;
     _isolateCommandPort = null;
-    debugPrint('[DetectionService] disposed');
   }
 
   Future<DetectionResult?> processFrame(CameraImage image) async {
-    _frameCount++;
-
     if (!isReady || _isRunning) return null;
 
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -265,22 +300,15 @@ class DetectionService {
 
     _lastInferMs = now;
     _isRunning = true;
-    _inferCount++;
-
-    debugPrint('[DetectionService] → inference #$_inferCount frame#$_frameCount image=${image.width}x${image.height}');
 
     try {
       if (image.planes.length < 3) return null;
 
-      final yBytes = image.planes[0].bytes;
-      final uBytes = image.planes[1].bytes;
-      final vBytes = image.planes[2].bytes;
-
       final replyPort = ReceivePort();
       _isolateCommandPort!.send(_InferCommand(
-        yBytes: yBytes,
-        uBytes: uBytes,
-        vBytes: vBytes,
+        yBytes: image.planes[0].bytes,
+        uBytes: image.planes[1].bytes,
+        vBytes: image.planes[2].bytes,
         width: image.width,
         height: image.height,
         yRowStride: image.planes[0].bytesPerRow,
@@ -294,27 +322,31 @@ class DetectionService {
       final res = await replyPort.first as _InferResult;
       replyPort.close();
 
-      debugPrint('[DetectionService] ← #$_inferCount: ${res.debugMsg}');
+      if (res.debugMsg.isNotEmpty) {
+        debugPrint(res.debugMsg);
+      }
 
       if (res.classIdx < 0) return null;
 
       final denomination = _denominations[res.classIdx];
       final type = _types[res.classIdx];
-      debugPrint('[DetectionService] ✓ DETECTED: $denomination ($type) conf=${res.score.toStringAsFixed(3)} bbox=[${res.cx.toStringAsFixed(2)}, ${res.cy.toStringAsFixed(2)}, ${res.w.toStringAsFixed(2)}, ${res.h.toStringAsFixed(2)}]');
 
-      // YOLO models often return normalized [0, 1] or pixel [0, size] coordinates.
-      // We'll normalize if the value is significantly larger than 1.
       double sBcx = res.cx;
       double sBcy = res.cy;
       double sBw  = res.w;
       double sBh  = res.h;
       
-      if (sBcx > 1.1 || sBw > 1.1) {
-        sBcx /= _inputSize;
-        sBcy /= _inputSize;
-        sBw  /= _inputSize;
-        sBh  /= _inputSize;
+      if ((sBcx > 1.1 || sBw > 1.1) && res.inSize > 0) {
+        sBcx /= res.inSize;
+        sBcy /= res.inSize;
+        sBw  /= res.inSize;
+        sBh  /= res.inSize;
       }
+
+      sBcx = sBcx.clamp(0.0, 1.0);
+      sBcy = sBcy.clamp(0.0, 1.0);
+      sBw = sBw.clamp(0.0, 1.0);
+      sBh = sBh.clamp(0.0, 1.0);
 
       return DetectionResult(
         denomination: denomination,
@@ -326,8 +358,8 @@ class DetectionService {
           height: sBh,
         ),
       );
-    } catch (e, st) {
-      debugPrint('[DetectionService] ✗ processFrame error: $e\n$st');
+    } catch (e) {
+      debugPrint('[DetectionService] ✗ error: $e');
       return null;
     } finally {
       _isRunning = false;

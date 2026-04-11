@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,8 +20,8 @@ class VoiceCommandOverlay extends ConsumerWidget {
     final settings = ref.watch(appSettingsProvider);
     final l10n = AppLocalizations.of(settings.isTagalog);
 
-    // Hide overlay if fully blind (BlindVoiceUi handles it) or voice navigation is off
-    if (settings.visionProfile == VisionProfile.fullyBlind || !settings.voiceNavigation) {
+    // Hide overlay if fully blind (BlindVoiceUi handles it)
+    if (settings.visionProfile == VisionProfile.fullyBlind) {
       return const SizedBox.shrink();
     }
 
@@ -47,48 +48,77 @@ class VoiceCommandOverlay extends ConsumerWidget {
       displayMessage = l10n.voiceListeningLabel;
     }
 
+    final bool isVisible = status != VoiceStatus.idle && status != VoiceStatus.error;
+
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-      top: 60, // Visible at top
-      left: 16,
-      right: 16,
-      child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(24),
-        color: bgColor,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: accentColor.withValues(alpha: 0.3),
-              width: 1.5,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutBack,
+      top: isVisible ? 50 : -200, // Slightly more space for the "bounce"
+      left: 12,
+      right: 12,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: bgColor.withValues(alpha: isDark ? 0.7 : 0.8),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.25),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 32,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-          ),
-          child: Row(
-            children: [
-              _PulseMic(color: accentColor),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  displayMessage,
-                  maxLines: 2,
-                  overflow: TextOverflow.visible,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: textColor,
-                    height: 1.3,
+            child: Row(
+              children: [
+                _PulseMic(color: accentColor),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isVisible && status == VoiceStatus.passiveListening 
+                            ? l10n.voiceStatusStandingBy 
+                            : l10n.voiceListeningLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: accentColor.withValues(alpha: 0.8),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        displayMessage.isNotEmpty ? displayMessage : '...',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, size: 20),
-                onPressed: () => ref.read(voiceCommandServiceProvider).stopListening(),
-                color: textColor.withValues(alpha: 0.4),
-              ),
-            ],
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 24),
+                  onPressed: () => ref.read(voiceCommandServiceProvider).stopListening(),
+                  color: textColor.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
           ),
         ),
       ),

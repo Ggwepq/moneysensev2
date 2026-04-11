@@ -806,6 +806,10 @@ class AppLocalizations {
       isTagalog ? TlStrings.resultDismissLabel : EnStrings.resultDismissLabel;
   String get resultConfirmLabel =>
       isTagalog ? TlStrings.resultConfirmLabel : EnStrings.resultConfirmLabel;
+  String get resultRetryLabel =>
+      isTagalog ? TlStrings.resultRetryLabel : EnStrings.resultRetryLabel;
+  String get resultTitle =>
+      isTagalog ? TlStrings.resultTitle : EnStrings.resultTitle;
   String get resultSemanticUncertain => isTagalog
       ? TlStrings.resultSemanticUncertain
       : EnStrings.resultSemanticUncertain;
