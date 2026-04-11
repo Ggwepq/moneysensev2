@@ -12,6 +12,7 @@ import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/entities/scanner_state.dart';
+import '../../../../core/services/voice/voice_command_service.dart';
 import '../providers/scanner_provider.dart';
 import '../widgets/camera_viewfinder.dart';
 import 'result_screen.dart';
@@ -369,6 +370,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     } else {
       if (ax / ay > _maxCrossRatio) return;
       if (v.dy < 0) _toggleFlash();
+      else          _toggleVoice();
     }
   }
 
@@ -395,5 +397,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     ref.read(cameraControllerProvider.notifier).setFlash(next);
     EarconService.instance.play(EarconEvent.flashToggled);
     _enqueue(ScannerSpeech.flashToggled(_l10n, next));
+  }
+
+  void _toggleVoice() {
+    final status = ref.read(voiceCommandStatusProvider);
+    final service = ref.read(voiceCommandServiceProvider);
+    
+    if (status == VoiceStatus.idle || status == VoiceStatus.error) {
+      HapticFeedback.mediumImpact();
+      service.startActiveListening(withPrompt: true);
+    } else {
+      HapticFeedback.lightImpact();
+      service.stopListening();
+    }
   }
 }
