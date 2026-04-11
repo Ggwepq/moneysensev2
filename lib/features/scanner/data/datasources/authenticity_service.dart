@@ -113,6 +113,24 @@ class AuthenticityService {
     final debugDir = await getExternalStorageDirectory();
     final debugPath = debugDir?.path ?? (await getTemporaryDirectory()).path;
 
+    // Cache the full frame image for debugging
+    try {
+      final fullFrameFile = File('$debugPath/debug_full_frame.jpg');
+      await fullFrameFile.writeAsBytes(imageBytes);
+      debugPrint('[AuthenticityService] 💾 Saved debug_full_frame.jpg');
+    } catch (e) {
+      debugPrint('[AuthenticityService] ✗ Failed to save full frame: $e');
+    }
+
+    // Cache the full frame image for debugging
+    try {
+      final fullFrameFile = File('$debugPath/debug_full_frame.jpg');
+      await fullFrameFile.writeAsBytes(imageBytes);
+      debugPrint('[AuthenticityService] 💾 Saved debug_full_frame.jpg');
+    } catch (e) {
+      debugPrint('[AuthenticityService] ✗ Failed to save full frame: $e');
+    }
+
     // 1. Parallel Task: ResNet-18 (Physical Authenticity)
     debugPrint('[AuthenticityService] → Spawning ResNet task...');
     final resNetTask = compute(_processAndPredict, {
@@ -259,6 +277,45 @@ class AuthenticityService {
       width: image.width > image.height ? 224 : null, 
       height: image.height >= image.width ? 224 : null);
     img.compositeImage(canvas, resized, dstX: (224 - resized.width) ~/ 2, dstY: (224 - resized.height) ~/ 2);
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
+    
+    // Cache the processed input image for debugging
+    try {
+      final debugPath = args['debugPath'] as String;
+      final processedFile = File('$debugPath/debug_processed_input.jpg');
+      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
+    } catch (e) {
+      // Ignore errors in background isolate
+    }
     
     final input = Float32List(224 * 224 * 3);
     int p = 0;

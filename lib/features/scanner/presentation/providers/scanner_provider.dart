@@ -200,24 +200,35 @@ class ScannerNotifier extends Notifier<ScannerState> {
   }
 
   Future<void> _captureFrame(Map<String, dynamic> args, DetectionResult base) async {
-    debugPrint('[ScannerProvider] 📸 Captured frame. Moving to result.');
+    debugPrint('[ScannerProvider] 📸 Captured frame. Starting high-res OCR check...');
     
     // 1. JPEG Conversion
     final jpeg = await compute(_yuvToJpegTask, args);
     
+    // 2. OCR Correction (Parallel to the 1s delay)
+    // Run OCR identification immediately to catch things like "REPRODUCTION" or Tagalog words
+    final ocrFuture = AuthenticityService.instance.getDenominationFromOCR(jpeg);
+    final delayFuture = Future.delayed(const Duration(seconds: 1));
+
+    // 3. Wait for BOTH the 1s "chill" delay and the OCR pass to finish
+    final results = await Future.wait([ocrFuture, delayFuture]);
+    final ocrDenom = results[0] as String?;
+
+    if (ocrDenom != null && ocrDenom != base.denomination) {
+       debugPrint('[ScannerProvider] 🎯 OCR Corrected denomination: $ocrDenom (was ${base.denomination})');
+    }
+
     final finalResult = DetectionResult(
-      denomination:  base.denomination,
+      denomination:  ocrDenom ?? base.denomination,
       type:          base.type,
-      confidence:    base.confidence,
+      confidence:    ocrDenom != null ? 0.99 : base.confidence,
       boundingBox:    base.boundingBox,
       capturedImage: jpeg,
     );
 
-    // 2. Wait 1 second (per user request: "borders turn green, then go to result screen after a second")
-    await Future.delayed(const Duration(seconds: 1));
     if (state != ScannerState.processing) return; // Guard against reset during delay
 
-    // 3. Update Providers & Transition
+    // 4. Update Providers & Transition
     ref.read(detectionResultProvider.notifier).state = finalResult;
     ref.read(verificationResultProvider.notifier).state = null; // Reset verification
     
