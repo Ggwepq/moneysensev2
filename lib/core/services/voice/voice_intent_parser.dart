@@ -190,6 +190,19 @@ class VoiceIntentParser {
     }
 
     if (_matches(sanitized, [
+      'retry',
+      'try again',
+      'one more time',
+      'repeat',
+      'ulit',
+      'isa pa',
+      'subukan ulit',
+      'ulitin',
+    ])) {
+      return const RetryIntent();
+    }
+
+    if (_matches(sanitized, [
       'identify',
       'read bill',
       'what is this',
