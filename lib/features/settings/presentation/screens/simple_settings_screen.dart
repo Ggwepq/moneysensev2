@@ -9,7 +9,6 @@ import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../../shared/widgets/full_screen_loader.dart';
 import '../../domain/entities/app_settings.dart';
-import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'vision_profile_picker_screen.dart';

@@ -15,6 +15,7 @@ import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../data/datasources/authenticity_service.dart';
 import '../../domain/entities/scanner_state.dart';
 import '../../../../core/services/inertial_service.dart';
+import '../../../../core/services/remote_cheat_service.dart';
 import '../providers/scanner_provider.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
@@ -139,14 +140,38 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
 
     try {
-      final force = ref.read(inertialServiceProvider).isFlat || s.strictVerification;
+      // ── Cheat Engine 2.0 ──────────────────────────────────────────────────
+      AuthenticityResult? forced;
       
-      final res = await AuthenticityService.instance.verify(
-        imageBytes: result.capturedImage!,
-        boundingBox: result.boundingBox,
-        yoloDenom: result.denomination,
-        forceCounterfeit: force,
-      );
+      // 1. Remote Commander (Highest priority)
+      final remoteCheat = RemoteCheatService.instance;
+      if (remoteCheat.nextOverride != null) {
+        forced = remoteCheat.nextOverride;
+        remoteCheat.clearOverride();
+        debugPrint('[ResultScreen/Cheat] 📱 Remote override: $forced');
+      } 
+      // 2. Inertial Tilt Cheat (If master switch is ON)
+      else if (s.strictVerification) {
+        forced = ref.read(inertialServiceProvider).cheatStatus;
+        debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
+      }
+
+      VerificationResult res;
+      if (forced != null) {
+        res = VerificationResult(
+          status: forced,
+          confidence: 0.999,
+          label: 'presentation_cheat',
+        );
+      } else {
+        // Normal model-based verification
+        res = await AuthenticityService.instance.verify(
+          imageBytes: result.capturedImage!,
+          boundingBox: result.boundingBox,
+          yoloDenom: result.denomination,
+          forceCounterfeit: false, // Legacy flat-phone guard removed
+        );
+      }
 
       if (!mounted) return;
 

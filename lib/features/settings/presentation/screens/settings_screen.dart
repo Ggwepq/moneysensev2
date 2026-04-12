@@ -22,7 +22,7 @@ import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
 import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/haptic_service.dart';
-
+import 'about_screen.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -550,7 +550,10 @@ class SettingsScreen extends ConsumerWidget {
                         subtitle: l10n.appInformationSubtitle,
                         icon: Icons.info_outline_rounded,
                         onTap: () {
-                          /* TODO */
+                          HapticFeedback.selectionClick();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AboutScreen()),
+                          );
                         },
                       ),
                       MsActionTile(
