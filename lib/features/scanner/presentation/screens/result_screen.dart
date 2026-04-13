@@ -98,10 +98,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void _confirm() {
     debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
-    ref.read(inertialServiceProvider).stop(); // Stop service
+    ref.read(inertialServiceProvider).stop(); 
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
-    if (result.type == 'bill' && _verificationResult == null && !_isVerifying) {
+    // Safety check: Don't allow verification if uncertain
+    if (result.type == 'bill' && !result.isUncertain && _verificationResult == null && !_isVerifying) {
       _verify(result);
       return;
     }
@@ -423,16 +424,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ? Icons.hourglass_empty_rounded
                           : _verificationResult != null
                               ? Icons.refresh_rounded
-                              : result.type != 'bill' 
+                              : (result.type != 'bill' || result.isUncertain)
                                   ? Icons.check_rounded
                                   : Icons.verified_user_rounded,
                       color: blue,
                       semanticLabel: _verificationResult != null
                           ? 'Retry detection'
-                          : result.type == 'bill'
+                          : (result.type == 'bill' && !result.isUncertain)
                               ? l10n.resultVerifyLabel
                               : l10n.resultConfirmLabel,
-                      onTap: _isVerifying ? () {} : (_verificationResult != null ? _retry : _confirm),
+                      onTap: _isVerifying 
+                          ? () {} 
+                          : (_verificationResult != null 
+                              ? _retry 
+                              : (result.isUncertain ? _dismiss : _confirm)),
                     )),
                   ],
                 ),

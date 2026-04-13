@@ -52,10 +52,14 @@ class InertialService {
     required VoidCallback onTiltLeft,
     required VoidCallback onTiltRight,
   }) {
-    if (_running) return;
-    _running      = true;
     _onTiltLeft   = onTiltLeft;
     _onTiltRight  = onTiltRight;
+
+    if (_running) {
+      debugPrint('[InertialService] 🔄 Already running. Updated callbacks.');
+      return;
+    }
+    _running      = true;
     _currentOrientation = _TiltOrientation.portrait;
 
     _sub = accelerometerEventStream(
