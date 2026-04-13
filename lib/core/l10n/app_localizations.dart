@@ -942,4 +942,12 @@ class AppLocalizations {
       isTagalog ? TlStrings.guidanceMoveUp : EnStrings.guidanceMoveUp;
   String get guidanceCentered =>
       isTagalog ? TlStrings.guidanceCentered : EnStrings.guidanceCentered;
+  String get guidanceMoveRightDown =>
+      isTagalog ? TlStrings.guidanceMoveRightDown : EnStrings.guidanceMoveRightDown;
+  String get guidanceMoveRightUp =>
+      isTagalog ? TlStrings.guidanceMoveRightUp : EnStrings.guidanceMoveRightUp;
+  String get guidanceMoveLeftDown =>
+      isTagalog ? TlStrings.guidanceMoveLeftDown : EnStrings.guidanceMoveLeftDown;
+  String get guidanceMoveLeftUp =>
+      isTagalog ? TlStrings.guidanceMoveLeftUp : EnStrings.guidanceMoveLeftUp;
 }

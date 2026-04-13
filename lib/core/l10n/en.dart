@@ -608,6 +608,10 @@ abstract final class EnStrings {
   static const String guidanceMoveDown = 'Move down';
   static const String guidanceMoveUp = 'Move up';
   static const String guidanceCentered = 'Bill centered';
+  static const String guidanceMoveRightDown = 'Move right and down';
+  static const String guidanceMoveRightUp = 'Move right and up';
+  static const String guidanceMoveLeftDown = 'Move left and down';
+  static const String guidanceMoveLeftUp = 'Move left and up';
 
   static const String scannerStatusResult = 'Result ready';
   static const String scannerTapToOpen = 'Tap to open camera';

@@ -10,6 +10,7 @@ import '../../domain/entities/scanner_state.dart';
 import 'package:moneysensev2/core/l10n/app_localizations.dart';
 import 'package:moneysensev2/core/services/tts_service.dart';
 import 'package:moneysensev2/features/settings/presentation/providers/settings_provider.dart';
+import 'package:moneysensev2/features/settings/domain/entities/app_settings.dart';
 import '../../data/datasources/authenticity_service.dart';
 import 'package:moneysensev2/core/services/earcon_service.dart';
 
@@ -270,12 +271,21 @@ class ScannerNotifier extends Notifier<ScannerState> {
     final settings = ref.read(appSettingsProvider);
     final l10n = AppLocalizations.of(settings.isTagalog);
     
+    final isLeft = cx < 0.15;
+    final isRight = cx > 0.85;
+    final isTop = cy < 0.35;
+    final isBottom = cy > 0.65;
+
     String hint;
-    if (cx < 0.35)      hint = l10n.guidanceMoveRight;
-    else if (cx > 0.65) hint = l10n.guidanceMoveLeft;
-    else if (cy < 0.35) hint = l10n.guidanceMoveDown;
-    else if (cy > 0.65) hint = l10n.guidanceMoveUp;
-    else                hint = l10n.guidanceCentered;
+    if (isLeft && isTop)      hint = l10n.guidanceMoveRightDown;
+    else if (isLeft && isBottom) hint = l10n.guidanceMoveRightUp;
+    else if (isRight && isTop)   hint = l10n.guidanceMoveLeftDown;
+    else if (isRight && isBottom) hint = l10n.guidanceMoveLeftUp;
+    else if (isLeft)   hint = l10n.guidanceMoveRight;
+    else if (isRight)  hint = l10n.guidanceMoveLeft;
+    else if (isTop)    hint = l10n.guidanceMoveDown;
+    else if (isBottom) hint = l10n.guidanceMoveUp;
+    else               hint = l10n.guidanceCentered;
 
     // Handle stability tracking
     if (hint == l10n.guidanceCentered) {
@@ -296,7 +306,12 @@ class ScannerNotifier extends Notifier<ScannerState> {
     debugPrint('[Centering] 📍 cx: ${cx.toStringAsFixed(2)}, cy: ${cy.toStringAsFixed(2)} -> Hint: $hint');
 
     ref.read(ttsServiceProvider).enqueue(
-      TtsMessage.ambient(hint, id: 'scanner.guidance'),
+      TtsMessage(
+        text: hint,
+        priority: TtsPriority.navigation,
+        requiredVerbosity: TtsVerbosity.minimal,
+        id: 'scanner.guidance',
+      ),
       enabled: settings.ttsEnabled,
       currentVerbosity: settings.ttsVerbosity,
     );

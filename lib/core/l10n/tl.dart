@@ -606,6 +606,10 @@ abstract final class TlStrings {
   static const String guidanceMoveDown = 'Igalaw pababa';
   static const String guidanceMoveUp = 'Igalaw pataas';
   static const String guidanceCentered = 'Nagitna na ang pera';
+  static const String guidanceMoveRightDown = 'Igalaw pakanan at pababa';
+  static const String guidanceMoveRightUp = 'Igalaw pakanan at pataas';
+  static const String guidanceMoveLeftDown = 'Igalaw pakaliwa at pababa';
+  static const String guidanceMoveLeftUp = 'Igalaw pakaliwa at pataas';
   static const String scannerStatusResult = 'Handa na ang resulta';
   static const String scannerTapToOpen = 'I-tap para buksan ang kamera';
 
