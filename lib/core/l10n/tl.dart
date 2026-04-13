@@ -597,7 +597,19 @@ abstract final class TlStrings {
   static const String scannerStatusIdle = 'Naka-off ang kamera';
   static const String scannerStatusPreviewing = 'Ituro ang kamera sa pera';
   static const String scannerStatusScanning = 'Nagsa-scan…';
-  static const String scannerStatusProcessing = 'Kinikilala…';
+  static const String scannerStatusCentering = 'Pinaggitna ang pera. Wag gumalaw.';
+  static const String scannerStatusProcessing = 'Sinisigurado ang pagiging totoo...';
+
+  // ── Centering Guidance ─────────────────────────────────────────────────────
+  static const String guidanceMoveRight = 'Igalaw pakanan';
+  static const String guidanceMoveLeft = 'Igalaw pakaliwa';
+  static const String guidanceMoveDown = 'Igalaw pababa';
+  static const String guidanceMoveUp = 'Igalaw pataas';
+  static const String guidanceCentered = 'Nagitna na ang pera';
+  static const String guidanceMoveRightDown = 'Igalaw pakanan at pababa';
+  static const String guidanceMoveRightUp = 'Igalaw pakanan at pataas';
+  static const String guidanceMoveLeftDown = 'Igalaw pakaliwa at pababa';
+  static const String guidanceMoveLeftUp = 'Igalaw pakaliwa at pataas';
   static const String scannerStatusResult = 'Handa na ang resulta';
   static const String scannerTapToOpen = 'I-tap para buksan ang kamera';
 

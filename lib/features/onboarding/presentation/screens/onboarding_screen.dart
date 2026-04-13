@@ -192,6 +192,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
+    ref.read(ttsServiceProvider).stop();
     ref.read(ttsServiceProvider).isSpeakingNotifier.removeListener(_onTtsStatusChanged);
     _voiceSub?.cancel();
     super.dispose();
@@ -199,6 +200,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _goTo(int page) {
     if (page < 0 || page >= _total) return;
+    ref.read(ttsServiceProvider).stop();
     setState(() => _page = page);
     _narrate(page);
   }
@@ -210,6 +212,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _skip() {
     _voiceSub?.cancel();
+    ref.read(ttsServiceProvider).stop();
     EarconService.instance.play(EarconEvent.actionDisabled);
     
     final n = ref.read(appSettingsProvider.notifier);
@@ -223,6 +226,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _finish({required bool launchTutorial}) {
+    ref.read(ttsServiceProvider).stop();
     final n = ref.read(appSettingsProvider.notifier);
     n.setVisionProfile(_profile);
     n.setLanguage(_language);
@@ -305,9 +309,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       const SizedBox(height: 48),
 
-                      VoiceOnboardingOrb(
-                        isListening: _isListening,
-                        isSpeaking: _isSpeaking,
+                      SizedBox(
+                        width: 260,
+                        height: 260,
+                        child: Center(
+                          child: VoiceOnboardingOrb(
+                            isListening: _isListening,
+                            isSpeaking: _isSpeaking,
+                          ),
+                        ),
                       ),
                       
                       const SizedBox(height: 48),
@@ -449,7 +459,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _getStepPrompt() {
     if (_isSpeaking) return 'Listen carefully to the instructions.';
     switch (_page) {
-      case 0: return 'Say "Proceed" or "Yes" to begin setup.';
+      case 0: return 'Say "Proceed", "Yes", or "Skip" to begin.';
       case 1: return 'Say "Low Vision", "Partially Blind", or "Fully Blind".';
       case 2: return 'Say "English" or "Tagalog".';
       case 3: return 'Say "Proceed" to grant camera access.';

@@ -49,6 +49,7 @@ class TtsService {
   Future<void> init({
     required AppLanguage language,
     required TtsVerbosity verbosity,
+    required double speechRate,
   }) async {
     if (!_initialized) {
       await _tts.setSharedInstance(true);
@@ -75,7 +76,7 @@ class TtsService {
     }
 
     await _applyLanguage(language);
-    await _applyRate(verbosity);
+    await _applyRate(verbosity, speechRate);
     await _detectTalkBack();
   }
 
@@ -111,13 +112,13 @@ class TtsService {
     }
   }
 
-  Future<void> _applyRate(TtsVerbosity verbosity) async {
-    final rate = switch (verbosity) {
+  Future<void> _applyRate(TtsVerbosity verbosity, double speechRate) async {
+    final baseRate = switch (verbosity) {
       TtsVerbosity.minimal  => 0.55,
       TtsVerbosity.standard => 0.50,
       TtsVerbosity.full     => 0.44,
     };
-    await _tts.setSpeechRate(rate);
+    await _tts.setSpeechRate(baseRate * speechRate);
   }
 
   /// Detects whether TalkBack / VoiceOver is likely active.
@@ -246,6 +247,7 @@ class TtsService {
     }
 
     try {
+      debugPrint('[TtsService] 🗣 Speaking: "$text"');
       await _tts.speak(text);
     } catch (e) {
       _isSpeaking = false;
@@ -274,5 +276,6 @@ final ttsInitProvider = Provider<void>((ref) {
   TtsService.instance.init(
     language:  settings.language,
     verbosity: settings.ttsVerbosity,
+    speechRate: settings.speechRate,
   );
 });

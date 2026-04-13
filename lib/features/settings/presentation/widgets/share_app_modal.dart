@@ -91,6 +91,31 @@ class ShareAppModal extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: AppSpacing.md),
+                FilledButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(const ClipboardData(text: downloadUrl));
+                    EarconService.instance.play(EarconEvent.actionConfirmed);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Link copied to clipboard')),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.copy_rounded),
+                  label: const Text('Copy'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    foregroundColor: theme.colorScheme.onSecondaryContainer,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.base,
+                      horizontal: AppSpacing.lg,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.base),

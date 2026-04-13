@@ -238,8 +238,7 @@ class DetectionService {
     '1', '5', '10', '20', '50', '100', '200', '500', '1000',
   ];
   static const List<String> _types = [
-    'coin', 'coin', 'coin', 'coin',
-    'bill', 'bill', 'bill', 'bill', 'bill',
+    'coin', 'coin', 'coin', 'bill', 'bill', 'bill', 'bill', 'bill', 'bill',
   ];
   static const int _numClasses = 9;
 
@@ -252,6 +251,7 @@ class DetectionService {
   int _lastInferMs = 0;
 
   bool get isReady => _isInit && _isolateCommandPort != null;
+  bool get isProcessing => _isRunning;
 
   Future<void> init() async {
     if (_isInit) return;
@@ -329,7 +329,7 @@ class DetectionService {
       if (res.classIdx < 0) return null;
 
       final denomination = _denominations[res.classIdx];
-      final type = _types[res.classIdx];
+      String type = _types[res.classIdx];
 
       double sBcx = res.cx;
       double sBcy = res.cy;
@@ -347,6 +347,22 @@ class DetectionService {
       sBcy = sBcy.clamp(0.0, 1.0);
       sBw = sBw.clamp(0.0, 1.0);
       sBh = sBh.clamp(0.0, 1.0);
+
+      // ── Dynamic 20 Peso Discrimination ───────────────────────────────────
+      // If the model detects '20', we use the aspect ratio of the bounding box
+      // to determine if it is a coin or a bill.
+      // Bills are ~2.4x wider than tall (or taller than wide).
+      // Coins are approximately square (1:1 aspect ratio).
+      if (denomination == '20') {
+        final aspectRatio = sBw / sBh;
+        // If aspect ratio is square-ish [0.85, 1.25], it's likely a coin.
+        // We also check for inverted orientation (unlikely for coins but safe).
+        if (aspectRatio > 0.85 && aspectRatio < 1.17) {
+          type = 'coin';
+        } else {
+          type = 'bill';
+        }
+      }
 
       return DetectionResult(
         denomination: denomination,
