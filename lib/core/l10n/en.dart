@@ -598,8 +598,17 @@ abstract final class EnStrings {
   // ── Scanner screen status labels ───────────────────────────────────────────
   static const String scannerStatusIdle = 'Camera is off';
   static const String scannerStatusPreviewing = 'Point camera at currency';
-  static const String scannerStatusScanning = 'Scanning…';
-  static const String scannerStatusProcessing = 'Identifying…';
+  static const String scannerStatusScanning = 'Scanning...';
+  static const String scannerStatusCentering = 'Centering the bill. Hold still.';
+  static const String scannerStatusProcessing = 'Verifying authenticity...';
+
+  // ── Centering Guidance ─────────────────────────────────────────────────────
+  static const String guidanceMoveRight = 'Move right';
+  static const String guidanceMoveLeft = 'Move left';
+  static const String guidanceMoveDown = 'Move down';
+  static const String guidanceMoveUp = 'Move up';
+  static const String guidanceCentered = 'Bill centered';
+
   static const String scannerStatusResult = 'Result ready';
   static const String scannerTapToOpen = 'Tap to open camera';
 

@@ -63,6 +63,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
 
   void _updateAnimation() {
     final shouldPulse = widget.scannerState == ScannerState.scanning ||
+        widget.scannerState == ScannerState.centering ||
         widget.scannerState == ScannerState.processing;
     if (shouldPulse) {
       _pulseController.repeat(reverse: true);
@@ -82,6 +83,8 @@ class _CameraViewfinderState extends State<CameraViewfinder>
     switch (widget.scannerState) {
       case ScannerState.scanning:
         return AppColors.accentYellow;
+      case ScannerState.centering:
+        return AppColors.accentBlue;
       case ScannerState.processing:
         return AppColors.success;
       case ScannerState.result:
@@ -103,6 +106,9 @@ class _CameraViewfinderState extends State<CameraViewfinder>
     switch (widget.scannerState) {
       case ScannerState.scanning:
         glowColor = AppColors.accentYellow;
+        break;
+      case ScannerState.centering:
+        glowColor = AppColors.accentBlue;
         break;
       case ScannerState.processing:
         glowColor = AppColors.success;
@@ -148,6 +154,40 @@ class _CameraViewfinderState extends State<CameraViewfinder>
               color: _backgroundColor,
               child: widget.child ?? const SizedBox.expand(),
             ),
+            
+            // ── Target Reticle (Always present while scanning) ──────────────
+            if (widget.scannerState == ScannerState.scanning || 
+                widget.scannerState == ScannerState.centering)
+              Center(
+                child: Container(
+                  width: 240,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+
+            // ── Busy Spinner ────────────────────────────────────────────────
+            if (widget.scannerState == ScannerState.centering ||
+                widget.scannerState == ScannerState.processing)
+              Center(
+                child: SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 8,
+                    color: widget.scannerState == ScannerState.centering 
+                        ? AppColors.accentBlue 
+                        : AppColors.success,
+                  ),
+                ),
+              ),
+
             // Status label at the bottom
             if (widget.statusLabel != null)
               Positioned(
@@ -158,7 +198,7 @@ class _CameraViewfinderState extends State<CameraViewfinder>
                   padding: const EdgeInsets.symmetric(
                     vertical: AppSpacing.sm,
                   ),
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: Colors.black.withValues(alpha: 0.7),
                   child: Text(
                     widget.statusLabel!,
                     textAlign: TextAlign.center,

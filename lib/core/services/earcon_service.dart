@@ -73,6 +73,9 @@ enum EarconEvent {
   /// A selection was confirmed (segmented selector changed, onboarding step
   /// advanced, form submitted).
   actionConfirmed,
+
+  /// The bill has entered the center of the viewfinder (Guidance stage).
+  centered,
 }
 
 extension _EarconAsset on EarconEvent {
@@ -104,6 +107,8 @@ extension _EarconAsset on EarconEvent {
         return 'audio/earcon_action_disabled.wav';
       case EarconEvent.actionConfirmed:
         return 'audio/earcon_action_confirmed.wav';
+      case EarconEvent.centered:
+        return 'audio/earcon_scan_success.wav';
     }
   }
 }

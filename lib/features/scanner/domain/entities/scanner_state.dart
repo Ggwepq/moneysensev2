@@ -7,6 +7,7 @@ enum ScannerState {
   previewing,
   paused,
   scanning,
+  centering,
   processing,
   result,
 }
