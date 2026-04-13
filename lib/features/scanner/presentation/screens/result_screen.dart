@@ -49,7 +49,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) {
         t.cancel();
-        debugPrint('[ResultScreen] ⏰ Timer finished. AutoVerifying=$_isAutoVerifying');
         if (_isAutoVerifying) {
           final result = ref.read(detectionResultProvider) ?? widget.result;
           _verify(result);
@@ -60,22 +59,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     });
   }
 
-  void _cancelAutoVerify() {
-    setState(() {
-      _isAutoVerifying = false;
-      _secondsLeft = ref.read(appSettingsProvider).goBackTimerSeconds;
-    });
-    if (_secondsLeft > 0) {
-      _startTimer();
-    } else {
-      _autoTimer?.cancel();
-    }
-  }
 
   @override
   void dispose() {
     _autoTimer?.cancel();
     _ctrl.dispose();
+    ref.read(inertialServiceProvider).stop(); // Clean up service
     super.dispose();
   }
 
@@ -101,6 +90,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void _dismiss() {
     debugPrint('[ResultScreen] 🔙 Dismissing result. Verf=$_verificationResult');
     _autoTimer?.cancel();
+    ref.read(inertialServiceProvider).stop(); // Stop service to clear callbacks
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
@@ -108,9 +98,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void _confirm() {
     debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
+    ref.read(inertialServiceProvider).stop(); 
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
-    if (result.type == 'bill' && _verificationResult == null && !_isVerifying) {
+    // Safety check: Don't allow verification if uncertain
+    if (result.type == 'bill' && !result.isUncertain && _verificationResult == null && !_isVerifying) {
       _verify(result);
       return;
     }
@@ -178,10 +170,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       setState(() {
         _isVerifying = false;
         _verificationResult = res;
-        _secondsLeft = s.goBackTimerSeconds; // Reset timer after verification
+        _secondsLeft = s.goBackTimerSeconds; // Set go-back timer
+        _isAutoVerifying = false; // Never auto-verify again
       });
 
-      if (_secondsLeft > 0) _startTimer(); // Restart timer after result shown
+      if (_secondsLeft > 0) _startTimer();
 
       final msg = res.status == AuthenticityResult.genuine
           ? l10n.resultGenuine
@@ -248,9 +241,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     debugPrint('[ResultScreen] 🔄 Retrying detection.');
     HapticFeedback.mediumImpact();
     
+    // Reset timer to give user time to hear result
+    _autoTimer?.cancel();
+    _secondsLeft = ref.read(appSettingsProvider).goBackTimerSeconds;
+    _startTimer();
+
     // Clear existing result to show loading again
     setState(() {
       _verificationResult = null;
+      _isAutoVerifying = false;
     });
 
     final result = ref.read(detectionResultProvider) ?? widget.result;
@@ -355,55 +354,29 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ],
                           if (_verificationResult != null) ...[
                             const SizedBox(height: AppSpacing.lg),
-                            GestureDetector(
-                              onLongPress: () {
-                                HapticFeedback.heavyImpact();
-                                setState(() {
-                                  final old = _verificationResult!.status;
-                                  final nextStatus = old == AuthenticityResult.genuine
-                                      ? AuthenticityResult.counterfeit
-                                      : AuthenticityResult.genuine;
-                                  
-                                  _verificationResult = VerificationResult(
-                                    status: nextStatus,
-                                    confidence: 0.99,
-                                    label: 'manual_toggle',
-                                  );
-                                });
-                                
-                                final msg = _verificationResult!.status == AuthenticityResult.genuine
-                                    ? l10n.resultGenuine
-                                    : l10n.resultCounterfeit;
-                                ref.read(ttsServiceProvider).enqueue(
-                                  TtsMessage.result(msg, id: 'verify.toggle'),
-                                  enabled: s.ttsEnabled,
-                                  currentVerbosity: s.ttsVerbosity,
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                decoration: BoxDecoration(
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: _verificationResult!.status == AuthenticityResult.genuine
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
                                   color: _verificationResult!.status == AuthenticityResult.genuine
-                                      ? Colors.green.withValues(alpha: 0.1)
-                                      : Colors.red.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _verificationResult!.status == AuthenticityResult.genuine
-                                        ? Colors.green
-                                        : Colors.red,
-                                    width: 2,
-                                  ),
+                                      ? Colors.green
+                                      : Colors.red,
+                                  width: 2,
                                 ),
-                                child: Text(
-                                  _verificationResult!.status == AuthenticityResult.genuine
-                                      ? l10n.resultGenuine
-                                      : l10n.resultCounterfeit,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    color: _verificationResult!.status == AuthenticityResult.genuine
-                                        ? Colors.green
-                                        : Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              ),
+                              child: Text(
+                                _verificationResult!.status == AuthenticityResult.genuine
+                                    ? l10n.resultGenuine
+                                    : l10n.resultCounterfeit,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: _verificationResult!.status == AuthenticityResult.genuine
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -411,16 +384,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           if (_secondsLeft > 0) ...[
                             const SizedBox(height: AppSpacing.lg),
                             _isAutoVerifying
-                                ? _AutoVerifyHint(
-                                    secondsLeft: _secondsLeft,
-                                    l10n: l10n,
-                                    accentColor: blue,
-                                    onCancel: _cancelAutoVerify,
+                                ? Text(
+                                    l10n.resultAutoVerifyHint(_secondsLeft.toString()).replaceAll(l10n.resultAutoVerifyCancel, '').trim(), 
+                                    style: theme.textTheme.bodySmall?.copyWith(color: onBg.withValues(alpha: 0.6)),
+                                    textAlign: TextAlign.center,
                                   )
                                 : _GoBackHint(
                                     secondsLeft: _secondsLeft,
                                     l10n: l10n,
-                                    accentColor: blue,
+                                    theme: theme,
+                                    onBg: onBg,
                                     onTap: _dismiss,
                                   ),
                           ],
@@ -451,16 +424,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                           ? Icons.hourglass_empty_rounded
                           : _verificationResult != null
                               ? Icons.refresh_rounded
-                              : result.type != 'bill' 
+                              : (result.type != 'bill' || result.isUncertain)
                                   ? Icons.check_rounded
                                   : Icons.verified_user_rounded,
                       color: blue,
                       semanticLabel: _verificationResult != null
                           ? 'Retry detection'
-                          : result.type == 'bill'
+                          : (result.type == 'bill' && !result.isUncertain)
                               ? l10n.resultVerifyLabel
                               : l10n.resultConfirmLabel,
-                      onTap: _isVerifying ? () {} : (_verificationResult != null ? _retry : _confirm),
+                      onTap: _isVerifying 
+                          ? () {} 
+                          : (_verificationResult != null 
+                              ? _retry 
+                              : (result.isUncertain ? _dismiss : _confirm)),
                     )),
                   ],
                 ),
@@ -699,11 +676,13 @@ class _ConfidenceSentence extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = theme.textTheme.bodyLarge?.copyWith(color: onBg);
     final keyword = base?.copyWith(color: accentColor, fontWeight: FontWeight.bold);
+    
+    final percentage = ' (${(result.confidence * 100).toInt()}%)';
 
     if (result.isUncertain) {
       return Text.rich(TextSpan(style: base, children: [
         TextSpan(text: l10n.resultConfidencePre),
-        TextSpan(text: l10n.confidenceUncertain, style: keyword),
+        TextSpan(text: l10n.confidenceUncertain + percentage, style: keyword),
         TextSpan(text: l10n.resultUncertainSuffix),
       ]), textAlign: TextAlign.center);
     }
@@ -711,48 +690,30 @@ class _ConfidenceSentence extends StatelessWidget {
     final level = result.confidenceLevel == ConfidenceLevel.veryConfident ? l10n.confidenceVeryConfident : l10n.confidenceConfident;
     return Text.rich(TextSpan(style: base, children: [
       TextSpan(text: l10n.resultConfidencePre),
-      TextSpan(text: level, style: keyword),
+      TextSpan(text: level + percentage, style: keyword),
       TextSpan(text: l10n.resultConfidentSuffix(result.denomination, result.type)),
     ]), textAlign: TextAlign.center);
   }
 }
 
-class _AutoVerifyHint extends StatelessWidget {
-  const _AutoVerifyHint({required this.secondsLeft, required this.l10n, required this.accentColor, required this.onCancel});
-  final int secondsLeft;
-  final AppLocalizations l10n;
-  final Color accentColor;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onCancel,
-      child: Text.rich(TextSpan(style: theme.textTheme.bodySmall, children: [
-        TextSpan(text: l10n.resultAutoVerifyHint(secondsLeft.toString())),
-        TextSpan(text: l10n.resultAutoVerifyCancel, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
-      ]), textAlign: TextAlign.center),
-    );
-  }
-}
 
 class _GoBackHint extends StatelessWidget {
-  const _GoBackHint({required this.secondsLeft, required this.l10n, required this.accentColor, required this.onTap});
+  const _GoBackHint({required this.secondsLeft, required this.l10n, required this.theme, required this.onBg, required this.onTap});
   final int secondsLeft;
   final AppLocalizations l10n;
-  final Color accentColor;
+  final ThemeData theme;
+  final Color onBg;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
-      child: Text.rich(TextSpan(style: theme.textTheme.bodySmall, children: [
-        TextSpan(text: l10n.resultGoBackHintPre(secondsLeft.toString())),
-        TextSpan(text: l10n.resultGoBackLink, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
-      ]), textAlign: TextAlign.center),
+      child: Text(
+        l10n.resultGoBackHintPre(secondsLeft.toString()) + ' ' + l10n.resultGoBackLink,
+        style: theme.textTheme.bodySmall?.copyWith(color: onBg.withValues(alpha: 0.6)),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

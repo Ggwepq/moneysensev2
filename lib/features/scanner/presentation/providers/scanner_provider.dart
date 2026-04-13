@@ -52,8 +52,8 @@ class ScannerNotifier extends Notifier<ScannerState> {
   bool             _pendingFreshCapture = false;
   int              _lostFrames = 0;
 
-  static const int _guidanceIntervalMs = 1200; // Increased to avoid TTS debounce
-  static const int _requiredStabilityMs = 400; // Must be centered for 400ms
+  static const int _guidanceIntervalMs = 900;  // Optimized for faster speed
+  static const int _requiredStabilityMs = 150; // Optimized for speed (Hair-trigger)
   static const int _maxCenteringMs = 30000;     // Reset after 30s
   static const int _maxLostFrames = 3;         // Reset after ~3s of no detections
 
@@ -339,23 +339,28 @@ class ScannerNotifier extends Notifier<ScannerState> {
   }
 
   Future<void> _captureFrame(Map<String, dynamic> args, DetectionResult base) async {
-    debugPrint('[ScannerProvider] 📸 Captured frame. Starting high-res OCR check...');
+    debugPrint('[ScannerProvider] 📸 Captured frame. YOLO Confidence: ${(base.confidence * 100).toStringAsFixed(1)}%. Starting Triple-Check identification (Siamese + OCR)...');
     
     // 1. JPEG Conversion
     final jpeg = await compute(_yuvToJpegTask, args);
     
-    // 2. OCR Correction 
-    // Run OCR identification immediately to catch things like "REPRODUCTION" or Tagalog words
-    final ocrDenom = await AuthenticityService.instance.getDenominationFromOCR(jpeg);
+    // 2. Collaborative Identification (Siamese + OCR cross-validation)
+    final idResult = await AuthenticityService.instance.getCollaborativeIdentification(
+      imageBytes: jpeg,
+      boundingBox: base.boundingBox,
+      yoloDenom: base.denomination,
+      yoloConfidence: base.confidence,
+      type: base.type,
+    );
 
-    if (ocrDenom != null && ocrDenom != base.denomination) {
-       debugPrint('[ScannerProvider] 🎯 OCR Corrected denomination: $ocrDenom (was ${base.denomination})');
+    if (idResult.denomination != base.denomination) {
+       debugPrint('[ScannerProvider] 🎯 Triple-Check Corrected denomination: ${idResult.denomination} (was ${base.denomination})');
     }
 
     final finalResult = DetectionResult(
-      denomination:  ocrDenom ?? base.denomination,
+      denomination:  idResult.denomination,
       type:          base.type,
-      confidence:    ocrDenom != null ? 0.99 : base.confidence,
+      confidence:    idResult.confidence,
       boundingBox:    base.boundingBox,
       capturedImage: jpeg,
     );
