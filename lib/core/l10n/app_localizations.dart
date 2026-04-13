@@ -800,6 +800,14 @@ class AppLocalizations {
   String resultGoBackHintPre(String s) => isTagalog
       ? TlStrings.resultGoBackHintPre(s)
       : EnStrings.resultGoBackHintPre(s);
+
+  // ── Share App ─────────────────────────────────────────────────────────────
+  String get shareAppTitle => isTagalog ? TlStrings.shareAppTitle : EnStrings.shareAppTitle;
+  String get shareAppSubtitle => isTagalog ? TlStrings.shareAppSubtitle : EnStrings.shareAppSubtitle;
+  String get shareAppInstructions => isTagalog ? TlStrings.shareAppInstructions : EnStrings.shareAppInstructions;
+  String get shareAppCopyLink => isTagalog ? TlStrings.shareAppCopyLink : EnStrings.shareAppCopyLink;
+  String get shareAppOpenBrowser => isTagalog ? TlStrings.shareAppOpenBrowser : EnStrings.shareAppOpenBrowser;
+  String get shareAppLinkCopied => isTagalog ? TlStrings.shareAppLinkCopied : EnStrings.shareAppLinkCopied;
   String get resultGoBackLink =>
       isTagalog ? TlStrings.resultGoBackLink : EnStrings.resultGoBackLink;
   String get resultDismissLabel =>

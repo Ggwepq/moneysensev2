@@ -672,4 +672,12 @@ abstract final class EnStrings {
   static const String resultAutoVerifyCancel = 'Cancel';
   static const String strictVerificationTitle = 'Strict Verification';
   static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
+
+  // Share App
+  static const String shareAppTitle = 'Share MoneySense';
+  static const String shareAppSubtitle = 'Show a QR code to share the app.';
+  static const String shareAppInstructions = 'Scan this QR code to download MoneySense directly to your phone.';
+  static const String shareAppCopyLink = 'Copy Link';
+  static const String shareAppOpenBrowser = 'Open in Browser';
+  static const String shareAppLinkCopied = 'Link copied to clipboard!';
 }
