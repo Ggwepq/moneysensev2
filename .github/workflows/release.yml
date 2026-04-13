@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches:
-      - test-master
+      - master
 
 jobs:
   build-and-release:
