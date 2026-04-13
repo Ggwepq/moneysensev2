@@ -251,6 +251,7 @@ class DetectionService {
   int _lastInferMs = 0;
 
   bool get isReady => _isInit && _isolateCommandPort != null;
+  bool get isProcessing => _isRunning;
 
   Future<void> init() async {
     if (_isInit) return;

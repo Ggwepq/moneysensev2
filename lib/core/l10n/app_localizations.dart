@@ -920,6 +920,9 @@ class AppLocalizations {
   String get scannerStatusScanning => isTagalog
       ? TlStrings.scannerStatusScanning
       : EnStrings.scannerStatusScanning;
+  String get scannerStatusCentering => isTagalog
+      ? TlStrings.scannerStatusCentering
+      : EnStrings.scannerStatusCentering;
   String get scannerStatusProcessing => isTagalog
       ? TlStrings.scannerStatusProcessing
       : EnStrings.scannerStatusProcessing;
@@ -927,4 +930,24 @@ class AppLocalizations {
       isTagalog ? TlStrings.scannerStatusResult : EnStrings.scannerStatusResult;
   String get scannerTapToOpen =>
       isTagalog ? TlStrings.scannerTapToOpen : EnStrings.scannerTapToOpen;
+
+  // ── Guidance ──────────────────────────────────────────────────────────────
+  String get guidanceMoveRight =>
+      isTagalog ? TlStrings.guidanceMoveRight : EnStrings.guidanceMoveRight;
+  String get guidanceMoveLeft =>
+      isTagalog ? TlStrings.guidanceMoveLeft : EnStrings.guidanceMoveLeft;
+  String get guidanceMoveDown =>
+      isTagalog ? TlStrings.guidanceMoveDown : EnStrings.guidanceMoveDown;
+  String get guidanceMoveUp =>
+      isTagalog ? TlStrings.guidanceMoveUp : EnStrings.guidanceMoveUp;
+  String get guidanceCentered =>
+      isTagalog ? TlStrings.guidanceCentered : EnStrings.guidanceCentered;
+  String get guidanceMoveRightDown =>
+      isTagalog ? TlStrings.guidanceMoveRightDown : EnStrings.guidanceMoveRightDown;
+  String get guidanceMoveRightUp =>
+      isTagalog ? TlStrings.guidanceMoveRightUp : EnStrings.guidanceMoveRightUp;
+  String get guidanceMoveLeftDown =>
+      isTagalog ? TlStrings.guidanceMoveLeftDown : EnStrings.guidanceMoveLeftDown;
+  String get guidanceMoveLeftUp =>
+      isTagalog ? TlStrings.guidanceMoveLeftUp : EnStrings.guidanceMoveLeftUp;
 }

@@ -246,6 +246,7 @@ class TtsService {
     }
 
     try {
+      debugPrint('[TtsService] 🗣 Speaking: "$text"');
       await _tts.speak(text);
     } catch (e) {
       _isSpeaking = false;

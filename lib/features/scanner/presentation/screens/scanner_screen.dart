@@ -247,8 +247,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
 
     final statusLabel = switch (scannerState) {
-      ScannerState.scanning   => l10n.scannerSemanticScanning,
-      ScannerState.processing => l10n.scannerSemanticProcessing,
+      ScannerState.scanning   => l10n.scannerStatusScanning,
+      ScannerState.centering  => l10n.scannerStatusCentering,
+      ScannerState.processing => l10n.scannerStatusProcessing,
       _                       => null,
     };
 
@@ -302,9 +303,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       ScannerState.idle       => l10n.scannerSemanticIdle,
       ScannerState.previewing => l10n.scannerSemanticReady,
       ScannerState.paused     => l10n.scannerSemanticPaused,
-      ScannerState.scanning   => l10n.scannerSemanticScanning,
-      ScannerState.processing => l10n.scannerSemanticProcessing,
-      ScannerState.result     => l10n.scannerSemanticResult,
+      ScannerState.scanning   => l10n.scannerStatusScanning,
+      ScannerState.centering  => l10n.scannerStatusCentering,
+      ScannerState.processing => l10n.scannerStatusProcessing,
+      ScannerState.result     => l10n.scannerStatusResult,
     };
   }
 
@@ -334,8 +336,12 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         EarconService.instance.play(EarconEvent.scanStart);
         _enqueue(ScannerSpeech.scanStarted(_l10n));
         _cancelIdleTimer();
+      case ScannerState.centering:
+        HapticFeedback.selectionClick();
+        break;
       case ScannerState.processing:
         _enqueue(ScannerSpeech.processing(_l10n));
+        break;
       case ScannerState.result:
         EarconService.instance.play(EarconEvent.scanSuccess);
         _resetIdleTimer();
