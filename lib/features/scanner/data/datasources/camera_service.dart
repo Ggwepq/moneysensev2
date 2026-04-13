@@ -100,7 +100,12 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController?> {
   Future<void> _disposeController() async {
     final c = _controller;
     _controller = null;
-    if (c != null && c.value.isInitialized) await c.dispose();
+    if (c != null && c.value.isInitialized) {
+      try {
+        await c.setFlashMode(FlashMode.off);
+      } catch (_) {}
+      await c.dispose();
+    }
   }
 
   CameraDescription _pickCamera(

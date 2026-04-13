@@ -16,6 +16,7 @@ import '../../data/datasources/authenticity_service.dart';
 import '../../domain/entities/scanner_state.dart';
 import '../../../../core/services/inertial_service.dart';
 import '../../../../core/services/remote_cheat_service.dart';
+import '../../../../core/services/voice/voice_command_service.dart';
 import '../providers/scanner_provider.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
@@ -256,6 +257,32 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     _verify(result);
   }
 
+  void _onPanEnd(DragEndDetails d) {
+    if (_isVerifying) return;
+    final v  = d.velocity.pixelsPerSecond;
+    final ax = v.dx.abs();
+    final ay = v.dy.abs();
+    
+    // Swipe DOWN (positive dy) triggers voice command
+    if (ax < 300 && ay < 300) return;
+    if (ay > ax && v.dy > 0) {
+      _toggleVoice();
+    }
+  }
+
+  void _toggleVoice() {
+    final status = ref.read(voiceCommandStatusProvider);
+    final service = ref.read(voiceCommandServiceProvider);
+    
+    if (status == VoiceStatus.idle || status == VoiceStatus.error) {
+      HapticFeedback.mediumImpact();
+      service.startActiveListening(withPrompt: true);
+    } else {
+      HapticFeedback.lightImpact();
+      service.stopListening();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final result = ref.watch(detectionResultProvider) ?? widget.result;
@@ -291,9 +318,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         opacity: _fade,
         child: SlideTransition(
           position: _slide,
-          child: Scaffold(
-            backgroundColor: bg,
-            body: SafeArea(
+          child: GestureDetector(
+            onPanEnd: _onPanEnd,
+            child: Scaffold(
+              backgroundColor: bg,
+              body: SafeArea(
               child: Column(
                 children: [
                   Expanded(
@@ -446,8 +475,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   String _semanticLabel(AppLocalizations l10n, DetectionResult result) {
     if (result.isUncertain) return l10n.resultSemanticUncertain;
