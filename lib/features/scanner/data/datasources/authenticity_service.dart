@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -17,6 +18,10 @@ class VerificationResult {
   final String label;
   final String? collaborativeDenom;
   final String? reason;
+  
+  // Multi-stage scores for diagnostics
+  final double? classifierScore;
+  final List<String>? ocrAlerts;
 
   VerificationResult({
     required this.status,
@@ -24,7 +29,16 @@ class VerificationResult {
     required this.label,
     this.collaborativeDenom,
     this.reason,
+    this.classifierScore,
+    this.ocrAlerts,
   });
+}
+
+class IdentificationResult {
+  final String denomination;
+  final double confidence;
+  
+  IdentificationResult({required this.denomination, required this.confidence});
 }
 
 class AuthenticityService {
@@ -33,10 +47,16 @@ class AuthenticityService {
 
   final TextRecognizer _textRecognizer = TextRecognizer();
   Uint8List? _modelBytes;
+  Uint8List? _siameseBytes;
+  Map<String, List<List<double>>> _referenceEmbeddings = {};
   bool _isInit = false;
 
   static const String _modelPath =
       'assets/models/moneysense-verifier-resnet18.tflite';
+  static const String _siamesePath = 
+      'assets/models/moneysense-siamese.tflite';
+  static const String _referencesPath = 
+      'assets/models/reference_embeddings.json';
 
   static const List<String> _labels = [
     'genuine_20',
@@ -59,12 +79,46 @@ class AuthenticityService {
   Future<void> init() async {
     if (_isInit) return;
     try {
+      // Load Classifier
       final data = await rootBundle.load(_modelPath);
       _modelBytes = data.buffer.asUint8List();
+      
+      // Load Siamese
+      try {
+        final siameseData = await rootBundle.load(_siamesePath);
+        _siameseBytes = siameseData.buffer.asUint8List();
+        debugPrint('[AuthenticityService] Siamese model bytes loaded.');
+      } catch (e) {
+        debugPrint('[AuthenticityService] ⚠ Siamese model not found at $_siamesePath');
+      }
+
+      // Load Reference Embeddings
+      await _loadReferences();
+
       _isInit = true;
-      debugPrint('[AuthenticityService] ResNet-18 model bytes loaded.');
+      debugPrint('[AuthenticityService] Multi-stage ready.');
     } catch (e) {
-      debugPrint('[AuthenticityService] ✗ Error loading model: $e');
+      debugPrint('[AuthenticityService] ✗ Error loading models: $e');
+    }
+  }
+
+  Future<void> _loadReferences() async {
+    try {
+      final jsonStr = await rootBundle.loadString(_referencesPath);
+      final Map<String, dynamic> data = jsonDecode(jsonStr);
+      final embs = data['embeddings'] as Map<String, dynamic>;
+      
+      _referenceEmbeddings = embs.map((key, value) {
+        final list = value as List;
+        // Handle both single vector and multi-vector formats for robustness
+        if (list.isNotEmpty && list.first is num) {
+          return MapEntry(key, [List<double>.from(list)]);
+        }
+        return MapEntry(key, list.map((v) => List<double>.from(v as List)).toList());
+      });
+      debugPrint('[AuthenticityService] Loaded multi-reference embeddings for: ${_referenceEmbeddings.keys.join(", ")}');
+    } catch (e) {
+      debugPrint('[AuthenticityService] ⚠ Failed to load reference embeddings: $e');
     }
   }
 
@@ -79,6 +133,111 @@ class AuthenticityService {
     final debugPath = debugDir?.path ?? (await getTemporaryDirectory()).path;
     final ocrResult = await _runOCR(imageBytes, debugPath);
     return ocrResult.detectedDenom;
+  }
+
+  /// Performs collaborative identification using Siamese and OCR.
+  /// Used for early identification (The "Triple Check").
+  Future<IdentificationResult> getCollaborativeIdentification({
+    required Uint8List imageBytes,
+    required Rect? boundingBox,
+    required String yoloDenom,
+    required double yoloConfidence,
+    required String type,
+  }) async {
+    if (!_isInit) await init();
+    
+    final debugDir = await getExternalStorageDirectory();
+    final debugPath = debugDir?.path ?? (await getTemporaryDirectory()).path;
+
+    // 1. Skip Siamese for coins (No reference data yet)
+    if (type == 'coin') {
+      debugPrint('[AuthenticityService/ID] 🪙 Type is coin. Skipping Siamese, running OCR check.');
+      final ocrResult = await _runOCR(imageBytes, debugPath, boundingBox);
+      return IdentificationResult(
+        denomination: ocrResult.detectedDenom ?? yoloDenom,
+        confidence: yoloConfidence,
+      );
+    }
+
+    // 2. Task: Siamese Feature Extraction (Compute-bound)
+    Future<List<double>?> siameseTask;
+    if (_siameseBytes != null) {
+      siameseTask = compute(_processSiamese, {
+        'imageBytes': imageBytes,
+        'boundingBox': boundingBox != null
+            ? [boundingBox.left, boundingBox.top, boundingBox.width, boundingBox.height]
+            : null,
+        'modelBytes': _siameseBytes,
+        'debugPath': debugPath,
+      });
+    } else {
+      siameseTask = Future.value(null);
+    }
+
+    // 3. Task: OCR
+    final ocrTask = _runOCR(imageBytes, debugPath, boundingBox);
+
+    final results = await Future.wait([siameseTask, ocrTask]);
+    final liveEmbedding = results[0] as List<double>?;
+    final ocrResult = results[1] as _OCRResult;
+
+    String? siameseBestDenom;
+    double siameseBestScore = -1.0;
+
+    // 4. Multi-Denomination Siamese Check
+    if (liveEmbedding != null) {
+      for (final entry in _referenceEmbeddings.entries) {
+        final denom = entry.key;
+        final refs = entry.value;
+        
+        double maxSim = -1.0;
+        for (final ref in refs) {
+          final sim = _calculateSimilarity(liveEmbedding, ref);
+          if (sim > maxSim) maxSim = sim;
+        }
+        
+        if (maxSim > siameseBestScore) {
+          siameseBestScore = maxSim;
+          siameseBestDenom = denom;
+        }
+      }
+      debugPrint('[AuthenticityService/ID] Siamese Winner: $siameseBestDenom (Score: ${siameseBestScore.toStringAsFixed(4)})');
+    }
+
+    // 5. Decision Logic (CONSENSUS)
+    
+    // Rule 1: OCR is Gold Standard for text.
+    if (ocrResult.detectedDenom != null) {
+      debugPrint('[AuthenticityService/ID] 🎯 OCR Voted: ${ocrResult.detectedDenom}');
+      // Return OCR match with highest visual confidence as fallback for percentage display
+      return IdentificationResult(
+        denomination: ocrResult.detectedDenom!,
+        confidence: max(yoloConfidence, siameseBestScore),
+      );
+    }
+
+    // Rule 2: Siamese Competition Logic
+    if (siameseBestDenom != null) {
+      // Extreme confidence: Siamese Corrects YOLO
+      if (siameseBestScore > 0.94) {
+        debugPrint('[AuthenticityService/ID] 🎯 Siamese VETO: $siameseBestDenom (Score: $siameseBestScore > 0.94)');
+        return IdentificationResult(denomination: siameseBestDenom, confidence: siameseBestScore);
+      }
+      // Agreement: Confirms YOLO
+      if (siameseBestDenom == yoloDenom && siameseBestScore > 0.85) {
+        debugPrint('[AuthenticityService/ID] 🎯 Siamese CONFIRMED YOLO $yoloDenom (Score: $siameseBestScore)');
+        return IdentificationResult(denomination: yoloDenom, confidence: max(yoloConfidence, siameseBestScore));
+      }
+      // Moderate Disagreement: Siamese vs YOLO
+      if (siameseBestDenom != yoloDenom && siameseBestScore > 0.90) {
+        debugPrint('[AuthenticityService/ID] ⚖ Siamese Correcting YOLO to $siameseBestDenom (Score: $siameseBestScore)');
+        return IdentificationResult(denomination: siameseBestDenom, confidence: siameseBestScore);
+      }
+      
+      debugPrint('[AuthenticityService/ID] ⚖ Consensus Weak. Sticking with YOLO $yoloDenom.');
+    }
+
+    return IdentificationResult(denomination: yoloDenom, confidence: yoloConfidence);
   }
 
   /// Verifies a bill using both physical feature modeling (ResNet) 
@@ -123,7 +282,7 @@ class AuthenticityService {
     }
 
     // 1. Parallel Task: ResNet-18 (Physical Authenticity)
-    debugPrint('[AuthenticityService] → Spawning ResNet task...');
+    debugPrint('[AuthenticityService] → Spawning ResNet classifier task...');
     final resNetTask = compute(_processAndPredict, {
       'imageBytes': imageBytes,
       'boundingBox': boundingBox != null
@@ -145,26 +304,18 @@ class AuthenticityService {
     debugPrint('[AuthenticityService]   • ResNet status: ${resNetResult.status.name} (${(resNetResult.confidence * 100).toStringAsFixed(1)}%)');
     debugPrint('[AuthenticityService]   • OCR detected denomination: ${ocrResult.detectedDenom ?? "None"}');
     
-    // 4. Consensus & Decision (THE FINAL BOSS RULE)
-    
+    // 3. Consensus & Decision
     AuthenticityResult finalStatus = resNetResult.status;
     String? finalDenom = ocrResult.detectedDenom ?? yoloDenom;
     String? reason;
     
-    // AUTHENTICITY: OCR Keywords override EVERYTHING
+    // Rule 1: OCR Keywords (Veto Power)
     if (ocrResult.hasSecurityAlert) {
       finalStatus = AuthenticityResult.counterfeit;
       final alerts = ocrResult.alerts.join(", ");
       reason = 'OCR Keyword detected: $alerts';
-      debugPrint('[AuthenticityService] ‼ FINAL BOSS: OCR DETECTED COUNTERFEIT KEYWORD: $alerts');
+      debugPrint('[AuthenticityService] ‼ CONSENSUS: OCR VETO (Counterfeit keyword found)');
     } 
-    // If no OCR override, check for denomination mismatch if ResNet thought it was genuine
-    else if (resNetResult.status == AuthenticityResult.genuine) {
-      if (ocrResult.detectedDenom != null && ocrResult.detectedDenom != yoloDenom) {
-         debugPrint('[AuthenticityService] ⚠ Warning: Denomination Mismatch (YOLO=$yoloDenom vs OCR=${ocrResult.detectedDenom})');
-         // We might want to be suspicious, but for now we trust OCR for the denomination
-      }
-    }
 
     return VerificationResult(
       status: finalStatus,
@@ -172,7 +323,67 @@ class AuthenticityService {
       label: resNetResult.label,
       collaborativeDenom: finalDenom,
       reason: reason,
+      classifierScore: resNetResult.confidence,
+      ocrAlerts: ocrResult.alerts,
     );
+  }
+
+  static double _calculateSimilarity(List<double> a, List<double> b) {
+    if (a.length != b.length) return 0.0;
+    double dotProduct = 0.0;
+    double normA = 0.0;
+    double normB = 0.0;
+    for (int i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+    if (normA == 0 || normB == 0) return 0.0;
+    return dotProduct / (sqrt(normA) * sqrt(normB));
+  }
+
+  static Future<List<double>?> _processSiamese(Map<String, dynamic> args) async {
+    final Uint8List imageBytes = args['imageBytes'];
+    final List<double>? bbox = args['boundingBox'];
+    final Uint8List modelBytes = args['modelBytes'];
+    
+    img.Image? image = img.decodeImage(imageBytes);
+    if (image == null) return null;
+
+    if (bbox != null) {
+      image = img.copyCrop(image, 
+        x: (bbox[0] * image.width).toInt(), 
+        y: (bbox[1] * image.height).toInt(), 
+        width: (bbox[2] * image.width).toInt(), 
+        height: (bbox[3] * image.height).toInt());
+    }
+
+    final canvas = img.Image(width: 224, height: 224);
+    final resized = img.copyResize(image, 
+      width: image.width > image.height ? 224 : null, 
+      height: image.height >= image.width ? 224 : null);
+    img.compositeImage(canvas, resized, dstX: (224 - resized.width) ~/ 2, dstY: (224 - resized.height) ~/ 2);
+    
+    final input = Float32List(224 * 224 * 3);
+    int p = 0;
+    for (var pix in canvas) {
+      input[p++] = (pix.r / 255.0 - _mean[0]) / _std[0];
+      input[p++] = (pix.g / 255.0 - _mean[1]) / _std[1];
+      input[p++] = (pix.b / 255.0 - _mean[2]) / _std[2];
+    }
+
+    try {
+      final interpreter = Interpreter.fromBuffer(modelBytes);
+      // Assuming 512 dimensions for ResNet18 feature extractor
+      final output = List<double>.filled(512, 0).reshape([1, 512]);
+      interpreter.run(input.buffer.asUint8List(), output);
+      interpreter.close();
+      
+      return List<double>.from(output[0]);
+    } catch (e) {
+      debugPrint('[AuthenticityIsolate/Siamese] ✗ Inference failed: $e');
+      return null;
+    }
   }
 
   Future<_OCRResult> _runOCR(Uint8List imageBytes, String debugPath, [Rect? boundingBox]) async {
