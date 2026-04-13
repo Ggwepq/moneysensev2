@@ -52,6 +52,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     await TtsService.instance.init(
       language: settings.language,
       verbosity: settings.ttsVerbosity,
+      speechRate: settings.speechRate,
     );
 
     // Sync EarconService with persisted settings and TalkBack state.

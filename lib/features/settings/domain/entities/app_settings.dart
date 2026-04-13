@@ -60,6 +60,7 @@ class AppSettings {
   final VisionProfile visionProfile;
   final bool ttsEnabled;
   final TtsVerbosity ttsVerbosity;
+  final double speechRate;
   final bool hapticFeedback;
   final HapticIntensity hapticIntensity;
 
@@ -86,6 +87,7 @@ class AppSettings {
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
     this.ttsVerbosity = TtsVerbosity.standard,
+    this.speechRate = 1.0,
     this.hapticFeedback = true,
     this.hapticIntensity = HapticIntensity.medium,
     this.earconEnabled = true,
@@ -107,6 +109,7 @@ class AppSettings {
     VisionProfile? visionProfile,
     bool? ttsEnabled,
     TtsVerbosity? ttsVerbosity,
+    double? speechRate,
     bool? hapticFeedback,
     HapticIntensity? hapticIntensity,
     bool? earconEnabled,
@@ -128,6 +131,7 @@ class AppSettings {
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,
+      speechRate: speechRate ?? this.speechRate,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
       earconEnabled: earconEnabled ?? this.earconEnabled,

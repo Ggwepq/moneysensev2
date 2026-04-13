@@ -136,6 +136,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setTtsVerbosity(TtsVerbosity verbosity) =>
       _update(state.copyWith(ttsVerbosity: verbosity));
 
+  void setSpeechRate(double rate) =>
+      _update(state.copyWith(speechRate: rate));
+
   void toggleHapticFeedback(bool value) =>
       _update(state.copyWith(hapticFeedback: value));
 

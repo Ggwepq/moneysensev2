@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../settings/domain/entities/vision_config.dart';
 import '../../../../core/services/earcon_service.dart';
+import '../../../../core/services/tts_service.dart';
 
 /// Shared scaffold for all feature tutorials.
 ///
@@ -25,7 +26,7 @@ import '../../../../core/services/earcon_service.dart';
 ///
 /// Adding a new tutorial: create a widget that extends nothing: just provide
 /// [hero], [badge], [title], [description], [steps], and [interactive].
-class MsTutorialScaffold extends StatelessWidget {
+class MsTutorialScaffold extends ConsumerStatefulWidget {
   const MsTutorialScaffold({
     super.key,
     required this.title,
@@ -69,12 +70,22 @@ class MsTutorialScaffold extends StatelessWidget {
   final Color? accentColor;
 
   @override
+  ConsumerState<MsTutorialScaffold> createState() => _MsTutorialScaffoldState();
+}
+
+class _MsTutorialScaffoldState extends ConsumerState<MsTutorialScaffold> {
+  @override
+  void dispose() {
+    ref.read(ttsServiceProvider).stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cfg    = ProviderScope.containerOf(context, listen: false)
-        .read(visionConfigProvider);
-    final accent = accentColor ?? cfg.accent(isDark);
+    final cfg    = ref.read(visionConfigProvider);
+    final accent = widget.accentColor ?? cfg.accent(isDark);
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
@@ -96,7 +107,7 @@ class MsTutorialScaffold extends StatelessWidget {
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         ),
         title: Text(
-          title,
+          widget.title,
           style: theme.textTheme.titleMedium?.copyWith(
             color: onSurface,
             fontWeight: FontWeight.w700,
@@ -110,13 +121,13 @@ class MsTutorialScaffold extends StatelessWidget {
             // ── Hero zone ────────────────────────────────────────────────
             SizedBox(
               height: 260,
-              child: heroSemantic != null
+              child: widget.heroSemantic != null
                   ? Semantics(
-                      label: heroSemantic,
+                      label: widget.heroSemantic,
                       excludeSemantics: true,
-                      child: hero,
+                      child: widget.hero,
                     )
-                  : hero,
+                  : widget.hero,
             ),
 
             // ── Content zone ─────────────────────────────────────────────
@@ -145,7 +156,7 @@ class MsTutorialScaffold extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      badge.toUpperCase(),
+                      widget.badge.toUpperCase(),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -158,7 +169,7 @@ class MsTutorialScaffold extends StatelessWidget {
 
                   // Title
                   Text(
-                    title,
+                    widget.title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: onSurface,
                       fontWeight: FontWeight.w800,
@@ -169,7 +180,7 @@ class MsTutorialScaffold extends StatelessWidget {
 
                   // Description
                   Text(
-                    description,
+                    widget.description,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: onSurfaceVariant,
                       height: 1.55,
@@ -178,25 +189,25 @@ class MsTutorialScaffold extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xl),
 
                   // Steps
-                  ...List.generate(steps.length, (i) => _StepRow(
+                  ...List.generate(widget.steps.length, (i) => _StepRow(
                     number: i + 1,
-                    text: steps[i],
+                    text: widget.steps[i],
                     accentColor: accent,
                     surface: surface,
                     onSurface: onSurface,
                     theme: theme,
-                    isLast: i == steps.length - 1,
+                    isLast: i == widget.steps.length - 1,
                   )),
 
                   // Interactive zone
-                  if (interactive != null) ...[
+                  if (widget.interactive != null) ...[
                     const SizedBox(height: AppSpacing.xl),
-                    interactiveSemantic != null
+                    widget.interactiveSemantic != null
                         ? Semantics(
-                            label: interactiveSemantic,
-                            child: interactive!,
+                            label: widget.interactiveSemantic,
+                            child: widget.interactive!,
                           )
-                        : interactive!,
+                        : widget.interactive!,
                   ],
 
                   const SizedBox(height: AppSpacing.xxxl),

@@ -536,11 +536,10 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       MsActionTile(
                         title: l10n.shareAppTitle,
+                        subtitle: 'Download MoneySense using QR Code',
                         icon: Icons.qr_code_2_rounded,
                         onTap: () {
-                          EarconService.instance.play(
-                            EarconEvent.actionConfirmed,
-                          );
+                          EarconService.instance.play(EarconEvent.actionConfirmed);
                           say(SettingsSpeech.shareApp(l10n));
                           ShareAppModal.show(context);
                         },
