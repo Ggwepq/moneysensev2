@@ -82,7 +82,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Optional: Log why it skipped
+      # 7. Log why it skipped (Corrected Syntax)
       - name: Log skip reason
         if: env.SKIP_RELEASE == 'true' || env.TAG_EXISTS == 'true'
-        run: echo "Release process skipped. Reason: ${{ env.ERROR_MSG }}${{ env.TAG_EXISTS == 'true' && 'Version already exists' || '' }}"
+        run: |
+          if [ "${{ env.SKIP_RELEASE }}" = "true" ]; then
+            echo "Skipped: ${{ env.ERROR_MSG }}"
+          elif [ "${{ env.TAG_EXISTS }}" = "true" ]; then
+            echo "Skipped: Version ${{ env.VERSION }} already exists in tags."
+          fi
