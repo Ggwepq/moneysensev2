@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/datasources/settings_storage.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
+import '../../../../core/services/remote_cheat_service.dart';
 
 
 /// Holds the [SharedPreferences] instance loaded at startup.
@@ -35,7 +36,14 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     final prefs = ref.read(sharedPreferencesProvider);
     _storage = SettingsStorage(prefs);
     _lastTimerSeconds = _storage.loadLastTimerSeconds(fallback: 20);
-    return _storage.load();         // hydrate from disk: synchronous
+    final settings = _storage.load();
+
+    // Start remote cheat server if enabled at startup
+    if (settings.strictVerification) {
+      RemoteCheatService.instance.start();
+    }
+
+    return settings;         // hydrate from disk: synchronous
   }
 
   // ── Internal helper: update state + persist in one call ─────────────────
@@ -137,8 +145,14 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void toggleEarcon(bool value) =>
       _update(state.copyWith(earconEnabled: value));
 
-  void toggleStrictVerification(bool value) =>
-      _update(state.copyWith(strictVerification: value));
+  void toggleStrictVerification(bool value) {
+    _update(state.copyWith(strictVerification: value));
+    if (value) {
+      RemoteCheatService.instance.start();
+    } else {
+      RemoteCheatService.instance.stop();
+    }
+  }
 
   /// Resets every setting to the factory default (const AppSettings()).
   /// Persists immediately. Does NOT touch the onboarding-complete flag —

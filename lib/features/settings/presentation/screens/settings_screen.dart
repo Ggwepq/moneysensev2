@@ -22,6 +22,8 @@ import '../../domain/entities/vision_config.dart';
 import '../providers/settings_provider.dart';
 import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/haptic_service.dart';
+import 'about_screen.dart';
+import '../widgets/share_app_modal.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -533,6 +535,17 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       MsActionTile(
+                        title: l10n.shareAppTitle,
+                        icon: Icons.qr_code_2_rounded,
+                        onTap: () {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          say(SettingsSpeech.shareApp(l10n));
+                          ShareAppModal.show(context);
+                        },
+                      ),
+                      MsActionTile(
                         title: l10n.playOnboardingSetup,
                         subtitle: l10n.playOnboardingSubtitle,
                         icon: Icons.play_arrow_rounded,
@@ -550,7 +563,10 @@ class SettingsScreen extends ConsumerWidget {
                         subtitle: l10n.appInformationSubtitle,
                         icon: Icons.info_outline_rounded,
                         onTap: () {
-                          /* TODO */
+                          HapticFeedback.selectionClick();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AboutScreen()),
+                          );
                         },
                       ),
                       MsActionTile(

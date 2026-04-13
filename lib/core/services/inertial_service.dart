@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import '../../features/scanner/data/datasources/authenticity_service.dart';
+
 // Detects phone tilt using the raw accelerometer, not the gyroscope.
 // The X axis dominates when the phone tilts left or right. The phone must hold
 // the tilt for 1 second before the callback fires, and a flat-guard rejects
@@ -151,6 +153,15 @@ class InertialService {
   /// Current detected orientation.
   // ignore: library_private_types_in_public_api
   _TiltOrientation get orientation => _currentOrientation;
+
+  /// Returns forced authenticity based on tilt for "Presentation Mode".
+  /// Z > 8.5 (approx < 30 deg) -> Counterfeit
+  /// Z < 7.5 (approx > 40 deg) -> Genuine
+  // ignore: library_private_types_in_public_api
+  AuthenticityResult get cheatStatus {
+    if (_rawZ.abs() > 8.5) return AuthenticityResult.counterfeit;
+    return AuthenticityResult.genuine;
+  }
 }
 
 

@@ -51,6 +51,10 @@ abstract final class SettingsSpeech {
         l10n.ttsSettingChanged(settingName, newValue),
         id: 'settings.change.$settingName',
       );
+
+  /// Share App modal opened.
+  static TtsMessage shareApp(AppLocalizations l10n) =>
+      TtsMessage.navigation(l10n.shareAppTitle, id: 'settings.shareApp');
 }
 
 
