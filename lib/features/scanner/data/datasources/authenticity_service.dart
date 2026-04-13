@@ -364,22 +364,47 @@ class AuthenticityService {
       height: image.height >= image.width ? 224 : null);
     img.compositeImage(canvas, resized, dstX: (224 - resized.width) ~/ 2, dstY: (224 - resized.height) ~/ 2);
     
-    final input = Float32List(224 * 224 * 3);
-    int p = 0;
-    for (var pix in canvas) {
-      input[p++] = (pix.r / 255.0 - _mean[0]) / _std[0];
-      input[p++] = (pix.g / 255.0 - _mean[1]) / _std[1];
-      input[p++] = (pix.b / 255.0 - _mean[2]) / _std[2];
-    }
-
     try {
       final interpreter = Interpreter.fromBuffer(modelBytes);
-      // Assuming 512 dimensions for ResNet18 feature extractor
-      final output = List<double>.filled(512, 0).reshape([1, 512]);
+      interpreter.allocateTensors();
+
+      final inputTensor = interpreter.getInputTensor(0);
+      final inputShape = inputTensor.shape; // Expected [1, H, W, 3]
+      final targetH = inputShape[1];
+      final targetW = inputShape[2];
+
+      // Resize to match model's expected shape if different from 224
+      img.Image finalImage;
+      if (targetH != 224 || targetW != 224) {
+        finalImage = img.Image(width: targetW, height: targetH);
+        final resized = img.copyResize(image, 
+          width: image.width > image.height ? targetW : null, 
+          height: image.height >= image.width ? targetH : null);
+        img.compositeImage(finalImage, resized, dstX: (targetW - resized.width) ~/ 2, dstY: (targetH - resized.height) ~/ 2);
+      } else {
+        finalImage = canvas;
+      }
+
+      final input = Float32List(targetW * targetH * 3);
+      int p = 0;
+      for (var pix in finalImage) {
+        input[p++] = (pix.r / 255.0 - _mean[0]) / _std[0];
+        input[p++] = (pix.g / 255.0 - _mean[1]) / _std[1];
+        input[p++] = (pix.b / 255.0 - _mean[2]) / _std[2];
+      }
+
+      final outputTensor = interpreter.getOutputTensor(0);
+      final outputShape = outputTensor.shape;
+      final outputSize = outputShape.reduce((val, element) => val * element);
+      
+      final output = List<double>.filled(outputSize, 0).reshape(outputShape);
+      
+      // CRITICAL: Passing .buffer.asUint8List() is often required for the C++ backend
+      // to correctly treat the buffer as continuous memory of the specified type.
       interpreter.run(input.buffer.asUint8List(), output);
       interpreter.close();
       
-      return List<double>.from(output[0]);
+      return List<double>.from(output.reshape([outputSize]));
     } catch (e) {
       debugPrint('[AuthenticityIsolate/Siamese] ✗ Inference failed: $e');
       return null;

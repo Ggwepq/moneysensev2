@@ -64,6 +64,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void dispose() {
     _autoTimer?.cancel();
     _ctrl.dispose();
+    ref.read(inertialServiceProvider).stop(); // Clean up service
     super.dispose();
   }
 
@@ -89,6 +90,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void _dismiss() {
     debugPrint('[ResultScreen] 🔙 Dismissing result. Verf=$_verificationResult');
     _autoTimer?.cancel();
+    ref.read(inertialServiceProvider).stop(); // Stop service to clear callbacks
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
@@ -96,6 +98,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void _confirm() {
     debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
+    ref.read(inertialServiceProvider).stop(); // Stop service
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
     if (result.type == 'bill' && _verificationResult == null && !_isVerifying) {
