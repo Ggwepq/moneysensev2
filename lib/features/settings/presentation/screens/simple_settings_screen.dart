@@ -12,6 +12,7 @@ import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'vision_profile_picker_screen.dart';
+import '../widgets/share_app_modal.dart';
 
 class SimpleSettingsScreen extends ConsumerWidget {
   const SimpleSettingsScreen({super.key});
@@ -214,6 +215,20 @@ class SimpleSettingsScreen extends ConsumerWidget {
                               ),
                             );
                           }
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      // Share App — full width, opens modal
+                      _ToggleCardWide(
+                        icon: Icons.qr_code_2_rounded,
+                        label: l10n.shareAppTitle,
+                        isActive: false,
+                        onTap: () {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          say(SettingsSpeech.shareApp(l10n));
+                          ShareAppModal.show(context);
                         },
                       ),
                       const SizedBox(height: AppSpacing.md),

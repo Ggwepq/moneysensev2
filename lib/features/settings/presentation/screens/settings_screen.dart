@@ -23,6 +23,8 @@ import '../providers/settings_provider.dart';
 import '../../../../core/services/earcon_service.dart';
 import '../../../../core/services/haptic_service.dart';
 import 'about_screen.dart';
+import '../widgets/share_app_modal.dart';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -530,6 +532,17 @@ class SettingsScreen extends ConsumerWidget {
                         icon: Icons.refresh_rounded,
                         onTap: () {
                           /* TODO */
+                        },
+                      ),
+                      MsActionTile(
+                        title: l10n.shareAppTitle,
+                        icon: Icons.qr_code_2_rounded,
+                        onTap: () {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          say(SettingsSpeech.shareApp(l10n));
+                          ShareAppModal.show(context);
                         },
                       ),
                       MsActionTile(

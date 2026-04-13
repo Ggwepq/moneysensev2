@@ -670,4 +670,12 @@ abstract final class TlStrings {
   static const String resultAutoVerifyCancel = 'Kanselahin';
   static const String strictVerificationTitle = 'Strict Verification';
   static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
+
+  // Share App
+  static const String shareAppTitle = 'Ibahagi ang MoneySense';
+  static const String shareAppSubtitle = 'Magpakita ng QR code para ibahagi ang app.';
+  static const String shareAppInstructions = 'I-scan ang QR code na ito para ma-download ang MoneySense nang direkta sa iyong telepono.';
+  static const String shareAppCopyLink = 'Kopyahin ang Link';
+  static const String shareAppOpenBrowser = 'Buksan sa Browser';
+  static const String shareAppLinkCopied = 'Nakopya na ang link!';
 }
