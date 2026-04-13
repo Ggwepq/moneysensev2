@@ -1,0 +1,59 @@
+name: Production Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - test-master  # Adjust if your main branch is named 'main'
+
+jobs:
+  build-and-release:
+    # Only run if the PR was actually merged, not just closed
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Extract Version from PR Title
+      # Example: "merge master to dev for v2.1.0 release"
+      - name: Extract version
+        id: get_version
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          VERSION=$(echo "$TITLE" | grep -oP 'v[0-9]+\.[0-9]+\.[0-9]+')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted Version: $VERSION"
+
+      # 2. Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 3. Build the APK
+      - name: Build APK
+        run: flutter build apk --release
+
+      # 4. Rename the APK
+      - name: Rename Artifact
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/moneysense-universal.apk
+
+      # 5. Create GitHub Release & Upload Asset
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          generate_release_notes: true # Automatically generates notes based on commits
+          files: build/app/outputs/flutter-apk/moneysense-universal.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
