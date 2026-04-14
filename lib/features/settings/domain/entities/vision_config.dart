@@ -124,7 +124,7 @@ class VisionConfig {
     return switch (profile) {
       VisionProfile.lowVision => const VisionConfig(
         profile:                VisionProfile.lowVision,
-        fontScaleFloor:         1.0,
+        fontScaleFloor:         0.8,
         contrastLevel:          ContrastLevel.normal,
         defaultTtsVerbosity:    TtsVerbosity.minimal,
         defaultHapticIntensity: HapticIntensity.subtle,

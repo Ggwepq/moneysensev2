@@ -246,6 +246,9 @@ class TtsService {
       await Future.delayed(Duration(milliseconds: _talkBackDelayMs));
     }
 
+    // Abort if stop() was called during the TalkBack delay
+    if (!_isSpeaking) return;
+
     try {
       debugPrint('[TtsService] 🗣 Speaking: "$text"');
       await _tts.speak(text);

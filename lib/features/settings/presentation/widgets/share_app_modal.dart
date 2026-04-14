@@ -68,30 +68,9 @@ class ShareAppModal extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () async {
-                      final url = Uri.parse(downloadUrl);
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
-                        EarconService.instance.play(EarconEvent.actionConfirmed);
-                      }
-                    },
-                    icon: const Icon(Icons.open_in_browser_rounded),
-                    label: Text(l10n.shareAppOpenBrowser),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.base,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
                 FilledButton.icon(
                   onPressed: () {
                     Clipboard.setData(const ClipboardData(text: downloadUrl));
@@ -103,13 +82,32 @@ class ShareAppModal extends ConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.copy_rounded),
-                  label: const Text('Copy'),
+                  label: const Text('Copy Link'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.base,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                FilledButton.icon(
+                  onPressed: () async {
+                    final url = Uri.parse(downloadUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                      EarconService.instance.play(EarconEvent.actionConfirmed);
+                    }
+                  },
+                  icon: const Icon(Icons.open_in_browser_rounded),
+                  label: Text(l10n.shareAppOpenBrowser),
                   style: FilledButton.styleFrom(
                     backgroundColor: theme.colorScheme.secondaryContainer,
                     foregroundColor: theme.colorScheme.onSecondaryContainer,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.base,
-                      horizontal: AppSpacing.lg,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppSpacing.tileRadius),
