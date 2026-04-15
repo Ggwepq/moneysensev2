@@ -47,10 +47,10 @@ class VisionConfig {
 
   // ── Effective font scale ───────────────────────────────────────────────────
 
-  /// Returns the actual font scale to apply, clamping [userScale] to
-  /// [fontScaleFloor] so profiles can never go below their minimum.
+  /// Returns the actual font scale to apply, multiplying [userScale] by
+  /// [fontScaleFloor] so Small/Medium/Large relative differences are preserved.
   double effectiveFontScale(double userScale) =>
-      userScale.clamp(fontScaleFloor, 2.0);
+      (userScale * fontScaleFloor).clamp(0.5, 3.0);
 
   // ── Colour accessors ───────────────────────────────────────────────────────
   // Centralised here so adding a new colour-adaptive widget means reading one
@@ -124,7 +124,7 @@ class VisionConfig {
     return switch (profile) {
       VisionProfile.lowVision => const VisionConfig(
         profile:                VisionProfile.lowVision,
-        fontScaleFloor:         0.8,
+        fontScaleFloor:         1.0,
         contrastLevel:          ContrastLevel.normal,
         defaultTtsVerbosity:    TtsVerbosity.minimal,
         defaultHapticIntensity: HapticIntensity.subtle,
