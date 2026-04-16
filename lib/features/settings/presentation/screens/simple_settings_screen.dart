@@ -78,7 +78,38 @@ class SimpleSettingsScreen extends ConsumerWidget {
                     children: [
                       _BigRow(
                         children: [
-                          // Theme toggle: Light ↔ Dark (one box)
+                          // Font Size
+                          _ToggleCard(
+                            icon: Icons.format_size_rounded,
+                            label: 'Font: ${settings.fontScale == 1.0 ? 'Medium' : settings.fontScale == 1.5 ? 'Large' : 'Small'}',
+                            isActive: true,
+                            onTap: () {
+                               EarconService.instance.play(EarconEvent.actionConfirmed);
+                               final next = settings.fontScale == 1.0 ? 1.5 : settings.fontScale == 1.5 ? 0.8 : 1.0;
+                               notifier.setFontScale(next);
+                               final label = next == 1.0 ? 'Medium' : next == 1.5 ? 'Large' : 'Small';
+                               say(SettingsSpeech.changed(l10n, 'Font Size', label));
+                            },
+                          ),
+                          // Speech Rate
+                          _ToggleCard(
+                            icon: Icons.speed_rounded,
+                            label: 'Speed: ${settings.speechRate == 1.0 ? 'Normal' : settings.speechRate == 1.5 ? 'Fast' : 'Slow'}',
+                            isActive: true,
+                            onTap: () {
+                               EarconService.instance.play(EarconEvent.actionConfirmed);
+                               final next = settings.speechRate == 1.0 ? 1.5 : settings.speechRate == 1.5 ? 0.5 : 1.0;
+                               notifier.setSpeechRate(next);
+                               final label = next == 1.0 ? 'Normal' : next == 1.5 ? 'Fast' : 'Slow';
+                               say(SettingsSpeech.changed(l10n, 'Speech Rate', label));
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _BigRow(
+                        children: [
+                          // Theme toggle: Dark ↔ Light (one box)
                           _ToggleCard(
                             icon: isDark
                                 ? Icons.dark_mode_rounded
@@ -218,58 +249,32 @@ class SimpleSettingsScreen extends ConsumerWidget {
                         },
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      // Voice Command
-                      _ToggleCardWide(
-                        icon: settings.voiceNavigation
-                            ? Icons.mic_rounded
-                            : Icons.mic_off_rounded,
-                        label: 'Voice Command',
-                        isActive: settings.voiceNavigation,
-                        onTap: () {
-                          final next = !settings.voiceNavigation;
-                          EarconService.instance.play(
-                            next ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleVoiceNavigation(next);
-                          say(SettingsSpeech.toggled(l10n, 'Voice Command', next));
-                        },
+                      _BigRow(
+                        children: [
+                          // Voice Command
+                          _ToggleCard(
+                            icon: settings.voiceNavigation
+                                ? Icons.mic_rounded
+                                : Icons.mic_off_rounded,
+                            label: 'Voice Command',
+                            isActive: settings.voiceNavigation,
+                            onTap: () {
+                              final next = !settings.voiceNavigation;
+                              EarconService.instance.play(
+                                next ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
+                              );
+                              notifier.toggleVoiceNavigation(next);
+                              say(SettingsSpeech.toggled(l10n, 'Voice Command', next));
+                            },
+                          ),
+                          const SizedBox.shrink(),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      // Font Size
-                      _ToggleCardWide(
-                        icon: Icons.format_size_rounded,
-                        label: 'Font Size',
-                        sublabel: settings.fontScale == 1.0 ? 'Medium' : settings.fontScale == 1.5 ? 'Large' : 'Small',
-                        isActive: true,
-                        onTap: () {
-                           EarconService.instance.play(EarconEvent.actionConfirmed);
-                           final next = settings.fontScale == 1.0 ? 1.5 : settings.fontScale == 1.5 ? 0.8 : 1.0;
-                           notifier.setFontScale(next);
-                           final label = next == 1.0 ? 'Medium' : next == 1.5 ? 'Large' : 'Small';
-                           say(SettingsSpeech.changed(l10n, 'Font Size', label));
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      // Speech Rate
-                      _ToggleCardWide(
-                        icon: Icons.speed_rounded,
-                        label: 'Speech Rate',
-                        sublabel: settings.speechRate == 1.0 ? 'Normal' : settings.speechRate == 1.5 ? 'Fast' : 'Slow',
-                        isActive: true,
-                        onTap: () {
-                           EarconService.instance.play(EarconEvent.actionConfirmed);
-                           final next = settings.speechRate == 1.0 ? 1.5 : settings.speechRate == 1.5 ? 0.5 : 1.0;
-                           notifier.setSpeechRate(next);
-                           final label = next == 1.0 ? 'Normal' : next == 1.5 ? 'Fast' : 'Slow';
-                           say(SettingsSpeech.changed(l10n, 'Speech Rate', label));
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      // Share App — full width, opens modal
+                      // Share App
                       _ToggleCardWide(
                         icon: Icons.qr_code_2_rounded,
                         label: l10n.shareAppTitle,
-                        sublabel: 'Download MoneySense using QR Code',
                         isActive: false,
                         onTap: () {
                           EarconService.instance.play(EarconEvent.actionConfirmed);
@@ -395,7 +400,7 @@ class _BigRow extends StatelessWidget {
       children: [
         Expanded(child: children[0]),
         const SizedBox(width: AppSpacing.lg), // Increased from md
-        Expanded(child: children[1]),
+        Expanded(child: children.length > 1 ? children[1] : const SizedBox.shrink()),
       ],
     );
   }

@@ -259,6 +259,25 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     if (cameraOpen && !isPaused &&
         controller != null && controller.value.isInitialized) {
       previewChild = CameraPreview(controller);
+    } else if (isPaused) {
+      previewChild = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+             Icon(Icons.camera_rounded, size: 80, color: isDark ? Colors.white12 : Colors.black12),
+             const SizedBox(height: 16),
+             Text(
+               'SCANNER STANDBY',
+               style: TextStyle(
+                 color: isDark ? Colors.white24 : Colors.black26,
+                 fontSize: 20,
+                 fontWeight: FontWeight.w800,
+                 letterSpacing: 4.0,
+               ),
+             ),
+          ],
+        ),
+      );
     }
 
     return Scaffold(

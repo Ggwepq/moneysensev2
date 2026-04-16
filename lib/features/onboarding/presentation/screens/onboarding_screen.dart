@@ -211,6 +211,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _skip() {
+    _isAdvancing = false;
     _voiceSub?.cancel();
     ref.read(ttsServiceProvider).stop();
     EarconService.instance.play(EarconEvent.actionDisabled);
