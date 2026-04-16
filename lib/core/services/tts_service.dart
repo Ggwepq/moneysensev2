@@ -36,6 +36,12 @@ class TtsService {
   // Debounce timers keyed by message id
   final Map<String, Timer> _debounceTimers = {};
 
+  // ── Stop generation counter ───────────────────────────────────────────────
+  // Incremented on every stop() call. Completion handlers and debounce timers
+  // capture the generation at creation time and bail out if it has changed,
+  // preventing zombie speech from firing after a screen exit.
+  int _generation = 0;
+
   // ── Accessibility / TalkBack detection ────────────────────────────────────
   static const _accessibilityChannel =
       MethodChannel('flutter/accessibility');
@@ -177,7 +183,12 @@ class TtsService {
   }
 
   /// Stop all speech and clear the queue.
+  ///
+  /// Bumps the generation counter so that any in-flight completion handlers,
+  /// debounce timers, or TalkBack delays that fire AFTER this call will see
+  /// a stale generation and refuse to process the queue.
   Future<void> stop() async {
+    _generation++;
     for (final t in _debounceTimers.values) {
       t.cancel();
     }
@@ -196,7 +207,9 @@ class TtsService {
     }
     // Insert at front (highest priority wins immediately)
     _queue.insert(0, message);
+    final gen = _generation;
     _tts.stop().then((_) {
+      if (_generation != gen) return; // stop() was called — abort
       _isSpeaking = false;
       _processQueue();
     });
@@ -208,8 +221,10 @@ class TtsService {
     // Cancel previous timer for same key (dedup)
     _debounceTimers.remove(key)?.cancel();
 
+    final gen = _generation;
     _debounceTimers[key] = Timer(delay, () {
       _debounceTimers.remove(key);
+      if (_generation != gen) return; // stop() was called — abort
       // Remove stale item with same id from queue before re-adding
       if (message.id != null) {
         _queue.removeWhere((m) => m.id == message.id);
@@ -241,13 +256,15 @@ class TtsService {
     if (text.trim().isEmpty) return;
     _isSpeaking = true;
 
+    final gen = _generation;
+
     // If TalkBack is active, add a brief pause so we don't speak over it
     if (_talkBackActive) {
       await Future.delayed(Duration(milliseconds: _talkBackDelayMs));
     }
 
     // Abort if stop() was called during the TalkBack delay
-    if (!_isSpeaking) return;
+    if (!_isSpeaking || _generation != gen) return;
 
     try {
       debugPrint('[TtsService] 🗣 Speaking: "$text"');
