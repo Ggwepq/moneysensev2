@@ -64,13 +64,19 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedSettings(_l10n));
-    Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen()));
+    Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen())).then((_) {
+      // Kill any lingering settings/tutorial audio when returning to home
+      ref.read(ttsServiceProvider).stop();
+    });
   }
 
   void _pushTutorial() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedTutorial(_l10n));
-    Navigator.of(context).push(_slideFromRight(const TutorialScreen()));
+    Navigator.of(context).push(_slideFromRight(const TutorialScreen())).then((_) {
+      // Kill any lingering tutorial audio when returning to home
+      ref.read(ttsServiceProvider).stop();
+    });
   }
 
   void _enqueue(TtsMessage msg) {

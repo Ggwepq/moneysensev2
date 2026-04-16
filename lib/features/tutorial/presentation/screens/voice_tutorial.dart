@@ -64,6 +64,12 @@ class _VoiceTutorialState extends ConsumerState<VoiceTutorial> {
   }
 
   @override
+  void dispose() {
+    ref.read(voiceCommandServiceProvider).stopListening();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cfg = ref.watch(visionConfigProvider);

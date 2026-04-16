@@ -19,7 +19,7 @@ Give visually impaired Filipinos a reliable, independent way to handle cash with
 ### Objectives
 
 1. Design an accessible interface and system architecture that supports all three vision profiles across all app features.
-2. Build a real-time detection system using YOLOv8 for denomination identification and MobileNet for authenticity verification, capable of working under varying lighting, orientations, and backgrounds.
+2. Build a real-time detection system using YOLOv8 for denomination identification and parallel models (Siamese, ResNet) for verification, capable of working under varying lighting, orientations, and backgrounds purely on-device.
 3. Test bill and coin recognition, real-time performance, and voice guidance through structured test cases under different conditions.
 4. Evaluate usability, reliability, accuracy, and accessibility using the FURPS framework alongside testing with visually impaired participants.
 
@@ -111,7 +111,7 @@ This separation exists because the user's intent must survive background and for
 
 ### Settings as a single value object
 
-All 14 user preferences live in one `AppSettings` object under `appSettingsProvider`. This includes the new `voiceNavigation` flag. This means one subscription instead of 14, atomic updates via `copyWith`, and one serialization call to persist everything. Widgets that only care about one field use `.select()` to limit rebuilds.
+All user preferences live in one immutable `AppSettings` object under `appSettingsProvider`. This means one subscription instead of multiple, atomic updates via `copyWith`, and one serialization call to persist everything. Widgets that only care about one field use `.select()` to limit rebuilds.
 
 ### Named mutator methods
 
@@ -121,11 +121,11 @@ No widget writes `state = ...` directly to the settings provider. All changes go
 
 ## 7. Navigation Design
 
-MoneySense uses `Navigator.push()` for main screen navigation and a static `TutorialNavigator` for tutorials.
+MoneySense uses `Navigator.push()` for main screen navigation and a static `TutorialNavigator` for tutorials. (Route constants are defined and ready for a future `go_router` migration).
 
 ### Slide direction matches the triggering gesture
 
-The swipe gesture and the slide animation point the same direction, so the user can build a spatial mental model of where each screen lives.
+When Gestural Navigation is enabled, the swipe gesture and the slide animation point the same direction, so the user can build a spatial mental model of where each screen lives.
 
 | Destination | Trigger | Slide direction |
 |---|---|---|
@@ -157,11 +157,12 @@ The user's chosen font scale is applied at the root via a `MediaQuery` override 
 
 ### Vibration as primary output
 
-For fully blind users, the denomination vibration patterns are a primary output channel, not a secondary confirmation. Each of the 10 denominations has a unique pattern of long and short pulses that can be learned and identified without looking at the screen. The interactive tutorial for this feature lets users practice each pattern before relying on it in real use.
+For fully blind users, the denomination vibration patterns are a primary output channel, not a secondary confirmation. Each of the 10 denominations has a unique pattern of long and short pulses that can be learned and identified without looking at the screen. Device vibration capabilities (vibrator present, amplitude control supported) are cached at startup (`Vibration.hasAmplitudeControl()`) so these patterns execute instantly without asynchronous layout delays. The interactive tutorial for this feature lets users practice each pattern before relying on it in real use.
 
 ### TTS priority queue
 
-The TTS engine runs a priority queue so time-sensitive messages are never blocked. A scan result always interrupts ambient guidance. Navigation messages are debounced so rapid transitions produce one utterance instead of stacking. The engine also adds a short delay when TalkBack is detected as active so the app's voice does not talk over TalkBack's announcements.
+The TTS engine (`TtsService`) runs a priority queue so time-sensitive messages are never blocked. A scan result always interrupts ambient guidance. Navigation messages are debounced so rapid transitions produce one utterance instead of stacking. 
+The engine interacts with TalkBack directly via the `flutter/accessibility` platform channel. When TalkBack is detected as active, the engine adds a `500ms` delay before speaking so the app's voice does not talk over TalkBack's native announcements.
 
 ---
 
@@ -173,21 +174,35 @@ The camera lifecycle is the most complex part of the app because it involves And
 
 `AppLifecycleState.inactive` fires when the user pulls down the notification shade, swipes up the navigation bar, or when a call HUD appears. These are not genuine backgrounds. Releasing the camera on `inactive` would turn off the flashlight every time the user pulls down the notification bar while scanning. The correct behavior is to only release hardware on `paused` or `hidden`, which represent genuine backgrounds.
 
-### The `_routeObscured` flag
+### Auto-Flash Logic
 
-A boolean flag prevents the camera from restarting prematurely. When `didPushNext()` fires, the flag is set to true. On `AppLifecycleState.resumed`, the camera only restarts if the flag is false. This prevents a double-resume when the user backgrounds the app while Settings is open and then returns.
+When the camera opens, the app samples the luminance of the camera frame. If the frame is determined to be too dark across 5 distinct checks, the app automatically toggles the flashlight on and announces this action. This happens completely transparently without needing the user to guess if there's enough light.
 
 ---
 
-## 10. ML Model Integration
+## 10. ML Model Integration & Performance
 
-The ML pipeline is the pending connection point. The rest of the system works independently so wiring in the model requires changes in one place.
+MoneySense uses a multi-stage approach, separating the problem into high-speed **Identification** and high-precision **Verification**. See [SCANNING.md](./SCANNING.md) for deeper details on this pipeline.
 
-**YOLOv8** runs on-device via TensorFlow Lite for real-time denomination detection. It handles multiple objects in a single frame, which is what enables multi-bill and multi-coin scanning. On-device inference is also what makes offline operation possible.
+### The Persistent Isolate Architecture
 
-**MobileNet** provides a lightweight verification pass to confirm authenticity and improve classification confidence. It is fast enough for mid-range Android devices without causing frame drops during scanning.
+To achieve near-zero latency, running TFLite inference directly via `compute()` creates too much overhead (spawning and destroying isolates per frame). Instead, `DetectionService` spawns a single **Persistent Isolate** at startup.
+- The model buffer and interpreter sit inside this isolate.
+- Camera frames (`YUV_420_888`) are dispatched as bare Byte streams to the isolate.
+- The isolate performs YUV-to-RGB conversion, normalization, and inference entirely within the background layer.
 
-When the model produces a result, it writes to `detectionResultProvider`. The scanner screen, TTS service, and vibration service all watch this provider and respond automatically. The `startScanning()` method in `ScannerNotifier` is where this write happens.
+### The "Triple Check" Consensus
+
+Identification is not done by a single model. MoneySense uses three on-device systems to determine the denomination:
+1. **YOLOv8-Nano**: Real-time bounding boxes and initial classification (runs continuously).
+2. **Siamese Network**: Feature extraction and embedding matching against reference "gold standard" vectors using cosine similarity.
+3. **Google ML Kit OCR**: Text extraction matching Tagalog dictionary keywords (e.g., "DALAWAMPUNG").
+
+These three systems operate in a consensus engine to provide correct denomination identification regardless of bill rotation, lighting, or visible features.
+
+### Deep Verification
+
+After the denomination is identified via the Triple-Check, a high-resolution crop is processed by a **ResNet-18** physical classifier to identify genuine vs. counterfeit texturing. Simultaneously, the OCR checks for security keywords (e.g., "PLAY MONEY", "REPLICA"). If any fail, the verification is rejected.
 
 ---
 
@@ -207,7 +222,25 @@ Each tutorial has a 260px hero zone for an animated illustration and a scrollabl
 
 ---
 
-## 13. Plugin Rationale
+## 13. Voice Command System ("Hey MoneySense")
+
+The voice command system provides hands-free control of the application. It is designed to work globally, allowing users to navigate between screens, control camera hardware (flash/lens), and handle scanning operations using only their voice.
+
+### Wake-Word Detection
+The system uses the "hey moneysense" wake-word. It operates in two phases:
+1. **Passive Listening**: The engine continuously listens for the trigger phrase in the background.
+2. **Active Command Parsing**: Once triggered, the engine enters an active listening state, indicated by the `VoiceCommandOverlay`. It captures the user's utterance and passes it to the parsing pipeline.
+
+### The Pipeline
+1. **STT (Speech-to-Text)**: Managed by `VoiceCommandService` using the `speech_to_text` package. Converts raw audio into text.
+2. **Intent Parser**: `VoiceIntentParser` uses regular expressions and flexible, bilingual (English/Tagalog) fuzzy text matching to map text to a strongly-typed `VoiceIntent`.
+3. **Command Executor**: `VoiceCommandExecutor` receives the intent and dynamically commands Riverpod providers to trigger state changes or navigation.
+
+This system is completely non-blocking and co-exists naturally alongside Touch, Swipe, Tilt, and Shake navigation.
+
+---
+
+## 14. Plugin Rationale
 
 | Plugin | Why it was chosen |
 |---|---|
@@ -219,28 +252,5 @@ Each tutorial has a 260px hero zone for an animated illustration and a scrollabl
 | shared_preferences | Simple key-value persistence. Sufficient for the current settings model without the overhead of a local database |
 | go_router | Prepared for future deep-link and route-guard support. Route constants are already defined |
 | intl | Required by `flutter_localizations` for date and number formatting support |
-
----
-
-## 14. Voice Command System
-
-The voice command system provides hands-free control of the application, activated either by a toggle in Settings or selected during Onboarding. It is designed to work globally, allowing users to navigate between screens, control camera hardware (flash/lens), and handle scanning operations using only their voice.
-
-### Wake-Word Detection
-The system uses the "Hey MoneySense" wake-word. It operates in two phases:
-1. **Passive Listening**: The engine listens specifically for the "hey moneysense" trigger.
-2. **Active Command Parsing**: Once triggered, the engine enters an active listening state, indicated by the `VoiceCommandOverlay`. It captures the user's utterance and passes it to the parsing pipeline.
-
-### The Parsing Pipeline
-The system follows a three-stage processing model:
-1. **STT (Speech-to-Text)**: Managed by `VoiceCommandService` using the `speech_to_text` package. It converts raw audio into text strings.
-2. **Intent Parser**: The `VoiceIntentParser` uses regular expressions and fuzzy matching to map text strings (e.g., "go to settings", "buksan ang settings") into a strongly-typed `VoiceIntent`.
-3. **Command Executor**: The `VoiceCommandExecutor` receives the `VoiceIntent` and dispatches the corresponding action by calling into Riverpod providers (e.g., stopping the scanner, navigating to a new route, or toggling the flashlight).
-
-### Visual Feedback
-While the app is "listening" for a command after a wake-word trigger, a `VoiceCommandOverlay` provides visual confirmation. This ensures the user knows the state of the system, even if the primary mode of interaction is auditory.
-
-### Architecture Integration
-- **Engine Control**: The voice engine logic is localized in `lib/core/services/voice/`.
-- **Global Lifecycle**: The engine is initialized in `HomeShell` and its active state is bound to the `voiceNavigation` field in `AppSettings`.
-- **Non-Blocking**: Voice navigation co-exists with standard touch, gestural, and inertial navigation, providing a true multi-modal accessibility experience.
+| tflite_flutter | The engine for connecting Dart to underlying TensorFlow Lite binaries, giving hardware acceleration (GPU) support. |
+| google_mlkit_text_recognition | Unmatched accuracy and speed in offline on-device OCR, essential for reading bill security text. |
