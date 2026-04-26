@@ -22,12 +22,10 @@ abstract final class SettingsKeys {
   static const visionProfile       = 'settings.visionProfile';
   static const ttsEnabled          = 'settings.ttsEnabled';
   static const ttsVerbosity        = 'settings.ttsVerbosity';
+  static const textVerbosity       = 'settings.textVerbosity';
   static const hapticFeedback      = 'settings.hapticFeedback';
   static const earconEnabled        = 'settings.earconEnabled';
   static const hapticIntensity     = 'settings.hapticIntensity';
-  static const strictVerification   = 'settings.strictVerification';
-  static const proximityBeeps      = 'settings.proximityBeeps';
-  static const repeatLoop          = 'settings.repeatLoop';
 
   /// Set to true once the user completes onboarding.
   /// Absent or false = first run → show onboarding.
@@ -105,6 +103,11 @@ class SettingsStorage {
         TtsVerbosity.values,
         defaults.ttsVerbosity,
       ),
+      textVerbosity: _readEnum(
+        SettingsKeys.textVerbosity,
+        TextVerbosity.values,
+        defaults.textVerbosity,
+      ),
       hapticFeedback:
           _prefs.getBool(SettingsKeys.hapticFeedback) ?? defaults.hapticFeedback,
       earconEnabled:
@@ -114,15 +117,6 @@ class SettingsStorage {
         HapticIntensity.values,
         defaults.hapticIntensity,
       ),
-      strictVerification:
-          _prefs.getBool(SettingsKeys.strictVerification) ??
-              defaults.strictVerification,
-      proximityBeeps:
-          _prefs.getBool(SettingsKeys.proximityBeeps) ??
-              defaults.proximityBeeps,
-      repeatLoop:
-          _prefs.getBool(SettingsKeys.repeatLoop) ??
-              defaults.repeatLoop,
     );
   }
 
@@ -149,12 +143,10 @@ class SettingsStorage {
     _prefs.setString(SettingsKeys.visionProfile,       s.visionProfile.name);
     _prefs.setBool  (SettingsKeys.ttsEnabled,          s.ttsEnabled);
     _prefs.setString(SettingsKeys.ttsVerbosity,        s.ttsVerbosity.name);
+    _prefs.setString(SettingsKeys.textVerbosity,       s.textVerbosity.name);
     _prefs.setBool  (SettingsKeys.hapticFeedback,      s.hapticFeedback);
     _prefs.setBool  (SettingsKeys.earconEnabled,       s.earconEnabled);
     _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
-    _prefs.setBool  (SettingsKeys.strictVerification,  s.strictVerification);
-    _prefs.setBool  (SettingsKeys.proximityBeeps,       s.proximityBeeps);
-    _prefs.setBool  (SettingsKeys.repeatLoop,           s.repeatLoop);
   }
 
   /// Persist just [_lastTimerSeconds] separately.

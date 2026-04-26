@@ -202,50 +202,6 @@ class SettingsScreen extends ConsumerWidget {
                           TutorialRoute.denominationVibration,
                         ),
                       ),
-                      MsToggleTile(
-                        title: l10n.proximityBeeps,
-                        subtitle: l10n.proximityBeepsSubtitle,
-                        value: settings.proximityBeeps,
-                        onChanged: (v) {
-                          EarconService.instance.play(
-                            v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleProximityBeeps(v);
-                          say(SettingsSpeech.toggled(l10n, l10n.proximityBeeps, v));
-                        },
-                      ),
-                      MsToggleTile(
-                        title: l10n.repeatLoop,
-                        subtitle: l10n.repeatLoopSubtitle,
-                        value: settings.repeatLoop,
-                        onChanged: (v) {
-                          EarconService.instance.play(
-                            v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleRepeatLoop(v);
-                          say(SettingsSpeech.toggled(l10n, l10n.repeatLoop, v));
-                        },
-                      ),
-                      MsToggleTile(
-                        title: l10n.strictVerificationTitle,
-                        subtitle: l10n.strictVerificationSubtitle,
-                        value: settings.strictVerification,
-                        onChanged: (v) {
-                          EarconService.instance.play(
-                            v
-                                ? EarconEvent.actionEnabled
-                                : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleStrictVerification(v);
-                          say(
-                            SettingsSpeech.toggled(
-                              l10n,
-                              l10n.strictVerificationTitle,
-                              v,
-                            ),
-                          );
-                        },
-                      ),
                     ],
                   ),
 
@@ -459,7 +415,7 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       if (settings.ttsEnabled)
-                        _VerbosityTile(
+                        _TtsVerbosityTile(
                           label: l10n.ttsVerbosityTitle,
                           subtitle: isFullVerbosity
                               ? l10n.ttsVerbositySubtitleFull
@@ -486,6 +442,33 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           },
                         ),
+                      _TextVerbosityTile(
+                        label: l10n.textVerbosityTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.textVerbositySubtitleFull
+                            : l10n.textVerbositySubtitle,
+                        verbosity: settings.textVerbosity,
+                        l10n: l10n,
+                        visionConfig: visionConfig,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          notifier.setTextVerbosity(v);
+                          final label = v == TextVerbosity.minimal
+                              ? l10n.textVerbosityMinimal
+                              : v == TextVerbosity.standard
+                              ? l10n.textVerbosityStandard
+                              : l10n.textVerbosityFull;
+                          say(
+                            SettingsSpeech.changed(
+                              l10n,
+                              l10n.textVerbosityTitle,
+                              label,
+                            ),
+                          );
+                        },
+                      ),
                       MsToggleTile(
                         title: l10n.hapticTitle,
                         subtitle: isFullVerbosity
@@ -894,8 +877,8 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-class _VerbosityTile extends StatelessWidget {
-  const _VerbosityTile({
+class _TtsVerbosityTile extends StatelessWidget {
+  const _TtsVerbosityTile({
     required this.label,
     required this.subtitle,
     required this.verbosity,
@@ -952,6 +935,75 @@ class _VerbosityTile extends StatelessWidget {
               Icons.volume_mute_rounded,
               Icons.volume_down_rounded,
               Icons.volume_up_rounded,
+            ],
+            selected: verbosity,
+            onSelected: onChanged,
+            accentColor: visionConfig.accentYellow,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TextVerbosityTile extends StatelessWidget {
+  const _TextVerbosityTile({
+    required this.label,
+    required this.subtitle,
+    required this.verbosity,
+    required this.l10n,
+    required this.visionConfig,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String subtitle;
+  final TextVerbosity verbosity;
+  final AppLocalizations l10n;
+  final VisionConfig visionConfig;
+  final ValueChanged<TextVerbosity> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            label: '$label. $subtitle.',
+            excludeSemantics: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(subtitle, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          MsSegmentedSelector<TextVerbosity>(
+            options: TextVerbosity.values,
+            labels: [
+              l10n.textVerbosityMinimal,
+              l10n.textVerbosityStandard,
+              l10n.textVerbosityFull,
+            ],
+            leadingIcons: [
+              Icons.short_text_rounded,
+              Icons.notes_rounded,
+              Icons.article_rounded,
             ],
             selected: verbosity,
             onSelected: onChanged,

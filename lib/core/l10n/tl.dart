@@ -29,7 +29,13 @@ abstract final class TlStrings {
   static const String languageEnglish = 'Ingles';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Laki ng Teksto';
+  static const String fontSizeSmall = 'Maliit';
+  static const String fontSizeMedium = 'Katamtaman';
+  static const String fontSizeLarge = 'Malaki';
   static const String speechRate = 'Bilis ng Pagsasalita';
+  static const String speechRateSlow = 'Mabagal';
+  static const String speechRateNormal = 'Normal';
+  static const String speechRateFast = 'Mabilis';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -53,8 +59,6 @@ abstract final class TlStrings {
   static const String useFrontCamera = 'Gamitin ang Front Camera';
   static const String useFlashlight = 'Gamitin ang Flash';
   static const String denominationVibration = 'Vibrasyon ng Denominasyon';
-  static const String proximityBeeps = 'Proximity Beeps';
-  static const String repeatLoop = 'Pag-ulit ng Resulta';
 
   // Scanning: subtitles
   static const String useFrontCameraSubtitle =
@@ -69,10 +73,6 @@ abstract final class TlStrings {
       'Maramdaman ang natatanging pattern ng vibrasyon para sa bawat denominasyon.';
   static const String denominationVibrationSubtitleFull =
       'Kapag natukoy ang isang bill, ang iyong telepono ay nagvi-vibrate sa isang pattern na natatangi sa denominasyong iyon, para maramdaman mo ang resulta nang hindi nakikinig. Bawat halaga ng bill ay may natatanging pattern.';
-  static const String proximityBeepsSubtitle =
-      'Pabilisin ang tunog habang papalapit ang pera sa gitna.';
-  static const String repeatLoopSubtitle =
-      'Patuloy na ulitin ang resulta habang nakikita sa camera.';
 
   // Navigation: titles
   static const String shakeToGoBack = 'Iling para Bumalik';
@@ -691,10 +691,16 @@ abstract final class TlStrings {
   static const String resultManualCapturing = 'Kinikilala ang pera...';
   static String resultAutoVerifyHint(String seconds) => 'Awtomatikong magpapatunay sa loob ng $seconds... ';
   static const String resultAutoVerifyCancel = 'Kanselahin';
-  static const String strictVerificationTitle = 'Strict Verification';
-  static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
   static const String clarifyVoiceCommandsTitle = 'I-klaro ang mga Utos sa Boses';
   static const String clarifyVoiceCommandsSubtitle = 'Humingi ng kumpirmasyon (Oo/Hindi) bago isagawa ang mga nakilalang utos.';
+
+  // Text Verbosity
+  static const String textVerbosityTitle = 'Antas ng Teksto';
+  static const String textVerbositySubtitle = 'Gaano karaming impormasyon ang ipinapakita sa screen.';
+  static const String textVerbositySubtitleFull = 'Minimal: resulta lang. Standard: resulta at nabigasyon. Buo: detalyadong gabay at status.';
+  static const String textVerbosityMinimal = 'Minimal';
+  static const String textVerbosityStandard = 'Karaniwan';
+  static const String textVerbosityFull = 'Buo';
 
   // Share App
   static const String shareAppTitle = 'Ibahagi ang MoneySense';

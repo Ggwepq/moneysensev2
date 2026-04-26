@@ -39,7 +39,8 @@ class MsToggleCard extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           constraints: const BoxConstraints(
-            minHeight: 120, // Slightly taller for better touch target
+            minHeight: 160,
+            maxHeight: 160,
           ),
           decoration: BoxDecoration(
             color: backgroundColor,
@@ -54,10 +55,9 @@ class MsToggleCard extends StatelessWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: 48, color: textColor),
                 const SizedBox(height: 12),

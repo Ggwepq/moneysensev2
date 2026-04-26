@@ -29,7 +29,13 @@ abstract final class EnStrings {
   static const String languageEnglish = 'English';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Font Size';
+  static const String fontSizeSmall = 'Small';
+  static const String fontSizeMedium = 'Medium';
+  static const String fontSizeLarge = 'Large';
   static const String speechRate = 'Speech Rate';
+  static const String speechRateSlow = 'Slow';
+  static const String speechRateNormal = 'Normal';
+  static const String speechRateFast = 'Fast';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -53,8 +59,6 @@ abstract final class EnStrings {
   static const String useFrontCamera = 'Use Front Camera';
   static const String useFlashlight = 'Use Flashlight';
   static const String denominationVibration = 'Denomination Vibration';
-  static const String proximityBeeps = 'Proximity Beeps';
-  static const String repeatLoop = 'Identification Loop';
 
   // Scanning: subtitles
   static const String useFrontCameraSubtitle =
@@ -69,10 +73,6 @@ abstract final class EnStrings {
       'Feel a unique vibration pattern for each denomination scanned.';
   static const String denominationVibrationSubtitleFull =
       'When a bill is identified, your phone vibrates in a pattern unique to that denomination, so you can feel the result without listening. Each bill value has a distinct pattern.';
-  static const String proximityBeepsSubtitle =
-      'Speed up beeps as money centers in frame.';
-  static const String repeatLoopSubtitle =
-      'Continuously repeat results while in view.';
 
   // Navigation: titles
   static const String shakeToGoBack = 'Shake to Go Back';
@@ -694,10 +694,16 @@ abstract final class EnStrings {
   static const String resultManualCapturing = 'Identifying bill...';
   static String resultAutoVerifyHint(String seconds) => 'Verifying automatically in $seconds... ';
   static const String resultAutoVerifyCancel = 'Cancel';
-  static const String strictVerificationTitle = 'Strict Verification';
-  static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
   static const String clarifyVoiceCommandsTitle = 'Clarify Voice Commands';
-  static const String clarifyVoiceCommandsSubtitle = 'Ask for confirmation (Yes/No) before executing recognized voice commands.';
+  static const String clarifyVoiceCommandsSubtitle = 'Ask "Yes or No" before executing commands.';
+
+  // Text Verbosity
+  static const String textVerbosityTitle = 'Text Verbosity';
+  static const String textVerbositySubtitle = 'How much information is shown on the screen.';
+  static const String textVerbositySubtitleFull = 'Minimal: results only. Standard: results and navigation. Full: detailed status and guidance.';
+  static const String textVerbosityMinimal = 'Minimal';
+  static const String textVerbosityStandard = 'Standard';
+  static const String textVerbosityFull = 'Full';
 
   // Share App
   static const String shareAppTitle = 'Share MoneySense';

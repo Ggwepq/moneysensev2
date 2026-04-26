@@ -86,12 +86,6 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void toggleDenominationVibration(bool value) =>
       _update(state.copyWith(denominationVibration: value));
 
-  void toggleProximityBeeps(bool value) =>
-      _update(state.copyWith(proximityBeeps: value));
-
-  void toggleRepeatLoop(bool value) =>
-      _update(state.copyWith(repeatLoop: value));
-
   // ── Navigation ─────────────────────────────────────────────────────────
   void toggleShakeToGoBack(bool value) =>
       _update(state.copyWith(shakeToGoBack: value));
@@ -143,6 +137,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     _update(state.copyWith(
       visionProfile:      profile,
       ttsVerbosity:       config.defaultTtsVerbosity,
+      textVerbosity:      config.defaultTextVerbosity,
       hapticIntensity:    config.defaultHapticIntensity,
       voiceNavigation:    profile == VisionProfile.fullyBlind,
       gesturalNavigation: profile == VisionProfile.fullyBlind || profile == VisionProfile.partiallyBlind,
@@ -156,6 +151,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setTtsVerbosity(TtsVerbosity verbosity) =>
       _update(state.copyWith(ttsVerbosity: verbosity));
 
+  void setTextVerbosity(TextVerbosity verbosity) =>
+      _update(state.copyWith(textVerbosity: verbosity));
+
   void setSpeechRate(double rate) =>
       _update(state.copyWith(speechRate: rate));
 
@@ -167,12 +165,6 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
 
   void toggleEarcon(bool value) =>
       _update(state.copyWith(earconEnabled: value));
-
-  void toggleStrictVerification(bool value) {
-    // strictVerification toggle is deprecated — the service always runs.
-    // Kept for settings persistence compatibility; no side effects.
-    _update(state.copyWith(strictVerification: value));
-  }
 
   /// Resets every setting to the factory default (const AppSettings()).
   /// Persists immediately. Does NOT touch the onboarding-complete flag —

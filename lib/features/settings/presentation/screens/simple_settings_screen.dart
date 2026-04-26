@@ -10,6 +10,7 @@ import '../../../../shared/widgets/full_screen_loader.dart';
 import '../../../../shared/widgets/ms_big_row.dart';
 import '../../../../shared/widgets/ms_swipe_back_wrapper.dart';
 import '../../../../shared/widgets/ms_toggle_card.dart';
+import '../../../../shared/widgets/ms_toggle_card_wide.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
@@ -69,7 +70,8 @@ class SimpleSettingsScreen extends ConsumerWidget {
                             // Font Size
                             MsToggleCard(
                               icon: Icons.format_size_rounded,
-                              label: _fontLabel(settings.fontScale, l10n),
+                              label:
+                                  '${l10n.fontSize}: ${_fontValueLabel(settings.fontScale, l10n)}',
                               isActive: true,
                               onTap: () {
                                 EarconService.instance.play(EarconEvent.actionConfirmed);
@@ -80,13 +82,17 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                         : 1.0;
                                 notifier.setFontScale(next);
                                 say(SettingsSpeech.changed(
-                                    l10n, l10n.fontSize, _fontLabel(next, l10n)));
+                                  l10n,
+                                  l10n.fontSize,
+                                  _fontValueLabel(next, l10n),
+                                ));
                               },
                             ),
                             // Speech Rate
                             MsToggleCard(
                               icon: Icons.speed_rounded,
-                              label: _speedLabel(settings.speechRate, l10n),
+                              label:
+                                  '${l10n.speechRate}: ${_speedValueLabel(settings.speechRate, l10n)}',
                               isActive: true,
                               onTap: () {
                                 EarconService.instance.play(EarconEvent.actionConfirmed);
@@ -97,7 +103,10 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                         : 1.0;
                                 notifier.setSpeechRate(next);
                                 say(SettingsSpeech.changed(
-                                    l10n, l10n.speechRate, _speedLabel(next, l10n)));
+                                  l10n,
+                                  l10n.speechRate,
+                                  _speedValueLabel(next, l10n),
+                                ));
                               },
                             ),
                           ],
@@ -111,7 +120,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                   ? Icons.dark_mode_rounded
                                   : Icons.light_mode_rounded,
                               label: isDark ? l10n.themeDark : l10n.themeLight,
-                              isActive: true,
+                              isActive: isDark, // Highlight only if dark
                               onTap: () {
                                 final next = isDark ? AppThemeMode.light : AppThemeMode.dark;
                                 EarconService.instance.play(EarconEvent.actionConfirmed);
@@ -155,8 +164,8 @@ class SimpleSettingsScreen extends ConsumerWidget {
                               icon: isFrontCamera
                                   ? Icons.camera_front_rounded
                                   : Icons.camera_rear_rounded,
-                              label: isFrontCamera ? 'Front' : 'Back',
-                              isActive: true,
+                              label: isFrontCamera ? 'Front Cam' : 'Back Cam',
+                              isActive: isFrontCamera, // Highlight if front
                               onTap: () {
                                 final nextIsFront = !isFrontCamera;
                                 EarconService.instance.play(nextIsFront
@@ -211,7 +220,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
                                 say(SettingsSpeech.toggled(l10n, l10n.voiceNavigation, next));
                               },
                             ),
-                            // Clarify Commands Toggle (RECOMMENDED)
+                            // Clarify Commands Toggle
                             MsToggleCard(
                               icon: settings.clarifyVoiceCommands
                                   ? Icons.fact_check_rounded
@@ -230,53 +239,60 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        MsBigRow(
-                          children: [
-                            // Denomination Vibration (RECOMMENDED)
-                            MsToggleCard(
-                              icon: settings.denominationVibration
-                                  ? Icons.vibration_rounded
-                                  : Icons.vibration_outlined,
-                              label: l10n.denominationVibration,
-                              isActive: settings.denominationVibration,
-                              onTap: () {
-                                final next = !settings.denominationVibration;
-                                EarconService.instance.play(next
-                                    ? EarconEvent.actionEnabled
-                                    : EarconEvent.actionDisabled);
-                                notifier.toggleDenominationVibration(next);
-                                say(SettingsSpeech.toggled(
-                                    l10n, l10n.denominationVibration, next));
-                              },
-                            ),
-                            // Vision Profile (Link to Picker)
-                            MsToggleCard(
-                              icon: _visionIcon(settings.visionProfile),
-                              label: 'Profiles',
-                              isActive: false,
-                              onTap: () async {
-                                EarconService.instance.play(EarconEvent.actionConfirmed);
-                                final selected = await Navigator.of(context).push<VisionProfile>(
-                                  MaterialPageRoute(
-                                    builder: (_) => VisionProfilePickerScreen(
-                                      current: settings.visionProfile,
-                                      l10n: l10n,
-                                    ),
-                                  ),
-                                );
-                                if (selected != null &&
-                                    selected != settings.visionProfile &&
-                                    context.mounted) {
-                                  notifier.setVisionProfile(selected);
-                                  say(SettingsSpeech.changed(
-                                    l10n,
-                                    l10n.visionProfileTitle,
-                                    _visionLabel(selected, l10n),
-                                  ));
-                                }
-                              },
-                            ),
-                          ],
+                        // Text Verbosity - Cycle through options
+                        MsToggleCardWide(
+                          icon: Icons.short_text_rounded,
+                          label: l10n.textVerbosityTitle,
+                          sublabel: settings.textVerbosity == TextVerbosity.minimal
+                              ? l10n.textVerbosityMinimal
+                              : settings.textVerbosity == TextVerbosity.standard
+                                  ? l10n.textVerbosityStandard
+                                  : l10n.textVerbosityFull,
+                          isActive: true,
+                          onTap: () {
+                            EarconService.instance.play(EarconEvent.actionConfirmed);
+                            final next = settings.textVerbosity == TextVerbosity.minimal
+                                ? TextVerbosity.standard
+                                : settings.textVerbosity == TextVerbosity.standard
+                                    ? TextVerbosity.full
+                                    : TextVerbosity.minimal;
+                            notifier.setTextVerbosity(next);
+                            final label = next == TextVerbosity.minimal
+                                ? l10n.textVerbosityMinimal
+                                : next == TextVerbosity.standard
+                                    ? l10n.textVerbosityStandard
+                                    : l10n.textVerbosityFull;
+                            say(SettingsSpeech.changed(l10n, l10n.textVerbosityTitle, label));
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        // Vision Profile (Full Width Card)
+                        MsToggleCardWide(
+                          icon: _visionIcon(settings.visionProfile),
+                          label: l10n.visionProfileTitle,
+                          sublabel: _visionLabel(settings.visionProfile, l10n),
+                          isActive: false,
+                          onTap: () async {
+                            EarconService.instance.play(EarconEvent.actionConfirmed);
+                            final selected = await Navigator.of(context).push<VisionProfile>(
+                              MaterialPageRoute(
+                                builder: (_) => VisionProfilePickerScreen(
+                                  current: settings.visionProfile,
+                                  l10n: l10n,
+                                ),
+                              ),
+                            );
+                            if (selected != null &&
+                                selected != settings.visionProfile &&
+                                context.mounted) {
+                              notifier.setVisionProfile(selected);
+                              say(SettingsSpeech.changed(
+                                l10n,
+                                l10n.visionProfileTitle,
+                                _visionLabel(selected, l10n),
+                              ));
+                            }
+                          },
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         // Advanced Mode button
@@ -362,16 +378,16 @@ class SimpleSettingsScreen extends ConsumerWidget {
     if (context.mounted) FullScreenLoader.hide(context);
   }
 
-  String _fontLabel(double scale, AppLocalizations l10n) {
-    if (scale >= 1.4) return 'Size: L';
-    if (scale <= 0.9) return 'Size: S';
-    return 'Size: M';
+  String _fontValueLabel(double scale, AppLocalizations l10n) {
+    if (scale >= 1.4) return l10n.fontSizeLarge;
+    if (scale <= 0.9) return l10n.fontSizeSmall;
+    return l10n.fontSizeMedium;
   }
 
-  String _speedLabel(double rate, AppLocalizations l10n) {
-    if (rate >= 1.4) return 'Speed: F';
-    if (rate <= 0.6) return 'Speed: S';
-    return 'Speed: N';
+  String _speedValueLabel(double rate, AppLocalizations l10n) {
+    if (rate >= 1.4) return l10n.speechRateFast;
+    if (rate <= 0.6) return l10n.speechRateSlow;
+    return l10n.speechRateNormal;
   }
 
   IconData _visionIcon(VisionProfile p) => switch (p) {

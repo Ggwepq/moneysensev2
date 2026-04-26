@@ -25,13 +25,10 @@ enum VisionProfile { lowVision, partiallyBlind, fullyBlind }
 /// The user can override this independently in Settings → Accessibility.
 enum TtsVerbosity { minimal, standard, full }
 
+/// How much text information is displayed on screen.
+enum TextVerbosity { minimal, standard, full }
+
 /// How strongly the haptic / vibration engine responds.
-///
-/// [subtle]  : HapticFeedback only (no motor vibration), short patterns.
-/// [medium]  : HapticFeedback + short motor pulse.
-/// [strong]  : HapticFeedback + full motor vibration with rich patterns.
-///
-/// [VisionConfig] sets the default per profile; user can override.
 enum HapticIntensity { subtle, medium, strong }
 
 class AppSettings {
@@ -46,8 +43,6 @@ class AppSettings {
   final bool useFrontCamera;
   final bool useFlashlight;
   final bool denominationVibration;
-  final bool proximityBeeps;
-  final bool repeatLoop;
 
   // ── Navigation ────────────────────────────────────────────────────────
   final bool shakeToGoBack;
@@ -63,6 +58,7 @@ class AppSettings {
   final VisionProfile visionProfile;
   final bool ttsEnabled;
   final TtsVerbosity ttsVerbosity;
+  final TextVerbosity textVerbosity;
   final double speechRate;
   final bool hapticFeedback;
   final HapticIntensity hapticIntensity;
@@ -71,10 +67,6 @@ class AppSettings {
   /// Whether short audio cues play for scan events (independent of TTS).
   final bool earconEnabled;
 
-  /// [CHEAT] Forces all verification results to be counterfeit when enabled.
-  /// Labeled as "Strict Verification" in settings.
-  final bool strictVerification;
-
   const AppSettings({
     this.themeMode = AppThemeMode.system,
     this.language = AppLanguage.english,
@@ -82,8 +74,6 @@ class AppSettings {
     this.useFrontCamera = false,
     this.useFlashlight = false,
     this.denominationVibration = true,
-    this.proximityBeeps = false,
-    this.repeatLoop = false,
     this.shakeToGoBack = true,
     this.goBackTimerSeconds = 20,
     this.gesturalNavigation = true,
@@ -93,11 +83,11 @@ class AppSettings {
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
     this.ttsVerbosity = TtsVerbosity.standard,
+    this.textVerbosity = TextVerbosity.standard,
     this.speechRate = 1.0,
     this.hapticFeedback = true,
     this.hapticIntensity = HapticIntensity.medium,
     this.earconEnabled = true,
-    this.strictVerification = false,
   });
 
   AppSettings copyWith({
@@ -107,8 +97,6 @@ class AppSettings {
     bool? useFrontCamera,
     bool? useFlashlight,
     bool? denominationVibration,
-    bool? proximityBeeps,
-    bool? repeatLoop,
     bool? shakeToGoBack,
     int? goBackTimerSeconds,
     bool? gesturalNavigation,
@@ -118,11 +106,11 @@ class AppSettings {
     VisionProfile? visionProfile,
     bool? ttsEnabled,
     TtsVerbosity? ttsVerbosity,
+    TextVerbosity? textVerbosity,
     double? speechRate,
     bool? hapticFeedback,
     HapticIntensity? hapticIntensity,
     bool? earconEnabled,
-    bool? strictVerification,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -132,8 +120,6 @@ class AppSettings {
       useFlashlight: useFlashlight ?? this.useFlashlight,
       denominationVibration:
           denominationVibration ?? this.denominationVibration,
-      proximityBeeps: proximityBeeps ?? this.proximityBeeps,
-      repeatLoop: repeatLoop ?? this.repeatLoop,
       shakeToGoBack: shakeToGoBack ?? this.shakeToGoBack,
       goBackTimerSeconds: goBackTimerSeconds ?? this.goBackTimerSeconds,
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
@@ -143,11 +129,11 @@ class AppSettings {
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,
+      textVerbosity: textVerbosity ?? this.textVerbosity,
       speechRate: speechRate ?? this.speechRate,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
       earconEnabled: earconEnabled ?? this.earconEnabled,
-      strictVerification: strictVerification ?? this.strictVerification,
     );
   }
 
