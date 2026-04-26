@@ -35,7 +35,7 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(appSettingsProvider.notifier);
     final visionConfig = ref.watch(visionConfigProvider);
     final l10n = AppLocalizations.of(settings.isTagalog);
-    final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
+    final isFullVerbosity = settings.textVerbosity == TextVerbosity.full;
 
     // ── TTS helper: one line at every call site ──────────────────────────
     void say(TtsMessage msg) {

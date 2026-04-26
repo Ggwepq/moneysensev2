@@ -280,30 +280,31 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final s = ref.read(appSettingsProvider);
     final r = widget.result;
 
-    // Use a faster 3s timer for automated verification IF NOT UNCERTAIN
+    // Always use the configured goBackTimerSeconds so the user has time to hear the result.
+    // Auto-verification triggers at the end of the timer for eligible bills.
     if (r.type == 'bill' && _verificationResult == null && !r.isUncertain) {
       _isAutoVerifying = true;
-      _secondsLeft = 3;
-    } else {
-      _secondsLeft = s.goBackTimerSeconds;
     }
+    _secondsLeft = s.goBackTimerSeconds;
 
     if (_secondsLeft > 0) {
       _startTimer();
     }
 
-    // Initialize Tilt-to-Dismiss
-    ref.read(inertialServiceProvider).start(
-      onTiltLeft: _dismiss,
-      onTiltRight: _dismiss,
-    );
+    // Initialize Tilt-to-Dismiss with a settle delay to prevent accidental fires
+    // caused by inertial momentum from the transition.
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      ref.read(inertialServiceProvider).start(
+        onTiltLeft: _dismiss,
+        onTiltRight: _dismiss,
+      );
 
-    // Initialize Shake-to-Dismiss — runs independently from the global
-    // ShakeDetectorWidget which wraps HomeShell but not ResultScreen.
-    final s2 = ref.read(appSettingsProvider);
-    if (s2.shakeToGoBack) {
-      ref.read(shakeServiceProvider).start(_dismiss);
-    }
+      final s2 = ref.read(appSettingsProvider);
+      if (s2.shakeToGoBack) {
+        ref.read(shakeServiceProvider).start(_dismiss);
+      }
+    });
   }
 
   void _retry() {

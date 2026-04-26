@@ -39,6 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isListening   = false;
   bool _isAdvancing   = false;
   bool _launchFinalTutorial = false;
+  bool _isHandlingSelection = false;
   StreamSubscription? _voiceSub;
 
   @override
@@ -48,13 +49,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Ensure the wake-word passive loop (if already running) is stopped
-      // before we open the mic for onboarding — the two would fight otherwise.
       await ref.read(voiceCommandServiceProvider).stopListening();
       await Permission.microphone.request();
       _startVoiceMode();
     });
 
-    _voiceSub = ref.read(voiceCommandServiceProvider).intentStream.listen(_onVoiceIntent);
+    _voiceSub = ref.read(voiceCommandServiceProvider).intentStream.listen((intent) {
+      if (mounted) _onVoiceIntent(intent);
+    });
   }
 
   AppLocalizations get l10n => AppLocalizations.of(_language == AppLanguage.tagalog);
@@ -83,7 +85,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (!mounted) return;
     final speaking = ref.read(ttsServiceProvider).isSpeakingNotifier.value;
     if (_isSpeaking != speaking) {
-      setState(() => _isSpeaking = speaking);
+      setState(() {
+        _isSpeaking = speaking;
+        if (speaking) _isListening = false;
+      });
       if (!speaking) {
         if (_isAdvancing) {
           _isAdvancing = false;
@@ -92,10 +97,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           } else {
             _next();
           }
-          return;
-        }
-        if (_isVoiceActive && !_isListening) {
-          _startListening();
+        } else if (_isVoiceActive) {
+          _enqueueListening();
         }
       }
     }
@@ -106,17 +109,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _narrate(_page);
   }
 
-  Future<void> _startListening() async {
-    if (!_isVoiceActive || _isSpeaking || _isAdvancing) return;
+  void _enqueueListening({bool withPrompt = false}) {
     setState(() => _isListening = true);
-    await ref.read(voiceCommandServiceProvider).startActiveListening(persistent: true);
-    
-    Future.delayed(const Duration(seconds: 30), () {
-      if (mounted && _isListening && _isVoiceActive && !_isSpeaking && !_isAdvancing) {
-        _isListening = false;
-        _say(TtsMessage.ambient('I didn\'t hear anything. Would you like to continue or do you need help with this step?'));
-      }
-    });
+    ref.read(voiceCommandServiceProvider).startActiveListening(
+          persistent: true,
+          withPrompt: withPrompt,
+          owner: this,
+        );
   }
 
   void _onVoiceIntent(VoiceIntent intent) {
@@ -162,7 +161,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
 
     if (intent is SelectionIntent) {
-      _handleSelection(intent.value);
+      // 🚀 Speed Optimization: Advance immediately
+      _handleSelection(intent.value, fromVoice: true);
       return;
     }
     
@@ -177,8 +177,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  void _handleSelection(String value) {
-    if (_isAdvancing) return;
+  void _handleSelection(String value, {bool fromVoice = false}) {
+    if (_isHandlingSelection) return;
+    _isHandlingSelection = true;
+
+    // Immediately stop current narration
+    ref.read(ttsServiceProvider).stop();
 
     switch (value) {
       case 'lowVision': setState(() => _profile = VisionProfile.lowVision);
@@ -188,25 +192,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 'tagalog': setState(() => _language = AppLanguage.tagalog);
     }
     
-    _isAdvancing = true;
-
-    if (!ref.read(appSettingsProvider).clarifyVoiceCommands) {
-       _next();
-       return;
-    }
-
-    final confirmMsg = _page == 1 
-        ? l10n.onboardingConfirmVision 
-        : l10n.onboardingConfirmLanguage;
-    _say(TtsMessage.navigation(confirmMsg));
+    // Move to next page immediately
+    _next();
+    
+    _isHandlingSelection = false;
   }
 
   @override
   void dispose() {
+    ref.read(voiceCommandServiceProvider).release(this);
+    ref.read(voiceCommandServiceProvider).stopListening();
     ref.read(ttsServiceProvider).stop();
     ref.read(ttsServiceProvider).isSpeakingNotifier.removeListener(_onTtsStatusChanged);
     _voiceSub?.cancel();
-    ref.read(voiceCommandServiceProvider).stopListening();
     super.dispose();
   }
 

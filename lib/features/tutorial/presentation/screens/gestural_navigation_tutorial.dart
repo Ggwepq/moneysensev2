@@ -38,6 +38,14 @@ class _GesturalNavigationTutorialState
     });
   }
 
+  @override
+  void dispose() {
+    try {
+      ref.read(ttsServiceProvider).stop();
+    } catch (_) {}
+    super.dispose();
+  }
+
   void _onGesture(_GestureResult result) {
     HapticFeedback.lightImpact();
     setState(() => _lastResult = result);
@@ -109,16 +117,16 @@ extension _GestureResultExt on _GestureResult {
 }
 
 
-class _GestureHero extends StatefulWidget {
+class _GestureHero extends ConsumerStatefulWidget {
   const _GestureHero({required this.isDark, required this.lastResult});
   final bool isDark;
   final _GestureResult? lastResult;
 
   @override
-  State<_GestureHero> createState() => _GestureHeroState();
+  ConsumerState<_GestureHero> createState() => _GestureHeroState();
 }
 
-class _GestureHeroState extends State<_GestureHero>
+class _GestureHeroState extends ConsumerState<_GestureHero>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   int _step = 0;
@@ -137,7 +145,7 @@ class _GestureHeroState extends State<_GestureHero>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _advance();
+    Future.delayed(const Duration(milliseconds: 500), _advance);
   }
 
   void _advance() async {
@@ -154,6 +162,9 @@ class _GestureHeroState extends State<_GestureHero>
   @override
   void dispose() {
     _ctrl.dispose();
+    try {
+      ref.read(ttsServiceProvider).stop();
+    } catch (_) {}
     super.dispose();
   }
 

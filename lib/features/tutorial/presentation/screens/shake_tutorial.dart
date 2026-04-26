@@ -54,6 +54,9 @@ class _ShakeTutorialState extends ConsumerState<ShakeTutorial> {
     // Since we can't easily get that reference here, we just stop and the
     // ShakeDetectorWidget's build() will restart it on the next frame.
     ref.read(shakeServiceProvider).stop();
+    try {
+      ref.read(ttsServiceProvider).stop();
+    } catch (_) {}
     super.dispose();
   }
 

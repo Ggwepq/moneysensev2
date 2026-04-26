@@ -266,6 +266,33 @@ class SimpleSettingsScreen extends ConsumerWidget {
                           },
                         ),
                         const SizedBox(height: AppSpacing.md),
+                        // TTS Verbosity - Cycle through options
+                        MsToggleCardWide(
+                          icon: Icons.record_voice_over_rounded,
+                          label: l10n.ttsVerbosityTitle,
+                          sublabel: settings.ttsVerbosity == TtsVerbosity.minimal
+                              ? l10n.ttsVerbosityMinimal
+                              : settings.ttsVerbosity == TtsVerbosity.standard
+                                  ? l10n.ttsVerbosityStandard
+                                  : l10n.ttsVerbosityFull,
+                          isActive: true,
+                          onTap: () {
+                            EarconService.instance.play(EarconEvent.actionConfirmed);
+                            final next = settings.ttsVerbosity == TtsVerbosity.minimal
+                                ? TtsVerbosity.standard
+                                : settings.ttsVerbosity == TtsVerbosity.standard
+                                    ? TtsVerbosity.full
+                                    : TtsVerbosity.minimal;
+                            notifier.setTtsVerbosity(next);
+                            final label = next == TtsVerbosity.minimal
+                                ? l10n.ttsVerbosityMinimal
+                                : next == TtsVerbosity.standard
+                                    ? l10n.ttsVerbosityStandard
+                                    : l10n.ttsVerbosityFull;
+                            say(SettingsSpeech.changed(l10n, l10n.ttsVerbosityTitle, label));
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.md),
                         // Vision Profile (Full Width Card)
                         MsToggleCardWide(
                           icon: _visionIcon(settings.visionProfile),

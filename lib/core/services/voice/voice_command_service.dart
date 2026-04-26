@@ -54,6 +54,7 @@ class VoiceCommandService {
   bool _isPersistentActive = false;
   bool _isStopped = true;
   bool _isActiveMode = false;
+  bool _isChangingState = false;
 
   // ── Serialised hardware access ─────────────────────────────────────────────
   final _opQueue = <_HardwareOp>[];
@@ -65,6 +66,15 @@ class VoiceCommandService {
 
   // ── Passive restart timer ─────────────────────────────────────────────────
   Timer? _restartTimer;
+
+  // ── Feature Ownership & Silencing ──────────────────────────────────────────
+  /// Current owner of the voice service. Locked until released or stolen by high priority.
+  Object? _owner;
+  
+  /// Release the service from current owner.
+  void release(Object? owner) {
+    if (_owner == owner) _owner = null;
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // Initialisation
@@ -109,17 +119,45 @@ class VoiceCommandService {
   // Public API
   // ──────────────────────────────────────────────────────────────────────────
 
+  Future<void> _waitForTts() async {
+    final tts = ref.read(ttsServiceProvider);
+    if (!tts.isSpeakingNotifier.value) return;
+
+    final completer = Completer<void>();
+    void listener() {
+      if (!tts.isSpeakingNotifier.value) {
+        tts.isSpeakingNotifier.removeListener(listener);
+        if (!completer.isCompleted) completer.complete();
+      }
+    }
+
+    tts.isSpeakingNotifier.addListener(listener);
+    // Safety timeout: don't wait forever if TTS engine hangs
+    await completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+      tts.isSpeakingNotifier.removeListener(listener);
+    });
+  }
+
   /// Triggers an active listening session.
   ///
   /// [persistent]     – auto-restart when the microphone times out (onboarding).
   /// [withPrompt]     – play "I'm listening" before opening the mic.
   /// [isConfirmation] – whether this is a yes/no confirmation (longer timers).
+  /// [owner]          – requester identity to prevent feature fighting.
   Future<void> startActiveListening({
     bool persistent = false,
     bool withPrompt = false,
     bool isConfirmation = false,
+    Object? owner,
   }) async {
-    _cancelRestartTimer();
+    // If there is an owner and a new requester (different owner) tries to start,
+    // we allow it but log it. Priority logic could be added here.
+    if (_owner != null && _owner != owner) {
+      debugPrint('[VoiceService] ⚠️ Microhone requested by $owner while owned by $_owner. Overriding.');
+    }
+    _owner = owner;
+
+    _isChangingState = true;
     _isStopped = false;
     _isPassiveMode = false;
     _isActiveMode = false;
@@ -145,8 +183,14 @@ class VoiceCommandService {
       final pauseFor = isConfirmation ? const Duration(seconds: 8) : const Duration(seconds: 5);
 
       await _stopHardware(playEarcon: false);
-      // Wait for TTS to finish if prompt was played
-      await Future<void>.delayed(Duration(milliseconds: withPrompt ? 1000 : 300));
+      
+      // 🚀 CRITICAL FIX: Explicitly wait for TTS to finish before opening mic.
+      // This prevents the scanner or tutorial feedback from drowning out the user.
+      await _waitForTts();
+      
+      // Small settle time after TTS stops
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+      
       await _startHardware(
         listenFor: listenFor,
         pauseFor: pauseFor,
@@ -156,12 +200,14 @@ class VoiceCommandService {
       );
       _isPassiveMode = false;
       _isActiveMode = true;
+      _isChangingState = false;
     });
   }
 
   /// Triggers a continuous passive (wake-word) listening session.
   Future<void> startPassiveListening() async {
     if (_isPassiveMode) return;
+    _isChangingState = true;
     _isStopped = false;
     _isPassiveMode = false;
     _isActiveMode = false;
@@ -171,11 +217,13 @@ class VoiceCommandService {
     _enqueue(() async {
       await _stopHardware();
       await _startPassiveLoop();
+      _isChangingState = false;
     });
   }
 
   /// Immediately stops both active and passive listening.
   Future<void> stopListening() async {
+    _isChangingState = true;
     _cancelRestartTimer();
     _isStopped = true;
     _isPassiveMode = false;
@@ -186,6 +234,7 @@ class VoiceCommandService {
 
     _enqueue(() async {
       await _stopHardware(playEarcon: true);
+      _isChangingState = false;
     });
   }
 
@@ -293,6 +342,10 @@ class VoiceCommandService {
     debugPrint('[VoiceService] onStatus: $status (Passive: $_isPassiveMode, Active: $_isActiveMode, Persistent: $_isPersistentActive)');
     
     if (status == 'done' || status == 'notListening') {
+      if (_isChangingState) {
+        debugPrint('[VoiceService] onStatus: $status (Ignored, changing state)');
+        return;
+      }
       if (_isPassiveMode || _isPersistentActive) {
         _schedulePassiveRestart(delay: const Duration(milliseconds: 400));
       } else if (_isActiveMode) {

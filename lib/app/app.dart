@@ -8,14 +8,12 @@ import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
 import '../features/settings/domain/entities/vision_config.dart';
-import '../features/settings/domain/entities/app_settings.dart' show VisionProfile;
 import '../features/settings/presentation/providers/settings_provider.dart';
 import 'home_shell.dart';
 import 'startup_splash.dart';
 import '../core/services/voice/voice_command_executor.dart';
 import '../core/services/voice/voice_command_service.dart';
-import '../core/services/voice/voice_command_overlay.dart';
-import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
+import 'widgets/global_voice_overlay.dart';
 
 class MoneySenseApp extends ConsumerWidget {
   const MoneySenseApp({super.key});
@@ -47,6 +45,14 @@ class MoneySenseApp extends ConsumerWidget {
             themeMode: settings.flutterThemeMode,
             navigatorKey: VoiceCommandExecutor.navigatorKey,
             navigatorObservers: [routeObserver],
+            builder: (context, child) {
+              return Stack(
+                children: [
+                  if (child != null) child,
+                  const GlobalVoiceOverlay(),
+                ],
+              );
+            },
             home: _AppRoot(),
           ),
         );
@@ -103,9 +109,6 @@ class _AppRootState extends ConsumerState<_AppRoot> {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
-    final settings = ref.watch(appSettingsProvider);
-    final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
-
     // Returning users: kick off passive listening once on first home build.
     if (!_passiveStarted) {
       _passiveStarted = true;
@@ -133,16 +136,7 @@ class _AppRootState extends ConsumerState<_AppRoot> {
     });
 
     return ShakeDetectorWidget(
-      child: Stack(
-        children: [
-          HomeShell(launchTutorialOnLoad: _launchTutorial),
-          
-          if (isFullyBlind)
-            const BlindVoiceUi(),
-          if (!isFullyBlind)
-            const VoiceCommandOverlay(),
-        ],
-      ),
+      child: HomeShell(launchTutorialOnLoad: _launchTutorial),
     );
   }
 }

@@ -80,6 +80,10 @@ class _InertialNavigationTutorialState
     _pollTimer?.cancel();
     _pollTimer = null;
 
+    try {
+      ref.read(ttsServiceProvider).stop();
+    } catch (_) {}
+
     // Check mounted before accessing context or ref
     if (mounted) {
       // Access container before any async gaps or super.dispose

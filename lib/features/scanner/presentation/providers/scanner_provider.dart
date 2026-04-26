@@ -12,6 +12,7 @@ import 'package:moneysensev2/features/settings/presentation/providers/settings_p
 import 'package:moneysensev2/features/settings/domain/entities/app_settings.dart';
 import '../../data/datasources/authenticity_service.dart';
 import 'package:moneysensev2/core/services/earcon_service.dart';
+import 'package:moneysensev2/core/services/voice/voice_command_service.dart';
 
 
 export '../../data/datasources/camera_service.dart';
@@ -144,11 +145,16 @@ class ScannerNotifier extends Notifier<ScannerState> {
       // Feedback
       final settings = ref.read(appSettingsProvider);
       final l10n = AppLocalizations.of(settings.isTagalog);
-      ref.read(ttsServiceProvider).enqueue(
-        TtsMessage.ambient(l10n.resultManualCapturing, id: 'scanner.manual_capture'),
-        enabled: settings.ttsEnabled,
-        currentVerbosity: settings.ttsVerbosity,
-      );
+      final voiceStatus = ref.read(voiceCommandStatusProvider);
+
+      // Silence scanner feedback if voice command is actively listening or processing
+      if (voiceStatus != VoiceStatus.activeListening && voiceStatus != VoiceStatus.processing) {
+        ref.read(ttsServiceProvider).enqueue(
+          TtsMessage.ambient(l10n.resultManualCapturing, id: 'scanner.manual_capture'),
+          enabled: settings.ttsEnabled,
+          currentVerbosity: settings.ttsVerbosity,
+        );
+      }
       
       // Reset confidence filter briefly to catch the next frame
       _consecutiveFrames = 0;
@@ -304,6 +310,12 @@ class ScannerNotifier extends Notifier<ScannerState> {
     _lastHint = hint;
 
     debugPrint('[Centering] 📍 cx: ${cx.toStringAsFixed(2)}, cy: ${cy.toStringAsFixed(2)} -> Hint: $hint');
+
+    final voiceStatus = ref.read(voiceCommandStatusProvider);
+    if (voiceStatus == VoiceStatus.activeListening || voiceStatus == VoiceStatus.processing) {
+      debugPrint('[Centering] 🤫 Silencing guidance due to active voice command.');
+      return;
+    }
 
     ref.read(ttsServiceProvider).enqueue(
       TtsMessage(

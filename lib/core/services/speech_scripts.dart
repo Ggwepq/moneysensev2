@@ -83,7 +83,14 @@ abstract final class OnboardingSpeech {
 
   /// Spoken when the vision profile step is shown.
   static TtsMessage visionStep(AppLocalizations l10n) =>
-      TtsMessage.navigation('${l10n.onboardingVisionTitle}. ${l10n.onboardingVisionSubtitle}. ${l10n.onboardingVisionOptions}', id: 'onboarding.vision');
+      TtsMessage.navigation(
+        '${l10n.onboardingVisionTitle}. '
+        '${l10n.ttsOnboardingVision} '
+        '${l10n.visionLowVision}. ${l10n.visionLowVisionDesc}. '
+        '${l10n.visionPartiallyBlind}. ${l10n.visionPartiallyBlindDesc}. '
+        '${l10n.visionFullyBlind}. ${l10n.visionFullyBlindDesc}.',
+        id: 'onboarding.vision',
+      );
 
   /// Spoken when a profile is selected (confirmation).
   static TtsMessage profileSelected(AppLocalizations l10n) =>

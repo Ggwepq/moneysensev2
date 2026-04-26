@@ -7,6 +7,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/earcon_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
+import '../../../../core/services/tts_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 
 // Interactive walkthrough of the three navigation methods.
@@ -52,6 +53,7 @@ class _AppNavigationTutorialState extends ConsumerState<AppNavigationTutorial> {
   @override
   void dispose() {
     _controller.dispose();
+    try { ref.read(ttsServiceProvider).stop(); } catch (_) {}
     super.dispose();
   }
 
