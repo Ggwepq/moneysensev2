@@ -26,6 +26,8 @@ abstract final class SettingsKeys {
   static const earconEnabled        = 'settings.earconEnabled';
   static const hapticIntensity     = 'settings.hapticIntensity';
   static const strictVerification   = 'settings.strictVerification';
+  static const proximityBeeps      = 'settings.proximityBeeps';
+  static const repeatLoop          = 'settings.repeatLoop';
 
   /// Set to true once the user completes onboarding.
   /// Absent or false = first run → show onboarding.
@@ -115,6 +117,12 @@ class SettingsStorage {
       strictVerification:
           _prefs.getBool(SettingsKeys.strictVerification) ??
               defaults.strictVerification,
+      proximityBeeps:
+          _prefs.getBool(SettingsKeys.proximityBeeps) ??
+              defaults.proximityBeeps,
+      repeatLoop:
+          _prefs.getBool(SettingsKeys.repeatLoop) ??
+              defaults.repeatLoop,
     );
   }
 
@@ -145,6 +153,8 @@ class SettingsStorage {
     _prefs.setBool  (SettingsKeys.earconEnabled,       s.earconEnabled);
     _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
     _prefs.setBool  (SettingsKeys.strictVerification,  s.strictVerification);
+    _prefs.setBool  (SettingsKeys.proximityBeeps,       s.proximityBeeps);
+    _prefs.setBool  (SettingsKeys.repeatLoop,           s.repeatLoop);
   }
 
   /// Persist just [_lastTimerSeconds] separately.

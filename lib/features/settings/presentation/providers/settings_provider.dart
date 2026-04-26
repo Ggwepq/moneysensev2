@@ -56,9 +56,21 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void setThemeMode(AppThemeMode mode) =>
       _update(state.copyWith(themeMode: mode));
 
+  void toggleDarkMode() {
+    setThemeMode(state.themeMode == AppThemeMode.dark
+        ? AppThemeMode.light
+        : AppThemeMode.dark);
+  }
+
   // ── Language ───────────────────────────────────────────────────────────
   void setLanguage(AppLanguage lang) =>
       _update(state.copyWith(language: lang));
+
+  void toggleLanguage() {
+    setLanguage(state.language == AppLanguage.tagalog
+        ? AppLanguage.english
+        : AppLanguage.tagalog);
+  }
 
   // ── Font ───────────────────────────────────────────────────────────────
   void setFontScale(double scale) =>
@@ -73,6 +85,12 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
 
   void toggleDenominationVibration(bool value) =>
       _update(state.copyWith(denominationVibration: value));
+
+  void toggleProximityBeeps(bool value) =>
+      _update(state.copyWith(proximityBeeps: value));
+
+  void toggleRepeatLoop(bool value) =>
+      _update(state.copyWith(repeatLoop: value));
 
   // ── Navigation ─────────────────────────────────────────────────────────
   void toggleShakeToGoBack(bool value) =>

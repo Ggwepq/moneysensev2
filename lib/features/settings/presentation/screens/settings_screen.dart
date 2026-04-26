@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ms_segmented_selector.dart';
 import '../../../../shared/widgets/ms_settings_card.dart';
 import '../../../../shared/widgets/ms_slider_tile.dart';
 import '../../../../shared/widgets/ms_timer_tile.dart';
+import '../../../../shared/widgets/ms_swipe_back_wrapper.dart';
 import '../../../../shared/widgets/ms_toggle_tile.dart';
 import '../../../tutorial/domain/tutorial_route.dart';
 import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
@@ -47,7 +48,7 @@ class SettingsScreen extends ConsumerWidget {
           );
     }
 
-    return _SwipeBackWrapper(
+    return MsSwipeBackWrapper(
       isGesturalNavigationEnabled: settings.gesturalNavigation,
       child: Scaffold(
         appBar: AppBar(
@@ -196,11 +197,34 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           );
                         },
-                        showHelpButton: true,
                         onHelpTap: () => TutorialNavigator.push(
                           context,
                           TutorialRoute.denominationVibration,
                         ),
+                      ),
+                      MsToggleTile(
+                        title: l10n.proximityBeeps,
+                        subtitle: l10n.proximityBeepsSubtitle,
+                        value: settings.proximityBeeps,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleProximityBeeps(v);
+                          say(SettingsSpeech.toggled(l10n, l10n.proximityBeeps, v));
+                        },
+                      ),
+                      MsToggleTile(
+                        title: l10n.repeatLoop,
+                        subtitle: l10n.repeatLoopSubtitle,
+                        value: settings.repeatLoop,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleRepeatLoop(v);
+                          say(SettingsSpeech.toggled(l10n, l10n.repeatLoop, v));
+                        },
                       ),
                       MsToggleTile(
                         title: l10n.strictVerificationTitle,
@@ -1013,39 +1037,6 @@ class _HapticIntensityTile extends StatelessWidget {
   }
 }
 
-class _SwipeBackWrapper extends StatelessWidget {
-  const _SwipeBackWrapper({
-    required this.child,
-    required this.isGesturalNavigationEnabled,
-  });
-  final Widget child;
-  final bool isGesturalNavigationEnabled;
-
-  static const double _minVelocity = 300.0;
-  static const double _maxCrossRatio = 0.55;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanEnd: (details) {
-        if (!isGesturalNavigationEnabled) return;
-        final v = details.velocity.pixelsPerSecond;
-        final ax = v.dx.abs();
-        final ay = v.dy.abs();
-        if (ax < _minVelocity) return;
-        if (ax < ay) return;
-        if (ay / ax > _maxCrossRatio) return;
-        if (v.dx < 0) {
-          EarconService.instance.play(EarconEvent.navBack);
-          Navigator.of(context).maybePop();
-        }
-      },
-      child: child,
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Reset Settings tile + dialog
 // ─────────────────────────────────────────────────────────────────────────────
 

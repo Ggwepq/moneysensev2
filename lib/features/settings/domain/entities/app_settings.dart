@@ -46,6 +46,8 @@ class AppSettings {
   final bool useFrontCamera;
   final bool useFlashlight;
   final bool denominationVibration;
+  final bool proximityBeeps;
+  final bool repeatLoop;
 
   // ── Navigation ────────────────────────────────────────────────────────
   final bool shakeToGoBack;
@@ -80,6 +82,8 @@ class AppSettings {
     this.useFrontCamera = false,
     this.useFlashlight = false,
     this.denominationVibration = true,
+    this.proximityBeeps = false,
+    this.repeatLoop = false,
     this.shakeToGoBack = true,
     this.goBackTimerSeconds = 20,
     this.gesturalNavigation = true,
@@ -103,6 +107,8 @@ class AppSettings {
     bool? useFrontCamera,
     bool? useFlashlight,
     bool? denominationVibration,
+    bool? proximityBeeps,
+    bool? repeatLoop,
     bool? shakeToGoBack,
     int? goBackTimerSeconds,
     bool? gesturalNavigation,
@@ -126,6 +132,8 @@ class AppSettings {
       useFlashlight: useFlashlight ?? this.useFlashlight,
       denominationVibration:
           denominationVibration ?? this.denominationVibration,
+      proximityBeeps: proximityBeeps ?? this.proximityBeeps,
+      repeatLoop: repeatLoop ?? this.repeatLoop,
       shakeToGoBack: shakeToGoBack ?? this.shakeToGoBack,
       goBackTimerSeconds: goBackTimerSeconds ?? this.goBackTimerSeconds,
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
@@ -152,4 +160,5 @@ class AppSettings {
   }
 
   bool get isTagalog => language == AppLanguage.tagalog;
+  bool get isDarkMode => themeMode == AppThemeMode.dark;
 }
