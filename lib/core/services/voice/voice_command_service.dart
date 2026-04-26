@@ -50,6 +50,7 @@ class VoiceCommandService {
 
   bool _isPassiveMode = false;
   bool _isPersistentActive = false;
+  bool _isStopped = true;
 
   // ── Serialised hardware access ─────────────────────────────────────────────
   // All start/stop calls are funnelled through a single mutex so overlapping
@@ -119,6 +120,7 @@ class VoiceCommandService {
     bool withPrompt = false,
   }) async {
     _cancelRestartTimer();
+    _isStopped = false;
     _isPassiveMode = false;
     _isPersistentActive = persistent;
 
@@ -149,6 +151,7 @@ class VoiceCommandService {
   /// Triggers a continuous passive (wake-word) listening session.
   Future<void> startPassiveListening() async {
     if (_isPassiveMode) return;
+    _isStopped = false;
     _isPassiveMode = true;
     _isPersistentActive = false;
     _cancelRestartTimer();
@@ -162,6 +165,7 @@ class VoiceCommandService {
   /// Immediately stops both active and passive listening.
   Future<void> stopListening() async {
     _cancelRestartTimer();
+    _isStopped = true;
     _isPassiveMode = false;
     _isPersistentActive = false;
     _isAwaitingConfirmation = false;
@@ -273,6 +277,10 @@ class VoiceCommandService {
       } else {
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
         EarconService.instance.play(EarconEvent.actionDisabled);
+        
+        if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+          startPassiveListening();
+        }
       }
     }
   }
@@ -303,6 +311,10 @@ class VoiceCommandService {
     } else {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       EarconService.instance.play(EarconEvent.scanFail);
+      
+      if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+        startPassiveListening();
+      }
     }
   }
 
@@ -356,7 +368,11 @@ class VoiceCommandService {
             _schedulePassiveRestart(
                 delay: const Duration(milliseconds: 600));
           } else {
-            stopListening();
+            if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+              Future.delayed(const Duration(milliseconds: 600), () => startPassiveListening());
+            } else {
+              stopListening();
+            }
           }
         } else {
           tts.enqueue(
@@ -408,7 +424,11 @@ class VoiceCommandService {
       _intentController.add(intent);
 
       if (!_isPassiveMode) {
-        stopListening();
+        if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+          startPassiveListening();
+        } else {
+          stopListening();
+        }
       } else if (intent is! StopSpeakingIntent) {
         _schedulePassiveRestart(delay: const Duration(milliseconds: 600));
       }
@@ -455,7 +475,11 @@ class VoiceCommandService {
 
     if (!_isPassiveMode) {
       EarconService.instance.play(EarconEvent.scanFail);
-      stopListening();
+      if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+        startPassiveListening();
+      } else {
+        stopListening();
+      }
     } else {
       ref.read(voiceCommandTextProvider.notifier).state = '';
       ref.read(voiceCommandStatusProvider.notifier).state =

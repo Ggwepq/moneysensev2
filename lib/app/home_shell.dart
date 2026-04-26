@@ -67,6 +67,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     // Pause passive listening while settings is open.
     ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen())).then((_) {
+      if (!mounted) return;
       // Kill any lingering settings/tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
       // Restore passive listening on return.
@@ -83,6 +84,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     // Pause passive listening while tutorial is open.
     ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromRight(const TutorialScreen())).then((_) {
+      if (!mounted) return;
       // Kill any lingering tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
       // Restore passive listening on return.

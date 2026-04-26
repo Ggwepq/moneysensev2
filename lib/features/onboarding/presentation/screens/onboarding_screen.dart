@@ -80,8 +80,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _onTtsStatusChanged() {
+    if (!mounted) return;
     final speaking = ref.read(ttsServiceProvider).isSpeakingNotifier.value;
-    if (mounted && _isSpeaking != speaking) {
+    if (_isSpeaking != speaking) {
       setState(() => _isSpeaking = speaking);
       if (!speaking) {
         if (_isAdvancing) {
@@ -120,6 +121,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _onVoiceIntent(VoiceIntent intent) {
     if (!_isVoiceActive) return;
+    if (!mounted) return;
 
     setState(() => _isListening = false);
 
@@ -198,6 +200,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ref.read(ttsServiceProvider).stop();
     ref.read(ttsServiceProvider).isSpeakingNotifier.removeListener(_onTtsStatusChanged);
     _voiceSub?.cancel();
+    ref.read(voiceCommandServiceProvider).stopListening();
     super.dispose();
   }
 
@@ -216,6 +219,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _skip() {
     _isAdvancing = false;
     _voiceSub?.cancel();
+    ref.read(voiceCommandServiceProvider).stopListening();
     ref.read(ttsServiceProvider).stop();
     EarconService.instance.play(EarconEvent.actionDisabled);
     
