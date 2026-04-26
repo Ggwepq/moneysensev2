@@ -16,6 +16,7 @@ class RemoteCommanderScreen extends ConsumerStatefulWidget {
 class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> with SingleTickerProviderStateMixin {
   MoneySensePeer? _selectedPeer;
   late AnimationController _radarController;
+  Stream<List<MoneySensePeer>>? _scanStream;
   
   @override
   void initState() {
@@ -24,11 +25,19 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
+    _startScan();
+  }
+
+  void _startScan() {
+    setState(() {
+      _scanStream = RemoteCheatService.instance.startScanning();
+    });
   }
 
   @override
   void dispose() {
     _radarController.dispose();
+    RemoteCheatService.instance.stopScanning();
     super.dispose();
   }
 
@@ -70,7 +79,14 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
           if (_selectedPeer != null)
             IconButton(
               icon: const Icon(Icons.close),
-              onPressed: () => setState(() => _selectedPeer = null),
+              onPressed: () {
+                // Stop the current scan stream and restart it fresh so that
+                // the UDP socket is re-opened and peer discovery works again
+                // without requiring an app restart.
+                RemoteCheatService.instance.stopScanning();
+                setState(() => _selectedPeer = null);
+                _startScan();
+              },
             ),
         ],
       ),
@@ -80,7 +96,7 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
 
   Widget _buildRadar() {
     return StreamBuilder<List<MoneySensePeer>>(
-      stream: RemoteCheatService.instance.startScanning(),
+      stream: _scanStream,
       builder: (context, snapshot) {
         final peers = snapshot.data ?? [];
         

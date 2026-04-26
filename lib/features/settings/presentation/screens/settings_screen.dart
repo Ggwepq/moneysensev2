@@ -527,24 +527,6 @@ class SettingsScreen extends ConsumerWidget {
                   MsSettingsCard(
                     children: [
                       MsActionTile(
-                        title: l10n.checkForUpdates,
-                        subtitle: l10n.checkForUpdatesSubtitle,
-                        icon: Icons.refresh_rounded,
-                        onTap: () {
-                          /* TODO */
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.shareAppTitle,
-                        subtitle: 'Download MoneySense using QR Code',
-                        icon: Icons.qr_code_2_rounded,
-                        onTap: () {
-                          EarconService.instance.play(EarconEvent.actionConfirmed);
-                          say(SettingsSpeech.shareApp(l10n));
-                          ShareAppModal.show(context);
-                        },
-                      ),
-                      MsActionTile(
                         title: l10n.playOnboardingSetup,
                         subtitle: l10n.playOnboardingSubtitle,
                         icon: Icons.play_arrow_rounded,
@@ -558,6 +540,16 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       MsActionTile(
+                        title: l10n.shareAppTitle,
+                        subtitle: 'Download MoneySense using QR Code',
+                        icon: Icons.qr_code_2_rounded,
+                        onTap: () {
+                          EarconService.instance.play(EarconEvent.actionConfirmed);
+                          say(SettingsSpeech.shareApp(l10n));
+                          ShareAppModal.show(context);
+                        },
+                      ),
+                      MsActionTile(
                         title: l10n.appInformation,
                         subtitle: l10n.appInformationSubtitle,
                         icon: Icons.info_outline_rounded,
@@ -566,22 +558,6 @@ class SettingsScreen extends ConsumerWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const AboutScreen()),
                           );
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.leaveAFeedback,
-                        subtitle: l10n.leaveAFeedbackSubtitle,
-                        icon: Icons.campaign_outlined,
-                        onTap: () {
-                          /* TODO */
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.termsOfServices,
-                        subtitle: l10n.termsOfServicesSubtitle,
-                        icon: Icons.description_outlined,
-                        onTap: () {
-                          /* TODO */
                         },
                       ),
                     ],

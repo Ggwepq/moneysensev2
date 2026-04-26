@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/earcon_service.dart';
+import '../../../../core/services/shake_service.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
@@ -65,7 +66,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void dispose() {
     _autoTimer?.cancel();
     _ctrl.dispose();
-    ref.read(inertialServiceProvider).stop(); // Clean up service
+    ref.read(inertialServiceProvider).stop();
+    ref.read(shakeServiceProvider).stop();    // Clean up shake listener
     super.dispose();
   }
 
@@ -92,6 +94,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     debugPrint('[ResultScreen] 🔙 Dismissing result. Verf=$_verificationResult');
     _autoTimer?.cancel();
     ref.read(inertialServiceProvider).stop(); // Stop service to clear callbacks
+    ref.read(shakeServiceProvider).stop();    // Stop shake-to-dismiss
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
@@ -100,6 +103,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
     ref.read(inertialServiceProvider).stop(); 
+    ref.read(shakeServiceProvider).stop();    // Stop shake-to-dismiss
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
     // Safety check: Don't allow verification if uncertain
@@ -136,17 +140,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       // ── Cheat Engine 2.0 ──────────────────────────────────────────────────
       AuthenticityResult? forced;
       
-      // 1. Remote Commander (Highest priority)
+      // 1. Remote Commander (Highest priority) — override is persistent;
+      //    it stays set until the remote explicitly sends /api/reset.
+      //    This means retries always return the same forced result.
       final remoteCheat = RemoteCheatService.instance;
       if (remoteCheat.nextOverride != null) {
         forced = remoteCheat.nextOverride;
-        remoteCheat.clearOverride();
-        debugPrint('[ResultScreen/Cheat] 📱 Remote override: $forced');
+        debugPrint('[ResultScreen/Cheat] 📱 Remote override: $forced (persistent)');
       } 
-      // 2. Inertial Tilt Cheat (If master switch is ON)
-      else if (s.strictVerification) {
+      // 2. Inertial Tilt Cheat
+      else {
         forced = ref.read(inertialServiceProvider).cheatStatus;
-        debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
+        if (forced != null) {
+          debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
+        }
       }
 
       VerificationResult res;
@@ -230,11 +237,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       _startTimer();
     }
 
-    // Initialize Tilt-to-Dismiss (Shake)
+    // Initialize Tilt-to-Dismiss
     ref.read(inertialServiceProvider).start(
       onTiltLeft: _dismiss,
       onTiltRight: _dismiss,
     );
+
+    // Initialize Shake-to-Dismiss — runs independently from the global
+    // ShakeDetectorWidget which wraps HomeShell but not ResultScreen.
+    final s2 = ref.read(appSettingsProvider);
+    if (s2.shakeToGoBack) {
+      ref.read(shakeServiceProvider).start(_dismiss);
+    }
   }
 
   void _retry() {
