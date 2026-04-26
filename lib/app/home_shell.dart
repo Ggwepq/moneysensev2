@@ -64,18 +64,32 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedSettings(_l10n));
+    // Pause passive listening while settings is open.
+    ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen())).then((_) {
       // Kill any lingering settings/tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
+      // Restore passive listening on return.
+      final s = ref.read(appSettingsProvider);
+      if (s.voiceNavigation) {
+        ref.read(voiceCommandServiceProvider).startPassiveListening();
+      }
     });
   }
 
   void _pushTutorial() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedTutorial(_l10n));
+    // Pause passive listening while tutorial is open.
+    ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromRight(const TutorialScreen())).then((_) {
       // Kill any lingering tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
+      // Restore passive listening on return.
+      final s = ref.read(appSettingsProvider);
+      if (s.voiceNavigation) {
+        ref.read(voiceCommandServiceProvider).startPassiveListening();
+      }
     });
   }
 

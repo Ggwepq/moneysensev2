@@ -47,6 +47,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ref.read(ttsServiceProvider).isSpeakingNotifier.addListener(_onTtsStatusChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Ensure the wake-word passive loop (if already running) is stopped
+      // before we open the mic for onboarding — the two would fight otherwise.
+      await ref.read(voiceCommandServiceProvider).stopListening();
       await Permission.microphone.request();
       _startVoiceMode();
     });

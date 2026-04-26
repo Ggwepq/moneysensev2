@@ -61,20 +61,18 @@ class _AppRoot extends ConsumerStatefulWidget {
 }
 
 class _AppRootState extends ConsumerState<_AppRoot> {
-  bool _ttsReady       = false;
-  bool _launchTutorial = false;
+  bool _ttsReady        = false;
+  bool _launchTutorial  = false;
+  bool _passiveStarted  = false;
 
   @override
   void initState() {
     super.initState();
-    
-    // Resume voice if enabled on startup
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = ref.read(appSettingsProvider);
-      if (settings.voiceNavigation) {
-        ref.read(voiceCommandServiceProvider).startPassiveListening();
-      }
-    });
+    // NOTE: Passive listening is intentionally NOT started here.
+    // It starts in _onOnboardingComplete (after onboarding finishes) or
+    // once the home shell is shown for users who already completed onboarding.
+    // Starting it here would activate the microphone during onboarding,
+    // which interferes with the onboarding voice flow.
   }
 
   void _onSplashReady() {
@@ -107,6 +105,18 @@ class _AppRootState extends ConsumerState<_AppRoot> {
 
     final settings = ref.watch(appSettingsProvider);
     final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
+
+    // Returning users: kick off passive listening once on first home build.
+    if (!_passiveStarted) {
+      _passiveStarted = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final s = ref.read(appSettingsProvider);
+        if (s.voiceNavigation) {
+          ref.read(voiceCommandServiceProvider).startPassiveListening();
+        }
+      });
+    }
 
     // Manage global voice lifecycle: start/stop when settings change
     ref.listen(appSettingsProvider, (previous, next) {
