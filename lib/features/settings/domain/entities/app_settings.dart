@@ -55,6 +55,7 @@ class AppSettings {
   final bool gesturalNavigation;
   final bool inertialNavigation;
   final bool voiceNavigation;
+  final bool clarifyVoiceCommands;
 
   // ── Accessibility ─────────────────────────────────────────────────────
   final VisionProfile visionProfile;
@@ -84,6 +85,7 @@ class AppSettings {
     this.gesturalNavigation = true,
     this.inertialNavigation = true,
     this.voiceNavigation = false,
+    this.clarifyVoiceCommands = true,
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
     this.ttsVerbosity = TtsVerbosity.standard,
@@ -106,6 +108,7 @@ class AppSettings {
     bool? gesturalNavigation,
     bool? inertialNavigation,
     bool? voiceNavigation,
+    bool? clarifyVoiceCommands,
     VisionProfile? visionProfile,
     bool? ttsEnabled,
     TtsVerbosity? ttsVerbosity,
@@ -128,6 +131,7 @@ class AppSettings {
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
       inertialNavigation: inertialNavigation ?? this.inertialNavigation,
       voiceNavigation: voiceNavigation ?? this.voiceNavigation,
+      clarifyVoiceCommands: clarifyVoiceCommands ?? this.clarifyVoiceCommands,
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,

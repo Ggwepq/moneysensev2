@@ -189,6 +189,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     
     _isAdvancing = true;
+
+    if (!ref.read(appSettingsProvider).clarifyVoiceCommands) {
+       _next();
+       return;
+    }
+
     final confirmMsg = _page == 1 
         ? l10n.onboardingConfirmVision 
         : l10n.onboardingConfirmLanguage;

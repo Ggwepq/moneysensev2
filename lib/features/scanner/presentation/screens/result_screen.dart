@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibration/vibration.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
@@ -88,6 +89,60 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     ref.read(ttsServiceProvider).enqueue(
       msg, enabled: s.ttsEnabled, currentVerbosity: s.ttsVerbosity,
     );
+    
+    if (s.denominationVibration && !r.isUncertain) {
+      _vibrateDenomination(r.denomination, r.type == 'coin');
+    }
+  }
+
+  Future<void> _vibrateDenomination(String denomination, bool isCoin) async {
+    try {
+      final hasV = await Vibration.hasVibrator();
+      if (hasV != true) return;
+
+      int shorts = 0;
+      if (isCoin) {
+        if (denomination == '1') shorts = 1;
+        else if (denomination == '5') shorts = 2;
+        else if (denomination == '10') shorts = 3;
+        else if (denomination == '20') shorts = 4;
+      } else {
+        if (denomination == '20') shorts = 1;
+        else if (denomination == '50') shorts = 2;
+        else if (denomination == '100') shorts = 3;
+        else if (denomination == '200') shorts = 4;
+        else if (denomination == '500') shorts = 5;
+        else if (denomination == '1000') shorts = 6;
+      }
+
+      if (shorts == 0 && !isCoin) return; 
+
+      final p = <int>[];
+      const int longPulse = 350;
+      const int shortPulse = 100;
+      const int innerGap = 120;
+      const int groupGap = 300;
+
+      if (isCoin) {
+        p.add(longPulse);
+        if (shorts > 0) {
+          p.add(groupGap);
+          for (int i = 0; i < shorts; i++) {
+            p.add(shortPulse);
+            if (i < shorts - 1) p.add(innerGap);
+          }
+        }
+      } else {
+        for (int i = 0; i < shorts; i++) {
+          p.add(shortPulse);
+          if (i < shorts - 1) p.add(innerGap);
+        }
+      }
+
+      if (p.isNotEmpty) {
+        await Vibration.vibrate(pattern: [0, ...p]);
+      }
+    } catch (_) {}
   }
 
   void _dismiss() {

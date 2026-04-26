@@ -60,15 +60,7 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.of(context).maybePop();
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.help_outline_rounded),
-              tooltip: 'Help',
-              onPressed: () {
-                /* TODO */
-              },
-            ),
-          ],
+
         ),
         body: Column(
           children: [
@@ -282,6 +274,22 @@ class SettingsScreen extends ConsumerWidget {
                           context,
                           TutorialRoute.voice, // Assuming TutorialRoute.voice will exist
                         ),
+                      ),
+                      MsToggleTile(
+                        title: 'Clarify Voice Commands',
+                        subtitle: 'Ask "Yes or No" before executing commands',
+                        value: settings.clarifyVoiceCommands,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleClarifyVoiceCommands(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, 'Clarify Voice Commands', v),
+                          );
+                        },
                       ),
                       MsTimerTile(
                         title: l10n.goBackTimerOnResult,

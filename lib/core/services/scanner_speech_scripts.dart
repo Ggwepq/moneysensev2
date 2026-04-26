@@ -32,7 +32,7 @@ abstract final class ScannerSpeech {
       text = l10n.ttsScanResultWithType(denomination, type);
     } else {
       // Full: denomination + type + confidence warning if low
-      if (confidence < 0.80) {
+      if (confidence < 0.50) {
         text = l10n.ttsScanResultLowConfidence(denomination, type);
       } else {
         text = l10n.ttsScanResultWithType(denomination, type);

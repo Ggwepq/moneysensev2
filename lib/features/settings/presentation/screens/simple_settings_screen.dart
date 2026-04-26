@@ -12,7 +12,7 @@ import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'vision_profile_picker_screen.dart';
-import '../widgets/share_app_modal.dart';
+
 
 class SimpleSettingsScreen extends ConsumerWidget {
   const SimpleSettingsScreen({super.key});
@@ -51,15 +51,7 @@ class SimpleSettingsScreen extends ConsumerWidget {
             Navigator.of(context).maybePop();
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
-            tooltip: 'Help',
-            onPressed: () {
-              /* TODO */
-            },
-          ),
-        ],
+
       ),
       body: SafeArea(
 
@@ -109,13 +101,11 @@ class SimpleSettingsScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.md),
                       _BigRow(
                         children: [
-                          // Theme toggle: Dark ↔ Light (one box)
+                          // Dark Mode toggle
                           _ToggleCard(
-                            icon: isDark
-                                ? Icons.dark_mode_rounded
-                                : Icons.light_mode_rounded,
-                            label: isDark ? l10n.themeDark : l10n.themeLight,
-                            isActive: true,
+                            icon: Icons.dark_mode_rounded,
+                            label: l10n.themeDark,
+                            isActive: isDark,
                             onTap: () {
                               final next = isDark
                                   ? AppThemeMode.light
@@ -160,15 +150,11 @@ class SimpleSettingsScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.md),
                       _BigRow(
                         children: [
-                          // Camera toggle: Back ↔ Front (one box)
+                          // Front Camera toggle
                           _ToggleCard(
-                            icon: isFrontCamera
-                                ? Icons.camera_front_rounded
-                                : Icons.camera_rear_rounded,
-                            label: isFrontCamera
-                                ? 'Front Camera'
-                                : 'Back Camera',
-                            isActive: true,
+                            icon: Icons.camera_front_rounded,
+                            label: 'Front Camera',
+                            isActive: isFrontCamera,
                             onTap: () {
                               final nextIsFront = !isFrontCamera;
                               EarconService.instance.play(
@@ -267,21 +253,25 @@ class SimpleSettingsScreen extends ConsumerWidget {
                               say(SettingsSpeech.toggled(l10n, 'Voice Command', next));
                             },
                           ),
-                          const SizedBox.shrink(),
+                          // Clarify Voice Commands
+                          _ToggleCard(
+                            icon: settings.clarifyVoiceCommands
+                                ? Icons.record_voice_over_rounded
+                                : Icons.voice_over_off_rounded,
+                            label: 'Clarify Command',
+                            isActive: settings.clarifyVoiceCommands,
+                            onTap: () {
+                              final next = !settings.clarifyVoiceCommands;
+                              EarconService.instance.play(
+                                next ? EarconEvent.actionEnabled : EarconEvent.actionDisabled,
+                              );
+                              notifier.toggleClarifyVoiceCommands(next);
+                              say(SettingsSpeech.toggled(l10n, 'Clarify Voice Commands', next));
+                            },
+                          ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      // Share App
-                      _ToggleCardWide(
-                        icon: Icons.qr_code_2_rounded,
-                        label: l10n.shareAppTitle,
-                        isActive: false,
-                        onTap: () {
-                          EarconService.instance.play(EarconEvent.actionConfirmed);
-                          say(SettingsSpeech.shareApp(l10n));
-                          ShareAppModal.show(context);
-                        },
-                      ),
+
                       const SizedBox(height: AppSpacing.md),
                       // ── Advanced Mode button (scrollable) ─────────────────
                       Semantics(

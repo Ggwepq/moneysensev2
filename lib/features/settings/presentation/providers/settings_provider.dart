@@ -110,6 +110,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   void toggleVoiceNavigation(bool value) =>
       _update(state.copyWith(voiceNavigation: value));
 
+  void toggleClarifyVoiceCommands(bool value) =>
+      _update(state.copyWith(clarifyVoiceCommands: value));
+
   // ── Accessibility ──────────────────────────────────────────────────────
 
   /// Setting the vision profile also applies that profile's recommended

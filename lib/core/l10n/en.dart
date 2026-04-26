@@ -284,11 +284,11 @@ abstract final class EnStrings {
 
   // Vision profile descriptions (shown in the tile below the pills)
   static const String visionLowVisionDesc =
-      'Visual UI with amplified text and contrast. TTS and haptics are optional.';
+      'For prescriptions (75-500), astigmatism, or vision issues affecting daily tasks despite glasses.';
   static const String visionPartiallyBlindDesc =
-      'Audio-assisted. TTS announces results and navigation automatically.';
+      'For individuals with limited functional vision or serious eye conditions not corrected by glasses.';
   static const String visionFullyBlindDesc =
-      'Audio-primary. TTS narrates everything. Rich haptic patterns carry meaning.';
+      'For individuals with no functional vision. Audio and haptic feedback as primary tools.';
 
   // ── Onboarding
   static const String onboardingWelcomeTitle = 'Welcome to MoneySense';

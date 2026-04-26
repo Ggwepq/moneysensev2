@@ -287,11 +287,11 @@ abstract final class TlStrings {
 
   // Vision profile descriptions
   static const String visionLowVisionDesc =
-      'Visual na UI na may pinapalaking teksto at contrast. Opsyonal ang TTS at haptics.';
+      'Para sa may grado ang mata (75-500), astigmatism, o may hirap sa paningin kahit may salamin.';
   static const String visionPartiallyBlindDesc =
-      'May tulong na audio. Awtomatikong binabalita ng TTS ang mga resulta at nabigasyon.';
+      'Para sa mga may limitadong paningin o seryosong kondisyon sa mata na hindi madaan sa salamin.';
   static const String visionFullyBlindDesc =
-      'Audio ang pangunahin. Lahat ay binabalita ng TTS. Mga mayamang haptic pattern ang nagdadala ng kahulugan.';
+      'Para sa mga wala nang functional na paningin. Audio at haptics ang pangunahing gabay.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
   static const String onboardingWelcomeTitle =
