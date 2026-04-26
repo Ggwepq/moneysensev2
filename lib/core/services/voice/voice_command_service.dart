@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -52,21 +53,17 @@ class VoiceCommandService {
   bool _isPassiveMode = false;
   bool _isPersistentActive = false;
   bool _isStopped = true;
+  bool _isActiveMode = false;
 
   // ── Serialised hardware access ─────────────────────────────────────────────
-  // All start/stop calls are funnelled through a single mutex so overlapping
-  // calls (e.g. a gesture fires while the passive loop is restarting) never race.
-
   final _opQueue = <_HardwareOp>[];
   bool _opRunning = false;
 
   // ── Confirmation loop ──────────────────────────────────────────────────────
-
   VoiceIntent? _pendingIntent;
   bool _isAwaitingConfirmation = false;
 
   // ── Passive restart timer ─────────────────────────────────────────────────
-
   Timer? _restartTimer;
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -114,23 +111,24 @@ class VoiceCommandService {
 
   /// Triggers an active listening session.
   ///
-  /// [persistent]  – auto-restart when the microphone times out (onboarding).
-  /// [withPrompt]  – play "I'm listening" before opening the mic.
+  /// [persistent]     – auto-restart when the microphone times out (onboarding).
+  /// [withPrompt]     – play "I'm listening" before opening the mic.
+  /// [isConfirmation] – whether this is a yes/no confirmation (longer timers).
   Future<void> startActiveListening({
     bool persistent = false,
     bool withPrompt = false,
+    bool isConfirmation = false,
   }) async {
     _cancelRestartTimer();
     _isStopped = false;
     _isPassiveMode = false;
+    _isActiveMode = false;
     _isPersistentActive = persistent;
 
     if (withPrompt) {
       final settings = ref.read(appSettingsProvider);
       final l10n = AppLocalizations.of(settings.isTagalog);
-      ref
-          .read(ttsServiceProvider)
-          .enqueue(
+      ref.read(ttsServiceProvider).enqueue(
             TtsMessage.result(
               l10n.voiceListeningFeedback,
               id: 'voice.listening_start',
@@ -141,16 +139,23 @@ class VoiceCommandService {
     }
 
     _enqueue(() async {
+      // Increase silence window for confirmation sessions
+      // This gives the user more time to think or wait for the prompt to finish.
+      final listenFor = isConfirmation ? const Duration(seconds: 15) : const Duration(seconds: 10);
+      final pauseFor = isConfirmation ? const Duration(seconds: 8) : const Duration(seconds: 5);
+
       await _stopHardware(playEarcon: false);
+      // Wait for TTS to finish if prompt was played
+      await Future<void>.delayed(Duration(milliseconds: withPrompt ? 1000 : 300));
       await _startHardware(
-        listenFor: persistent
-            ? const Duration(minutes: 1)
-            : const Duration(seconds: 10),
-        pauseFor: persistent ? const Duration(seconds: 20) : null,
+        listenFor: listenFor,
+        pauseFor: pauseFor,
         cancelOnError: !persistent,
         passive: false,
         playEarcon: true,
       );
+      _isPassiveMode = false;
+      _isActiveMode = true;
     });
   }
 
@@ -158,7 +163,8 @@ class VoiceCommandService {
   Future<void> startPassiveListening() async {
     if (_isPassiveMode) return;
     _isStopped = false;
-    _isPassiveMode = true;
+    _isPassiveMode = false;
+    _isActiveMode = false;
     _isPersistentActive = false;
     _cancelRestartTimer();
 
@@ -173,6 +179,7 @@ class VoiceCommandService {
     _cancelRestartTimer();
     _isStopped = true;
     _isPassiveMode = false;
+    _isActiveMode = false;
     _isPersistentActive = false;
     _isAwaitingConfirmation = false;
     _pendingIntent = null;
@@ -187,13 +194,13 @@ class VoiceCommandService {
   // ──────────────────────────────────────────────────────────────────────────
 
   Future<void> _stopHardware({bool playEarcon = false}) async {
-    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+    debugPrint('[VoiceService] _stopHardware(playEarcon: $playEarcon)');
     if (playEarcon) EarconService.instance.play(EarconEvent.actionDisabled);
     if (_speech.isListening) {
       await _speech.cancel();
-      // Increase delay to give the native SpeechRecognizer ample time to release the mic
-      await Future.delayed(const Duration(milliseconds: 350));
+      await Future.delayed(const Duration(milliseconds: 300));
     }
+    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
   }
 
   Future<void> _startHardware({
@@ -203,6 +210,8 @@ class VoiceCommandService {
     required bool passive,
     bool playEarcon = false,
   }) async {
+    _cancelRestartTimer();
+    debugPrint('[VoiceService] _startHardware(listenFor: $listenFor, passive: $passive, playEarcon: $playEarcon)');
     await _initIfNeeded();
     if (!_isInit) {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
@@ -216,42 +225,58 @@ class VoiceCommandService {
     final started = await _speech.listen(
       onResult: _onResult,
       listenFor: listenFor,
-      pauseFor: pauseFor,
+      pauseFor: pauseFor ?? const Duration(seconds: 5),
       cancelOnError: cancelOnError,
       partialResults: true,
     );
 
     if (started) {
-      ref.read(voiceCommandStatusProvider.notifier).state = passive
-          ? VoiceStatus.passiveListening
-          : VoiceStatus.activeListening;
+      if (passive) {
+        _isPassiveMode = true;
+        _isActiveMode = false;
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
+      } else {
+        _isPassiveMode = false;
+        _isActiveMode = true;
+        _isPersistentActive = !cancelOnError;
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.activeListening;
+      }
     } else {
+      debugPrint('[VoiceService] _speech.listen failed to start.');
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
       if (passive) {
-        _schedulePassiveRestart(delay: const Duration(seconds: 3));
+        _schedulePassiveRestart(delay: const Duration(seconds: 2));
       }
     }
   }
 
   Future<void> _startPassiveLoop() async {
-    if (!_isPassiveMode) return;
+    _isPassiveMode = true;
     await _startHardware(
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 5),
+      listenFor: const Duration(minutes: 1),
+      pauseFor: const Duration(minutes: 1),
       cancelOnError: false,
       passive: true,
     );
   }
 
-  void _schedulePassiveRestart({
-    Duration delay = const Duration(milliseconds: 300),
-  }) {
+  void _schedulePassiveRestart({Duration delay = const Duration(milliseconds: 300)}) {
     _cancelRestartTimer();
-    if (!_isPassiveMode) return;
+    if (!_isPassiveMode && !_isPersistentActive) return;
     _restartTimer = Timer(delay, () {
       _restartTimer = null;
-      if (!_isPassiveMode) return;
-      _enqueue(() => _startPassiveLoop());
+      if (_isPersistentActive) {
+        _enqueue(() async {
+          await _startHardware(
+            listenFor: const Duration(minutes: 1),
+            pauseFor: const Duration(seconds: 20),
+            cancelOnError: false,
+            passive: false,
+          );
+        });
+      } else if (_isPassiveMode) {
+        _enqueue(() => _startPassiveLoop());
+      }
     });
   }
 
@@ -265,64 +290,38 @@ class VoiceCommandService {
   // ──────────────────────────────────────────────────────────────────────────
 
   void _onStatus(String status) {
+    debugPrint('[VoiceService] onStatus: $status (Passive: $_isPassiveMode, Active: $_isActiveMode, Persistent: $_isPersistentActive)');
+    
     if (status == 'done' || status == 'notListening') {
-      if (_isPassiveMode) {
+      if (_isPassiveMode || _isPersistentActive) {
+        _schedulePassiveRestart(delay: const Duration(milliseconds: 400));
+      } else if (_isActiveMode) {
+        _isActiveMode = false;
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-        _schedulePassiveRestart();
-      } else if (_isPersistentActive) {
-        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-        _cancelRestartTimer();
-        _restartTimer = Timer(const Duration(milliseconds: 300), () {
-          _restartTimer = null;
-          if (!_isPersistentActive) return;
-          _enqueue(() async {
-            await _startHardware(
-              listenFor: const Duration(minutes: 1),
-              pauseFor: const Duration(seconds: 20),
-              cancelOnError: false,
-              passive: false,
-            );
-          });
-        });
-      } else {
-        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-
         if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+          debugPrint('[VoiceService] Active done. Restoring passive listening.');
           startPassiveListening();
         } else {
           EarconService.instance.play(EarconEvent.actionDisabled);
         }
+      } else {
+        debugPrint('[VoiceService] Unhandled stop ignored (transitionary).');
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
       }
     }
   }
 
   void _onError(SpeechRecognitionError error) {
+    debugPrint('[VoiceService] onError: ${error.errorMsg}');
     final delay = error.errorMsg.contains('network')
         ? const Duration(seconds: 3)
         : const Duration(seconds: 1);
 
-    if (_isPassiveMode) {
-      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+    if (_isPassiveMode || _isPersistentActive) {
       _schedulePassiveRestart(delay: delay);
-    } else if (_isPersistentActive) {
-      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-      _cancelRestartTimer();
-      _restartTimer = Timer(delay, () {
-        _restartTimer = null;
-        if (!_isPersistentActive) return;
-        _enqueue(() async {
-          await _startHardware(
-            listenFor: const Duration(minutes: 1),
-            pauseFor: const Duration(seconds: 20),
-            cancelOnError: false,
-            passive: false,
-          );
-        });
-      });
     } else {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       EarconService.instance.play(EarconEvent.scanFail);
-
       if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
         startPassiveListening();
       } else {
@@ -333,38 +332,30 @@ class VoiceCommandService {
 
   void _onResult(SpeechRecognitionResult result) {
     final recognizedText = result.recognizedWords.toLowerCase();
-
-    // Always update the live-text provider so the UI feels responsive.
     ref.read(voiceCommandTextProvider.notifier).state = recognizedText;
 
-    // ── Wake-word gate (passive mode only) ────────────────────────────────
     if (_isPassiveMode) {
       final wakeWordRegex = RegExp(
-        r'(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ams|ms|miss|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?',
+        r'^(hey|hoy|hay|hi|hello|ok|paki|yo|hame)?\s*(ams|ms|miss|money|monie|moni|monee|mane|mani|many|mona|mone|monay|madison|mannequin)\s*(s[iey]nc[e]?|s[iey]ns[e]?|sc[iey]ns[e]?|sc[iey]nc[e]?|cents|sents|sends|sens|ence|s)?$',
         caseSensitive: false,
       );
-      if (!wakeWordRegex.hasMatch(recognizedText)) return;
+      if (!wakeWordRegex.hasMatch(recognizedText.trim())) return;
     }
 
     final intent = VoiceIntentParser.parse(recognizedText);
 
-    // ── Confirmation loop ─────────────────────────────────────────────────
-    if (_isAwaitingConfirmation &&
-        _pendingIntent != null &&
-        result.finalResult) {
+    // Confirmation Loop: Handle Yes/No while awaiting confirmation.
+    // We allow non-final results here for SNAPPY confirmation feedback.
+    if (_isAwaitingConfirmation && _pendingIntent != null) {
       if (intent is SelectionConfirmationIntent) {
         final settings = ref.read(appSettingsProvider);
         final l10n = AppLocalizations.of(settings.isTagalog);
         final tts = ref.read(ttsServiceProvider);
 
         if (intent.isConfirmed) {
-          ref.read(voiceCommandStatusProvider.notifier).state =
-              VoiceStatus.processing;
-          final success = ref
-              .read(voiceCommandExecutorProvider)
-              .execute(_pendingIntent!);
+          ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
+          final success = ref.read(voiceCommandExecutorProvider).execute(_pendingIntent!);
           _intentController.add(_pendingIntent!);
-
           if (success) {
             tts.enqueue(
               TtsMessage.result(l10n.voiceActionSuccess, id: 'voice.success'),
@@ -372,21 +363,12 @@ class VoiceCommandService {
               currentVerbosity: settings.ttsVerbosity,
             );
           }
-
           _pendingIntent = null;
           _isAwaitingConfirmation = false;
-
-          if (_isPassiveMode) {
-            _schedulePassiveRestart(delay: const Duration(milliseconds: 600));
+          if (settings.voiceNavigation) {
+            Future.delayed(const Duration(milliseconds: 800), () => startPassiveListening());
           } else {
-            if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
-              Future.delayed(
-                const Duration(milliseconds: 600),
-                () => startPassiveListening(),
-              );
-            } else {
-              stopListening();
-            }
+            stopListening();
           }
         } else {
           tts.enqueue(
@@ -396,8 +378,7 @@ class VoiceCommandService {
           );
           _pendingIntent = null;
           _isAwaitingConfirmation = false;
-
-          Future.delayed(const Duration(milliseconds: 600), () {
+          Future.delayed(const Duration(milliseconds: 800), () {
             startActiveListening();
           });
         }
@@ -405,38 +386,33 @@ class VoiceCommandService {
       }
     }
 
-    // ── Wake word ─────────────────────────────────────────────────────────
+    // Standard Intent Processing (Commands)
+    // Only process these when FINAL to avoid multi-execution during speech.
+    if (!result.finalResult) return;
+
     if (intent is WakeIntent) {
-      if (_isPassiveMode) {
-        final settings = ref.read(appSettingsProvider);
-        final l10n = AppLocalizations.of(settings.isTagalog);
-        ref
-            .read(ttsServiceProvider)
-            .enqueue(
-              TtsMessage.result(
-                l10n.voicePromptWhatShallIDo,
-                id: 'voice.prompt',
-              ),
-              enabled: settings.ttsEnabled,
-              currentVerbosity: settings.ttsVerbosity,
-            );
-        // Flip out of passive mode BEFORE calling startActiveListening so
-        // the flag check inside startPassiveListening doesn't re-enter.
-        _isPassiveMode = false;
-        Future.delayed(const Duration(milliseconds: 250), () {
-          startActiveListening();
-        });
-      }
+      final settings = ref.read(appSettingsProvider);
+      final l10n = AppLocalizations.of(settings.isTagalog);
+      ref.read(ttsServiceProvider).enqueue(
+            TtsMessage.result(l10n.voicePromptWhatShallIDo, id: 'voice.prompt'),
+            enabled: settings.ttsEnabled,
+            currentVerbosity: settings.ttsVerbosity,
+          );
+      _isPassiveMode = false;
+      _isActiveMode = false;
+      _isPersistentActive = false;
+      
+      Future.delayed(const Duration(milliseconds: 800), () {
+        startActiveListening();
+      });
       return;
     }
 
-    // ── Instant intents (no confirmation) ────────────────────────────────
     if (intent is StopSpeakingIntent ||
         intent is SelectionConfirmationIntent ||
         intent is SelectionIntent ||
         intent is StartVoiceSetupIntent) {
-      ref.read(voiceCommandStatusProvider.notifier).state =
-          VoiceStatus.processing;
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
       _intentController.add(intent);
 
@@ -447,13 +423,12 @@ class VoiceCommandService {
           stopListening();
         }
       } else if (intent is! StopSpeakingIntent) {
-        _schedulePassiveRestart(delay: const Duration(milliseconds: 600));
+        _schedulePassiveRestart(delay: const Duration(milliseconds: 800));
       }
       return;
     }
 
-    // ── Standard commands: confirmation loop ──────────────────────────────
-    if (intent is! UnknownIntent && result.finalResult) {
+    if (intent is! UnknownIntent) {
       _pendingIntent = intent;
       _isAwaitingConfirmation = true;
 
@@ -461,13 +436,8 @@ class VoiceCommandService {
       final l10n = AppLocalizations.of(settings.isTagalog);
       final tts = ref.read(ttsServiceProvider);
 
-      ref.read(voiceCommandStatusProvider.notifier).state =
-          VoiceStatus.processing;
-      ref.read(lastDetectedIntentProvider.notifier).state = intent
-          .toString()
-          .split('(')
-          .first;
-
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
+      ref.read(lastDetectedIntentProvider.notifier).state = intent.toString().split('(').first;
       final description = intent.toDescription(l10n);
 
       if (!settings.clarifyVoiceCommands) {
@@ -476,65 +446,46 @@ class VoiceCommandService {
           enabled: settings.ttsEnabled,
           currentVerbosity: settings.ttsVerbosity,
         );
-
         _intentController.add(intent);
         ref.read(voiceCommandExecutorProvider).execute(intent);
-
         _pendingIntent = null;
         _isAwaitingConfirmation = false;
-
-        if (_isPassiveMode) {
-          _schedulePassiveRestart(delay: const Duration(milliseconds: 600));
+        if (settings.voiceNavigation) {
+          Future.delayed(const Duration(milliseconds: 800), () => startPassiveListening());
         } else {
-          if (!_isStopped && settings.voiceNavigation) {
-            Future.delayed(
-              const Duration(milliseconds: 600),
-              () => startPassiveListening(),
-            );
-          } else {
-            stopListening();
-          }
+          stopListening();
         }
         return;
       }
 
       tts.enqueue(
-        TtsMessage.result(
-          '${l10n.voiceConfirmPrefix} $description${l10n.voiceConfirmSuffix}',
-          id: 'voice.confirm_prompt',
-        ),
+        TtsMessage.result('${l10n.voiceConfirmPrefix} $description${l10n.voiceConfirmSuffix}', id: 'voice.confirm_prompt'),
         enabled: settings.ttsEnabled,
         currentVerbosity: settings.ttsVerbosity,
       );
 
-      // Give TTS a moment to start, then reopen the mic for Yes/No.
-      Future.delayed(const Duration(milliseconds: 400), () {
-        startActiveListening();
+      // Increase delay to allow confirmation prompt to finish before mic re-opens
+      Future.delayed(const Duration(milliseconds: 1400), () {
+        if (_isAwaitingConfirmation) {
+           startActiveListening(isConfirmation: true);
+        }
       });
       return;
     }
 
-    // ── Unknown final result ──────────────────────────────────────────────
-    if (!result.finalResult) return;
-
-    ref.read(voiceCommandStatusProvider.notifier).state =
-        VoiceStatus.processing;
-    ref.read(voiceCommandExecutorProvider).execute(intent);
-
-    if (!_isPassiveMode) {
+    // Default Fallback (Unknown)
+    if (_isPassiveMode) {
+      ref.read(voiceCommandTextProvider.notifier).state = '';
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
+    } else {
       EarconService.instance.play(EarconEvent.scanFail);
       if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
         startPassiveListening();
       } else {
         stopListening();
       }
-    } else {
-      ref.read(voiceCommandTextProvider.notifier).state = '';
-      ref.read(voiceCommandStatusProvider.notifier).state =
-          VoiceStatus.passiveListening;
     }
   }
 }
 
-/// Typedef for a queued hardware operation.
 typedef _HardwareOp = Future<void> Function();

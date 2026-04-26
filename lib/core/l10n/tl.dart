@@ -29,6 +29,7 @@ abstract final class TlStrings {
   static const String languageEnglish = 'Ingles';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Laki ng Teksto';
+  static const String speechRate = 'Bilis ng Pagsasalita';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -43,11 +44,17 @@ abstract final class TlStrings {
       'Ayusin ang laki ng teksto ayon sa iyong kaginhawahan.';
   static const String fontSizeSubtitleFull =
       'I-drag ang slider para palakihin o paliitin ang teksto. Ang iyong vision profile ay nagtatakda ng minimum na laki. Maaari kang pumunta ng mas mataas, ngunit hindi mas mababa sa floor ng iyong profile.';
+  static const String speechRateSubtitle =
+      'Ayusin kung gaano kabilis magsalita ang app.';
+  static const String speechRateSubtitleFull =
+      'I-drag ang slider para pabilisin o pabagalin ang boses. Ang mas mabilis na bilis ay karaniwang mas gusto ng mga sanay na gumamit ng screen reader.';
 
   // Scanning: titles
   static const String useFrontCamera = 'Gamitin ang Front Camera';
   static const String useFlashlight = 'Gamitin ang Flash';
   static const String denominationVibration = 'Vibrasyon ng Denominasyon';
+  static const String proximityBeeps = 'Proximity Beeps';
+  static const String repeatLoop = 'Pag-ulit ng Resulta';
 
   // Scanning: subtitles
   static const String useFrontCameraSubtitle =
@@ -62,6 +69,10 @@ abstract final class TlStrings {
       'Maramdaman ang natatanging pattern ng vibrasyon para sa bawat denominasyon.';
   static const String denominationVibrationSubtitleFull =
       'Kapag natukoy ang isang bill, ang iyong telepono ay nagvi-vibrate sa isang pattern na natatangi sa denominasyong iyon, para maramdaman mo ang resulta nang hindi nakikinig. Bawat halaga ng bill ay may natatanging pattern.';
+  static const String proximityBeepsSubtitle =
+      'Pabilisin ang tunog habang papalapit ang pera sa gitna.';
+  static const String repeatLoopSubtitle =
+      'Patuloy na ulitin ang resulta habang nakikita sa camera.';
 
   // Navigation: titles
   static const String shakeToGoBack = 'Iling para Bumalik';
@@ -287,11 +298,11 @@ abstract final class TlStrings {
 
   // Vision profile descriptions
   static const String visionLowVisionDesc =
-      'Para sa may grado ang mata (75-500), astigmatism, o may hirap sa paningin kahit may salamin.';
+      'Para sa may matataas na grado ng salamin (75-500), may astigmatism, o malabo pa rin ang paningin kahit may suot na salamin.';
   static const String visionPartiallyBlindDesc =
-      'Para sa mga may limitadong paningin o seryosong kondisyon sa mata na hindi madaan sa salamin.';
+      'Para sa mga may malalang problema sa mata, limitado ang paningin, o di na nakukuha ng salamin ang paglabo ng mata.';
   static const String visionFullyBlindDesc =
-      'Para sa mga wala nang functional na paningin. Audio at haptics ang pangunahing gabay.';
+      'Para sa mga wala nang kakayahang makakita. Audio at vibration ang pangunahing gabay sa paggamit.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
   static const String onboardingWelcomeTitle =
@@ -682,6 +693,8 @@ abstract final class TlStrings {
   static const String resultAutoVerifyCancel = 'Kanselahin';
   static const String strictVerificationTitle = 'Strict Verification';
   static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
+  static const String clarifyVoiceCommandsTitle = 'I-klaro ang mga Utos sa Boses';
+  static const String clarifyVoiceCommandsSubtitle = 'Humingi ng kumpirmasyon (Oo/Hindi) bago isagawa ang mga nakilalang utos.';
 
   // Share App
   static const String shareAppTitle = 'Ibahagi ang MoneySense';

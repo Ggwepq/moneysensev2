@@ -165,9 +165,9 @@ class _PhoneGraphic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final blue    = _cfg.accentBlue;
+    final blue    = cfg.accentBlue;
     final phoneColor = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
     final border     = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final accent     = glowing ? blue : (isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant);
@@ -291,9 +291,9 @@ class _ShakeDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final blue    = _cfg.accentBlue;
+    final blue    = cfg.accentBlue;
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;

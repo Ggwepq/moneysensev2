@@ -330,10 +330,10 @@ class _GesturePlayground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final yellow  = _cfg.accentYellow;
-    final blue    = _cfg.accentBlue;
+    final yellow  = cfg.accentYellow;
+    final blue    = cfg.accentBlue;
     final theme = Theme.of(context);
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border  = isDark ? AppColors.darkBorder   : AppColors.lightBorder;

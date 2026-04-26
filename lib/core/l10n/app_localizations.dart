@@ -55,6 +55,7 @@ class AppLocalizations {
   String get languageTagalog =>
       isTagalog ? TlStrings.languageTagalog : EnStrings.languageTagalog;
   String get fontSize => isTagalog ? TlStrings.fontSize : EnStrings.fontSize;
+  String get speechRate => isTagalog ? TlStrings.speechRate : EnStrings.speechRate;
 
   // General: subtitles
   String get themeSubtitle =>
@@ -71,6 +72,12 @@ class AppLocalizations {
   String get fontSizeSubtitleFull => isTagalog
       ? TlStrings.fontSizeSubtitleFull
       : EnStrings.fontSizeSubtitleFull;
+  String get speechRateSubtitle => isTagalog
+      ? TlStrings.speechRateSubtitle
+      : EnStrings.speechRateSubtitle;
+  String get speechRateSubtitleFull => isTagalog
+      ? TlStrings.speechRateSubtitleFull
+      : EnStrings.speechRateSubtitleFull;
 
   // Scanning: titles
   String get useFrontCamera =>
@@ -80,6 +87,10 @@ class AppLocalizations {
   String get denominationVibration => isTagalog
       ? TlStrings.denominationVibration
       : EnStrings.denominationVibration;
+  String get proximityBeeps =>
+      isTagalog ? TlStrings.proximityBeeps : EnStrings.proximityBeeps;
+  String get repeatLoop =>
+      isTagalog ? TlStrings.repeatLoop : EnStrings.repeatLoop;
 
   // Scanning: subtitles
   String get useFrontCameraSubtitle => isTagalog
@@ -100,6 +111,12 @@ class AppLocalizations {
   String get denominationVibrationSubtitleFull => isTagalog
       ? TlStrings.denominationVibrationSubtitleFull
       : EnStrings.denominationVibrationSubtitleFull;
+  String get proximityBeepsSubtitle => isTagalog
+      ? TlStrings.proximityBeepsSubtitle
+      : EnStrings.proximityBeepsSubtitle;
+  String get repeatLoopSubtitle => isTagalog
+      ? TlStrings.repeatLoopSubtitle
+      : EnStrings.repeatLoopSubtitle;
 
   // Navigation: titles
   String get shakeToGoBack =>
@@ -894,6 +911,15 @@ class AppLocalizations {
   // Command Confirmation & Feedback
   String get voiceConfirmPrefix => isTagalog ? TlStrings.voiceConfirmPrefix : EnStrings.voiceConfirmPrefix;
   String get voiceConfirmSuffix => isTagalog ? TlStrings.voiceConfirmSuffix : EnStrings.voiceConfirmSuffix;
+
+  // Strict Verification
+  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
+  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
+
+  // Clarify Voice Commands
+  String get clarifyVoiceCommandsTitle => isTagalog ? TlStrings.clarifyVoiceCommandsTitle : EnStrings.clarifyVoiceCommandsTitle;
+  String get clarifyVoiceCommandsSubtitle => isTagalog ? TlStrings.clarifyVoiceCommandsSubtitle : EnStrings.clarifyVoiceCommandsSubtitle;
+
   String get voiceActionSuccess => isTagalog ? TlStrings.voiceActionSuccess : EnStrings.voiceActionSuccess;
   String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
   String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
@@ -907,9 +933,6 @@ class AppLocalizations {
   String get resultManualCapturing => isTagalog ? TlStrings.resultManualCapturing : EnStrings.resultManualCapturing;
   String resultAutoVerifyHint(String seconds) => isTagalog ? TlStrings.resultAutoVerifyHint(seconds) : EnStrings.resultAutoVerifyHint(seconds);
   String get resultAutoVerifyCancel => isTagalog ? TlStrings.resultAutoVerifyCancel : EnStrings.resultAutoVerifyCancel;
-
-  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
-  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
 
   // Scanner status labels
   String get scannerStatusIdle =>

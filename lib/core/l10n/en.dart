@@ -29,6 +29,7 @@ abstract final class EnStrings {
   static const String languageEnglish = 'English';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Font Size';
+  static const String speechRate = 'Speech Rate';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -43,11 +44,17 @@ abstract final class EnStrings {
       'Adjust the text size to what is most comfortable for you.';
   static const String fontSizeSubtitleFull =
       "Drag the slider to make text larger or smaller. Your vision profile sets a minimum size floor. You can go larger, but not below your profile's floor.";
+  static const String speechRateSubtitle =
+      'Adjust how fast the app speaks results.';
+  static const String speechRateSubtitleFull =
+      'Drag the slider to make the voice faster or slower. A faster rate is often preferred by experienced users of screen readers, while a normal rate is easier to understand for most people.';
 
   // Scanning: titles
   static const String useFrontCamera = 'Use Front Camera';
   static const String useFlashlight = 'Use Flashlight';
   static const String denominationVibration = 'Denomination Vibration';
+  static const String proximityBeeps = 'Proximity Beeps';
+  static const String repeatLoop = 'Identification Loop';
 
   // Scanning: subtitles
   static const String useFrontCameraSubtitle =
@@ -62,6 +69,10 @@ abstract final class EnStrings {
       'Feel a unique vibration pattern for each denomination scanned.';
   static const String denominationVibrationSubtitleFull =
       'When a bill is identified, your phone vibrates in a pattern unique to that denomination, so you can feel the result without listening. Each bill value has a distinct pattern.';
+  static const String proximityBeepsSubtitle =
+      'Speed up beeps as money centers in frame.';
+  static const String repeatLoopSubtitle =
+      'Continuously repeat results while in view.';
 
   // Navigation: titles
   static const String shakeToGoBack = 'Shake to Go Back';
@@ -284,11 +295,11 @@ abstract final class EnStrings {
 
   // Vision profile descriptions (shown in the tile below the pills)
   static const String visionLowVisionDesc =
-      'For prescriptions (75-500), astigmatism, or vision issues affecting daily tasks despite glasses.';
+      'For people with high prescriptions (75-500), astigmatism, or vision issues that affect daily tasks even with glasses.';
   static const String visionPartiallyBlindDesc =
-      'For individuals with limited functional vision or serious eye conditions not corrected by glasses.';
+      'For those with very limited vision, serious eye conditions, or vision only in one eye that cannot be corrected by lenses.';
   static const String visionFullyBlindDesc =
-      'For individuals with no functional vision. Audio and haptic feedback as primary tools.';
+      'For individuals with no functional vision. Relies primarily on audio and haptic feedback.';
 
   // ── Onboarding
   static const String onboardingWelcomeTitle = 'Welcome to MoneySense';
@@ -299,7 +310,7 @@ abstract final class EnStrings {
       'We\'ll adjust the app to best serve your needs.';
   static const String visionLowVision = 'Low Vision';
   static const String visionPartiallyBlind = 'Partially Blind';
-  static const String visionFullyBlind = 'Fully Blind';
+  static const String visionFullyBlind = 'Completely Blind';
   static const String onboardingVisionOptions = 'Please say: Low Vision, Partially Blind, or Fully Blind.';
 
   static const String voiceNavigation = 'Voice Navigation';
@@ -685,6 +696,8 @@ abstract final class EnStrings {
   static const String resultAutoVerifyCancel = 'Cancel';
   static const String strictVerificationTitle = 'Strict Verification';
   static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
+  static const String clarifyVoiceCommandsTitle = 'Clarify Voice Commands';
+  static const String clarifyVoiceCommandsSubtitle = 'Ask for confirmation (Yes/No) before executing recognized voice commands.';
 
   // Share App
   static const String shareAppTitle = 'Share MoneySense';

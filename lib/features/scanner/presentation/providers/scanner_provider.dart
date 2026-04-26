@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart' as img;
 
@@ -277,8 +276,9 @@ class ScannerNotifier extends Notifier<ScannerState> {
     final isBottom = cy > 0.65;
 
     String hint;
-    if (isLeft && isTop)      hint = l10n.guidanceMoveRightDown;
-    else if (isLeft && isBottom) hint = l10n.guidanceMoveRightUp;
+    if (isLeft && isTop) {
+      hint = l10n.guidanceMoveRightDown;
+    } else if (isLeft && isBottom) hint = l10n.guidanceMoveRightUp;
     else if (isRight && isTop)   hint = l10n.guidanceMoveLeftDown;
     else if (isRight && isBottom) hint = l10n.guidanceMoveLeftUp;
     else if (isLeft)   hint = l10n.guidanceMoveRight;

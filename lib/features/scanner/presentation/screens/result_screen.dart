@@ -102,13 +102,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
       int shorts = 0;
       if (isCoin) {
-        if (denomination == '1') shorts = 1;
-        else if (denomination == '5') shorts = 2;
+        if (denomination == '1') {
+          shorts = 1;
+        } else if (denomination == '5') shorts = 2;
         else if (denomination == '10') shorts = 3;
         else if (denomination == '20') shorts = 4;
       } else {
-        if (denomination == '20') shorts = 1;
-        else if (denomination == '50') shorts = 2;
+        if (denomination == '20') {
+          shorts = 1;
+        } else if (denomination == '50') shorts = 2;
         else if (denomination == '100') shorts = 3;
         else if (denomination == '200') shorts = 4;
         else if (denomination == '500') shorts = 5;
@@ -206,10 +208,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       // 2. Inertial Tilt Cheat
       else {
         forced = ref.read(inertialServiceProvider).cheatStatus;
-        if (forced != null) {
-          debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
-        }
-      }
+        debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
+            }
 
       VerificationResult res;
       if (forced != null) {
@@ -809,7 +809,7 @@ class _GoBackHint extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Text(
-        l10n.resultGoBackHintPre(secondsLeft.toString()) + ' ' + l10n.resultGoBackLink,
+        '${l10n.resultGoBackHintPre(secondsLeft.toString())} ${l10n.resultGoBackLink}',
         style: theme.textTheme.bodySmall?.copyWith(color: onBg.withValues(alpha: 0.6)),
         textAlign: TextAlign.center,
       ),
