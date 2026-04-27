@@ -38,9 +38,9 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
 
     HapticFeedback.mediumImpact();
 
-    if (status == VoiceStatus.activeListening) {
-      // User wants to cancel the current active session.
-      service.stopListening();
+    if (status == VoiceStatus.activeListening || status == VoiceStatus.processing) {
+      // User wants to RESTART or interrupt.
+      service.startActiveListening(withPrompt: false);
     } else {
       // Open active listening (with prompt).
       service.startActiveListening(withPrompt: true);
@@ -112,19 +112,16 @@ class _BlindVoiceUiState extends ConsumerState<BlindVoiceUi> {
 
                       const SizedBox(height: 80),
 
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: Text(
-                          statusLabel,
-                          key: ValueKey(statusLabel),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                            height: 1.2,
-                          ),
+                      Text(
+                        statusLabel,
+                        key: ValueKey(statusLabel),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                          height: 1.2,
                         ),
                       ),
 

@@ -192,7 +192,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 onTap: () {
                   if (settings.voiceNavigation && !isFullyBlind) {
                     HapticFeedback.lightImpact();
-                    ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
+                    final status = ref.read(voiceCommandStatusProvider);
+                    ref.read(voiceCommandServiceProvider).startActiveListening(
+                      withPrompt: status == VoiceStatus.idle || status == VoiceStatus.error,
+                    );
                   }
                 },
                 behavior: HitTestBehavior.opaque,

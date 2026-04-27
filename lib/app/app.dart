@@ -46,12 +46,7 @@ class MoneySenseApp extends ConsumerWidget {
             navigatorKey: VoiceCommandExecutor.navigatorKey,
             navigatorObservers: [routeObserver],
             builder: (context, child) {
-              return Stack(
-                children: [
-                  if (child != null) child,
-                  const GlobalVoiceOverlay(),
-                ],
-              );
+              return child ?? const SizedBox.shrink();
             },
             home: _AppRoot(),
           ),
@@ -69,7 +64,6 @@ class _AppRoot extends ConsumerStatefulWidget {
 class _AppRootState extends ConsumerState<_AppRoot> {
   bool _ttsReady        = false;
   bool _launchTutorial  = false;
-  bool _passiveStarted  = false;
 
   @override
   void initState() {
@@ -89,10 +83,10 @@ class _AppRootState extends ConsumerState<_AppRoot> {
     _launchTutorial = launchTutorial;
     markOnboardingComplete(ref);
     
-    // Explicitly start voice if enabled after onboarding
+    // Explicitly stop voice if disabled (startPassive is removed)
     final settings = ref.read(appSettingsProvider);
-    if (settings.voiceNavigation) {
-      ref.read(voiceCommandServiceProvider).startPassiveListening();
+    if (!settings.voiceNavigation) {
+      ref.read(voiceCommandServiceProvider).stopListening();
     }
   }
 
@@ -109,34 +103,25 @@ class _AppRootState extends ConsumerState<_AppRoot> {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
-    // Returning users: kick off passive listening once on first home build.
-    if (!_passiveStarted) {
-      _passiveStarted = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final s = ref.read(appSettingsProvider);
-        if (s.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        }
-      });
-    }
-
     // Manage global voice lifecycle: start/stop when settings change
     ref.listen(appSettingsProvider, (previous, next) {
       final voiceNavChanged = previous?.voiceNavigation != next.voiceNavigation;
       final profileChanged = previous?.visionProfile != next.visionProfile;
 
       if (voiceNavChanged || profileChanged) {
-        if (next.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        } else {
+        if (!next.voiceNavigation) {
           ref.read(voiceCommandServiceProvider).stopListening();
         }
       }
     });
 
     return ShakeDetectorWidget(
-      child: HomeShell(launchTutorialOnLoad: _launchTutorial),
+      child: Stack(
+        children: [
+          HomeShell(launchTutorialOnLoad: _launchTutorial),
+          const GlobalVoiceOverlay(),
+        ],
+      ),
     );
   }
 }

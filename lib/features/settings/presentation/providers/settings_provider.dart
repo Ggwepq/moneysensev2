@@ -5,6 +5,8 @@ import '../../data/datasources/settings_storage.dart';
 import '../../domain/entities/app_settings.dart';
 import '../../domain/entities/vision_config.dart';
 import '../../../../core/services/remote_cheat_service.dart';
+import '../../../../core/services/tts_service.dart';
+import '../../../../core/l10n/app_localizations.dart';
 
 
 /// Holds the [SharedPreferences] instance loaded at startup.
@@ -142,7 +144,34 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       voiceNavigation:    profile == VisionProfile.fullyBlind,
       gesturalNavigation: profile == VisionProfile.fullyBlind || profile == VisionProfile.partiallyBlind,
       inertialNavigation: false,
+      // Ensure smooth transition by enabling core accessibility features
+      ttsEnabled:         true,
+      hapticFeedback:     true,
+      earconEnabled:      true,
     ));
+
+    // Announce the transition
+    _announceProfileChange(profile);
+  }
+
+  void _announceProfileChange(VisionProfile profile) {
+    final isTagalog = state.language == AppLanguage.tagalog;
+    final l10n = AppLocalizations.of(isTagalog);
+    final text = switch (profile) {
+      VisionProfile.lowVision => l10n.ttsProfileLowVision,
+      VisionProfile.partiallyBlind => l10n.ttsProfilePartiallyBlind,
+      VisionProfile.fullyBlind => l10n.ttsProfileFullyBlind,
+    };
+
+    ref.read(ttsServiceProvider).enqueue(
+      TtsMessage(
+        text: text,
+        priority: TtsPriority.critical,
+        requiredVerbosity: TtsVerbosity.minimal,
+      ),
+      enabled: true,
+      currentVerbosity: TtsVerbosity.full,
+    );
   }
 
   void toggleTts(bool value) =>

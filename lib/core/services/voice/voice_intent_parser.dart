@@ -283,7 +283,72 @@ class VoiceIntentParser {
       return const ToggleFlashlightIntent(false);
     }
 
-    // -- 4. Navigation & Shortcuts (Keywords) --
+    // -- 4. Settings Modification Commands --
+    
+    // Language
+    if (_matches(sanitized, ['use english', 'set language to english', 'ingles'])) {
+      return const ChangeLanguageIntent('english');
+    }
+    if (_matches(sanitized, ['use tagalog', 'set language to tagalog', 'tagalog'])) {
+      return const ChangeLanguageIntent('tagalog');
+    }
+
+    // Theme / Dark Mode
+    if (_matches(sanitized, ['dark mode', 'set theme to dark', 'itim na tema', 'dark theme'])) {
+      return const ChangeThemeIntent('dark');
+    }
+    if (_matches(sanitized, ['light mode', 'set theme to light', 'puting tema', 'light theme'])) {
+      return const ChangeThemeIntent('light');
+    }
+    if (_matches(sanitized, ['system theme', 'default theme', 'automatic theme'])) {
+      return const ChangeThemeIntent('system');
+    }
+
+    // Font Size
+    if (_matches(sanitized, ['large font', 'big text', 'malaking letra', 'set font to large'])) {
+      return const ChangeFontSizeIntent('large');
+    }
+    if (_matches(sanitized, ['regular font', 'normal text', 'katamtamang letra', 'set font to regular'])) {
+      return const ChangeFontSizeIntent('regular');
+    }
+    if (_matches(sanitized, ['small font', 'small text', 'maliit na letra', 'set font to small'])) {
+      return const ChangeFontSizeIntent('small');
+    }
+
+    // Speech Rate
+    if (_matches(sanitized, ['fast speech', 'speak faster', 'bilisan ang pagsasalita'])) {
+      return const ChangeSpeechRateIntent('fast');
+    }
+    if (_matches(sanitized, ['normal speech', 'regular speech', 'normal na bilis'])) {
+      return const ChangeSpeechRateIntent('normal');
+    }
+    if (_matches(sanitized, ['slow speech', 'speak slower', 'bagalan ang pagsasalita'])) {
+      return const ChangeSpeechRateIntent('slow');
+    }
+
+    // Verbosity
+    if (_matches(sanitized, ['full description', 'high verbosity', 'maraming detalye'])) {
+      return const ChangeVerbosityIntent('full');
+    }
+    if (_matches(sanitized, ['standard description', 'normal verbosity', 'katamtamang detalye'])) {
+      return const ChangeVerbosityIntent('standard');
+    }
+    if (_matches(sanitized, ['concise description', 'minimal verbosity', 'kaunting detalye', 'minimal description'])) {
+      return const ChangeVerbosityIntent('minimal');
+    }
+
+    // Vision Profile
+    if (_matches(sanitized, ['low vision', 'malabo ang mata', 'set profile to low vision'])) {
+      return const ChangeVisionProfileIntent('lowVision');
+    }
+    if (_matches(sanitized, ['partially blind', 'bahagyang bulag', 'set profile to partially blind'])) {
+      return const ChangeVisionProfileIntent('partiallyBlind');
+    }
+    if (_matches(sanitized, ['fully blind', 'total blindness', 'bulag talaga', 'complete blindness', 'set profile to fully blind'])) {
+      return const ChangeVisionProfileIntent('fullyBlind');
+    }
+
+    // -- 5. Navigation & Shortcuts (Keywords) --
     if (_matches(sanitized, [
       'settings',
       'open settings',

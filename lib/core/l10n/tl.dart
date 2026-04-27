@@ -680,6 +680,13 @@ abstract final class TlStrings {
   static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
   static const String voiceListeningFeedback = 'Nakikinig ako.';
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
+  static const String voiceCommandExecuting = 'Isinasagawa';
+  static const String voiceCommandUnknown = 'Paumanhin, hindi ko naintindihan. Maaari mo bang sabihin ulit?';
+
+  // Profile Transitions
+  static const String ttsProfileLowVision = 'Ang profile ay naitakda sa Mababang Paningin. Minimal na pagsasalita at karaniwang laki ng teksto.';
+  static const String ttsProfilePartiallyBlind = 'Ang profile ay naitakda sa Bahagyang Bulag. Malaking teksto at karaniwang pagsasalita ang aktibo.';
+  static const String ttsProfileFullyBlind = 'Ang profile ay naitakda sa Ganap na Bulag. High contrast at buong nabigasyon sa boses ang aktibo.';
 
   static const String resultVerifyLabel = 'I-verify ang Katunayan';
   static const String resultRetryLabel = 'Ulitin';

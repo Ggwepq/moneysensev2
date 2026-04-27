@@ -177,10 +177,9 @@ class VoiceCommandService {
     }
 
     _enqueue(() async {
-      // Increase silence window for confirmation sessions
-      // This gives the user more time to think or wait for the prompt to finish.
-      final listenFor = isConfirmation ? const Duration(seconds: 15) : const Duration(seconds: 10);
-      final pauseFor = isConfirmation ? const Duration(seconds: 8) : const Duration(seconds: 5);
+      // Balanced durations: longer than original but shorter than previous refinement.
+      final listenFor = isConfirmation ? const Duration(seconds: 18) : const Duration(seconds: 15);
+      final pauseFor = isConfirmation ? const Duration(seconds: 8) : const Duration(seconds: 7);
 
       await _stopHardware(playEarcon: false);
       
@@ -204,21 +203,10 @@ class VoiceCommandService {
     });
   }
 
-  /// Triggers a continuous passive (wake-word) listening session.
+  /// Wake-word passive listening is deprecated in favor of manual triggers.
   Future<void> startPassiveListening() async {
-    if (_isPassiveMode) return;
-    _isChangingState = true;
-    _isStopped = false;
-    _isPassiveMode = false;
-    _isActiveMode = false;
-    _isPersistentActive = false;
-    _cancelRestartTimer();
-
-    _enqueue(() async {
-      await _stopHardware();
-      await _startPassiveLoop();
-      _isChangingState = false;
-    });
+    // No-op: Passive listening is removed to save battery and prevent unwanted triggers.
+    return;
   }
 
   /// Immediately stops both active and passive listening.
@@ -351,12 +339,10 @@ class VoiceCommandService {
       } else if (_isActiveMode) {
         _isActiveMode = false;
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-        if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
-          debugPrint('[VoiceService] Active done. Restoring passive listening.');
-          startPassiveListening();
-        } else {
-          EarconService.instance.play(EarconEvent.actionDisabled);
-        }
+        // NOTE: Passive listening restoration is removed.
+      } else {
+        debugPrint('[VoiceService] Unhandled stop ignored (transitionary).');
+        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
       }
     } else if (status == 'listening') {
       if (_isPassiveMode) {
@@ -384,11 +370,7 @@ class VoiceCommandService {
     } else {
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.error;
       EarconService.instance.play(EarconEvent.scanFail);
-      if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
-        startPassiveListening();
-      } else {
-        EarconService.instance.play(EarconEvent.actionDisabled);
-      }
+      // NOTE: Passive listening restoration is removed.
     }
   }
 
@@ -449,7 +431,23 @@ class VoiceCommandService {
     }
 
     // Standard Intent Processing (Commands)
-    // Only process these when FINAL to avoid multi-execution during speech.
+    // 🚀 SNAPPY EXECUTION: If we find a valid command, execute it immediately 
+    // even if it's a partial result. This solves the "waits too long" problem.
+    if (intent is! UnknownIntent && 
+        intent is! WakeIntent && 
+        intent is! SelectionConfirmationIntent &&
+        intent is! SelectionIntent &&
+        intent is! StartVoiceSetupIntent) {
+      
+      debugPrint('[VoiceService] Snappy Execution: Found ${intent.runtimeType} in partial result. Stopping mic.');
+      
+      // Stop mic immediately to give feedback and prevent double-execution
+      _stopHardware(playEarcon: false);
+      _executeStandardIntent(intent);
+      return;
+    }
+
+    // Only process these when FINAL or if it's a special intent handled above.
     if (!result.finalResult) return;
 
     if (intent is WakeIntent) {
@@ -470,68 +468,22 @@ class VoiceCommandService {
       return;
     }
 
-    if (intent is StopSpeakingIntent ||
-        intent is SelectionConfirmationIntent ||
+    // Special Onboarding/Selection intents - these also benefit from snappy execution
+    if (intent is SelectionConfirmationIntent ||
         intent is SelectionIntent ||
         intent is StartVoiceSetupIntent) {
+      
+      debugPrint('[VoiceService] Snappy Onboarding: Found ${intent.runtimeType}');
+      _stopHardware(playEarcon: false);
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
       _intentController.add(intent);
 
-      if (!_isPassiveMode) {
-        if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
-          startPassiveListening();
-        } else {
-          stopListening();
-        }
-      } else if (intent is! StopSpeakingIntent) {
-        _schedulePassiveRestart(delay: const Duration(milliseconds: 800));
+      if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
+        startPassiveListening();
+      } else {
+        stopListening();
       }
-      return;
-    }
-
-    if (intent is! UnknownIntent) {
-      _pendingIntent = intent;
-      _isAwaitingConfirmation = true;
-
-      final settings = ref.read(appSettingsProvider);
-      final l10n = AppLocalizations.of(settings.isTagalog);
-      final tts = ref.read(ttsServiceProvider);
-
-      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
-      ref.read(lastDetectedIntentProvider.notifier).state = intent.toString().split('(').first;
-      final description = intent.toDescription(l10n);
-
-      if (!settings.clarifyVoiceCommands) {
-        tts.enqueue(
-          TtsMessage.result('Executing $description', id: 'voice.executing'),
-          enabled: settings.ttsEnabled,
-          currentVerbosity: settings.ttsVerbosity,
-        );
-        _intentController.add(intent);
-        ref.read(voiceCommandExecutorProvider).execute(intent);
-        _pendingIntent = null;
-        _isAwaitingConfirmation = false;
-        if (settings.voiceNavigation) {
-          Future.delayed(const Duration(milliseconds: 800), () => startPassiveListening());
-        } else {
-          stopListening();
-        }
-        return;
-      }
-
-      tts.enqueue(
-        TtsMessage.result('${l10n.voiceConfirmPrefix} $description${l10n.voiceConfirmSuffix}', id: 'voice.confirm_prompt'),
-        enabled: settings.ttsEnabled,
-        currentVerbosity: settings.ttsVerbosity,
-      );
-
-      // Increase delay to allow confirmation prompt to finish before mic re-opens
-      Future.delayed(const Duration(milliseconds: 1400), () {
-        if (_isAwaitingConfirmation) {
-           startActiveListening(isConfirmation: true);
-        }
-      });
       return;
     }
 
@@ -540,13 +492,76 @@ class VoiceCommandService {
       ref.read(voiceCommandTextProvider.notifier).state = '';
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.passiveListening;
     } else {
-      EarconService.instance.play(EarconEvent.scanFail);
-      if (!_isStopped && ref.read(appSettingsProvider).voiceNavigation) {
-        startPassiveListening();
+      if (result.finalResult) {
+        final settings = ref.read(appSettingsProvider);
+        final l10n = AppLocalizations.of(settings.isTagalog);
+        
+        ref.read(ttsServiceProvider).enqueue(
+          TtsMessage.result(l10n.voiceCommandUnknown, id: 'voice.unknown'),
+          enabled: settings.ttsEnabled,
+          currentVerbosity: settings.ttsVerbosity,
+        );
+        
+        EarconService.instance.play(EarconEvent.scanFail);
+        if (!_isStopped && settings.voiceNavigation) {
+          startPassiveListening();
+        } else {
+          stopListening();
+        }
+      }
+    }
+  }
+
+  void _executeStandardIntent(VoiceIntent intent) {
+    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
+    
+    if (intent is StopSpeakingIntent) {
+      ref.read(voiceCommandExecutorProvider).execute(intent);
+      _intentController.add(intent);
+      stopListening();
+      return;
+    }
+
+    _pendingIntent = intent;
+    _isAwaitingConfirmation = true;
+
+    final settings = ref.read(appSettingsProvider);
+    final l10n = AppLocalizations.of(settings.isTagalog);
+    final tts = ref.read(ttsServiceProvider);
+
+    ref.read(lastDetectedIntentProvider.notifier).state = intent.toString().split('(').first;
+    final description = intent.toDescription(l10n);
+
+    if (!settings.clarifyVoiceCommands) {
+      tts.enqueue(
+        TtsMessage.result(l10n.voiceCommandExecuting(description), id: 'voice.executing'),
+        enabled: settings.ttsEnabled,
+        currentVerbosity: settings.ttsVerbosity,
+      );
+      _intentController.add(intent);
+      ref.read(voiceCommandExecutorProvider).execute(intent);
+      _pendingIntent = null;
+      _isAwaitingConfirmation = false;
+      
+      if (settings.voiceNavigation) {
+        Future.delayed(const Duration(milliseconds: 800), () => startPassiveListening());
       } else {
         stopListening();
       }
+      return;
     }
+
+    tts.enqueue(
+      TtsMessage.result('${l10n.voiceConfirmPrefix} $description${l10n.voiceConfirmSuffix}', id: 'voice.confirm_prompt'),
+      enabled: settings.ttsEnabled,
+      currentVerbosity: settings.ttsVerbosity,
+    );
+
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (_isAwaitingConfirmation) {
+         startActiveListening(isConfirmation: true);
+      }
+    });
   }
 }
 

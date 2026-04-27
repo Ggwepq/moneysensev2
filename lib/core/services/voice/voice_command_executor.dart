@@ -11,6 +11,7 @@ import '../../../features/tutorial/presentation/screens/tutorial_screen.dart';
 import '../../../features/tutorial/presentation/screens/tutorial_navigator.dart';
 import '../../../features/tutorial/domain/tutorial_route.dart';
 import '../../../features/settings/presentation/providers/settings_provider.dart';
+import '../../../features/settings/domain/entities/app_settings.dart';
 import '../../../features/scanner/domain/entities/scanner_state.dart';
 import '../../../features/scanner/presentation/providers/scanner_provider.dart';
 
@@ -219,6 +220,61 @@ class VoiceCommandExecutor {
       case SelectionIntent():
       case SelectionConfirmationIntent():
         // These are handled contextually by the Onboarding screen
+        return true;
+
+      case ChangeLanguageIntent():
+        final lang = intent.language == 'tagalog' ? AppLanguage.tagalog : AppLanguage.english;
+        settingsNotifier.setLanguage(lang);
+        say(SettingsSpeech.changed(l10n, l10n.language, intent.language));
+        return true;
+
+      case ChangeThemeIntent():
+        final theme = switch (intent.theme) {
+          'dark' => AppThemeMode.dark,
+          'light' => AppThemeMode.light,
+          _ => AppThemeMode.system,
+        };
+        settingsNotifier.setThemeMode(theme);
+        say(SettingsSpeech.changed(l10n, l10n.theme, intent.theme));
+        return true;
+
+      case ChangeFontSizeIntent():
+        final scale = switch (intent.size) {
+          'large' => 1.5,
+          'small' => 0.8,
+          _ => 1.0,
+        };
+        settingsNotifier.setFontScale(scale);
+        say(SettingsSpeech.changed(l10n, l10n.fontSize, intent.size));
+        return true;
+
+      case ChangeSpeechRateIntent():
+        final rate = switch (intent.rate) {
+          'fast' => 1.5,
+          'slow' => 0.8,
+          _ => 1.05,
+        };
+        settingsNotifier.setSpeechRate(rate);
+        say(SettingsSpeech.changed(l10n, l10n.speechRate, intent.rate));
+        return true;
+
+      case ChangeVerbosityIntent():
+        final verbosity = switch (intent.level) {
+          'full' => TextVerbosity.full,
+          'minimal' => TextVerbosity.minimal,
+          _ => TextVerbosity.standard,
+        };
+        settingsNotifier.setTextVerbosity(verbosity);
+        say(SettingsSpeech.changed(l10n, l10n.textVerbosityTitle, intent.level));
+        return true;
+
+      case ChangeVisionProfileIntent():
+        final profile = switch (intent.profile) {
+          'lowVision' => VisionProfile.lowVision,
+          'partiallyBlind' => VisionProfile.partiallyBlind,
+          _ => VisionProfile.fullyBlind,
+        };
+        settingsNotifier.setVisionProfile(profile);
         return true;
     }
   }

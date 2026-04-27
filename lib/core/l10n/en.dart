@@ -683,6 +683,13 @@ abstract final class EnStrings {
   static const String voiceActionCancelled = 'No problem. What shall I do instead?';
   static const String voiceListeningFeedback = 'I am listening.';
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
+  static const String voiceCommandExecuting = 'Executing';
+  static const String voiceCommandUnknown = "I'm sorry, I didn't catch that. Could you say it again?";
+
+  // Profile Transitions
+  static const String ttsProfileLowVision = 'Profile set to Low Vision. Minimal speech and standard font size.';
+  static const String ttsProfilePartiallyBlind = 'Profile set to Partially Blind. Larger text and standard speech active.';
+  static const String ttsProfileFullyBlind = 'Profile set to Fully Blind. High contrast and full voice navigation enabled.';
 
   static const String resultVerifyLabel = 'Verify Authenticity';
   static const String resultRetryLabel = 'Retry';

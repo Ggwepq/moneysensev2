@@ -29,6 +29,11 @@ class AppLocalizations {
   String get simpleMode => isTagalog ? TlStrings.simpleMode : EnStrings.simpleMode;
   String get advancedMode => isTagalog ? TlStrings.advancedMode : EnStrings.advancedMode;
 
+  // Profile Transitions
+  String get ttsProfileLowVision => isTagalog ? TlStrings.ttsProfileLowVision : EnStrings.ttsProfileLowVision;
+  String get ttsProfilePartiallyBlind => isTagalog ? TlStrings.ttsProfilePartiallyBlind : EnStrings.ttsProfilePartiallyBlind;
+  String get ttsProfileFullyBlind => isTagalog ? TlStrings.ttsProfileFullyBlind : EnStrings.ttsProfileFullyBlind;
+
   // Sections
   String get sectionGeneral =>
       isTagalog ? TlStrings.sectionGeneral : EnStrings.sectionGeneral;
@@ -943,6 +948,13 @@ class AppLocalizations {
   String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
   String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
   String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
+  String voiceCommandExecuting(String d) => isTagalog
+      ? '${TlStrings.voiceCommandExecuting}: $d'
+      : '${EnStrings.voiceCommandExecuting}: $d';
+
+  String get voiceCommandUnknown => isTagalog
+      ? TlStrings.voiceCommandUnknown
+      : EnStrings.voiceCommandUnknown;
 
   String get resultVerifyLabel => isTagalog ? TlStrings.resultVerifyLabel : EnStrings.resultVerifyLabel;
   String get resultVerifying => isTagalog ? TlStrings.resultVerifying : EnStrings.resultVerifying;
