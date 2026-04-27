@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart' as img;
 
@@ -13,6 +12,7 @@ import 'package:moneysensev2/features/settings/presentation/providers/settings_p
 import 'package:moneysensev2/features/settings/domain/entities/app_settings.dart';
 import '../../data/datasources/authenticity_service.dart';
 import 'package:moneysensev2/core/services/earcon_service.dart';
+import 'package:moneysensev2/core/services/voice/voice_command_service.dart';
 
 
 export '../../data/datasources/camera_service.dart';
@@ -145,11 +145,16 @@ class ScannerNotifier extends Notifier<ScannerState> {
       // Feedback
       final settings = ref.read(appSettingsProvider);
       final l10n = AppLocalizations.of(settings.isTagalog);
-      ref.read(ttsServiceProvider).enqueue(
-        TtsMessage.ambient(l10n.resultManualCapturing, id: 'scanner.manual_capture'),
-        enabled: settings.ttsEnabled,
-        currentVerbosity: settings.ttsVerbosity,
-      );
+      final voiceStatus = ref.read(voiceCommandStatusProvider);
+
+      // Silence scanner feedback if voice command is actively listening or processing
+      if (voiceStatus != VoiceStatus.activeListening && voiceStatus != VoiceStatus.processing) {
+        ref.read(ttsServiceProvider).enqueue(
+          TtsMessage.ambient(l10n.resultManualCapturing, id: 'scanner.manual_capture'),
+          enabled: settings.ttsEnabled,
+          currentVerbosity: settings.ttsVerbosity,
+        );
+      }
       
       // Reset confidence filter briefly to catch the next frame
       _consecutiveFrames = 0;
@@ -277,8 +282,9 @@ class ScannerNotifier extends Notifier<ScannerState> {
     final isBottom = cy > 0.65;
 
     String hint;
-    if (isLeft && isTop)      hint = l10n.guidanceMoveRightDown;
-    else if (isLeft && isBottom) hint = l10n.guidanceMoveRightUp;
+    if (isLeft && isTop) {
+      hint = l10n.guidanceMoveRightDown;
+    } else if (isLeft && isBottom) hint = l10n.guidanceMoveRightUp;
     else if (isRight && isTop)   hint = l10n.guidanceMoveLeftDown;
     else if (isRight && isBottom) hint = l10n.guidanceMoveLeftUp;
     else if (isLeft)   hint = l10n.guidanceMoveRight;
@@ -304,6 +310,12 @@ class ScannerNotifier extends Notifier<ScannerState> {
     _lastHint = hint;
 
     debugPrint('[Centering] 📍 cx: ${cx.toStringAsFixed(2)}, cy: ${cy.toStringAsFixed(2)} -> Hint: $hint');
+
+    final voiceStatus = ref.read(voiceCommandStatusProvider);
+    if (voiceStatus == VoiceStatus.activeListening || voiceStatus == VoiceStatus.processing) {
+      debugPrint('[Centering] 🤫 Silencing guidance due to active voice command.');
+      return;
+    }
 
     ref.read(ttsServiceProvider).enqueue(
       TtsMessage(

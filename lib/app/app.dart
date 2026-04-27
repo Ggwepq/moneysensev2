@@ -8,14 +8,12 @@ import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart'
     show routeObserverProvider;
 import '../features/settings/domain/entities/vision_config.dart';
-import '../features/settings/domain/entities/app_settings.dart' show VisionProfile;
 import '../features/settings/presentation/providers/settings_provider.dart';
 import 'home_shell.dart';
 import 'startup_splash.dart';
 import '../core/services/voice/voice_command_executor.dart';
 import '../core/services/voice/voice_command_service.dart';
-import '../core/services/voice/voice_command_overlay.dart';
-import '../features/scanner/presentation/widgets/blind_voice_ui.dart';
+import 'widgets/global_voice_overlay.dart';
 
 class MoneySenseApp extends ConsumerWidget {
   const MoneySenseApp({super.key});
@@ -47,6 +45,9 @@ class MoneySenseApp extends ConsumerWidget {
             themeMode: settings.flutterThemeMode,
             navigatorKey: VoiceCommandExecutor.navigatorKey,
             navigatorObservers: [routeObserver],
+            builder: (context, child) {
+              return child ?? const SizedBox.shrink();
+            },
             home: _AppRoot(),
           ),
         );
@@ -61,20 +62,17 @@ class _AppRoot extends ConsumerStatefulWidget {
 }
 
 class _AppRootState extends ConsumerState<_AppRoot> {
-  bool _ttsReady       = false;
-  bool _launchTutorial = false;
+  bool _ttsReady        = false;
+  bool _launchTutorial  = false;
 
   @override
   void initState() {
     super.initState();
-    
-    // Resume voice if enabled on startup
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = ref.read(appSettingsProvider);
-      if (settings.voiceNavigation) {
-        ref.read(voiceCommandServiceProvider).startPassiveListening();
-      }
-    });
+    // NOTE: Passive listening is intentionally NOT started here.
+    // It starts in _onOnboardingComplete (after onboarding finishes) or
+    // once the home shell is shown for users who already completed onboarding.
+    // Starting it here would activate the microphone during onboarding,
+    // which interferes with the onboarding voice flow.
   }
 
   void _onSplashReady() {
@@ -85,10 +83,10 @@ class _AppRootState extends ConsumerState<_AppRoot> {
     _launchTutorial = launchTutorial;
     markOnboardingComplete(ref);
     
-    // Explicitly start voice if enabled after onboarding
+    // Explicitly stop voice if disabled (startPassive is removed)
     final settings = ref.read(appSettingsProvider);
-    if (settings.voiceNavigation) {
-      ref.read(voiceCommandServiceProvider).startPassiveListening();
+    if (!settings.voiceNavigation) {
+      ref.read(voiceCommandServiceProvider).stopListening();
     }
   }
 
@@ -105,18 +103,13 @@ class _AppRootState extends ConsumerState<_AppRoot> {
       return OnboardingScreen(onComplete: _onOnboardingComplete);
     }
 
-    final settings = ref.watch(appSettingsProvider);
-    final isFullyBlind = settings.visionProfile == VisionProfile.fullyBlind;
-
     // Manage global voice lifecycle: start/stop when settings change
     ref.listen(appSettingsProvider, (previous, next) {
       final voiceNavChanged = previous?.voiceNavigation != next.voiceNavigation;
       final profileChanged = previous?.visionProfile != next.visionProfile;
 
       if (voiceNavChanged || profileChanged) {
-        if (next.voiceNavigation) {
-          ref.read(voiceCommandServiceProvider).startPassiveListening();
-        } else {
+        if (!next.voiceNavigation) {
           ref.read(voiceCommandServiceProvider).stopListening();
         }
       }
@@ -126,11 +119,7 @@ class _AppRootState extends ConsumerState<_AppRoot> {
       child: Stack(
         children: [
           HomeShell(launchTutorialOnLoad: _launchTutorial),
-          
-          if (isFullyBlind)
-            const BlindVoiceUi(),
-          if (!isFullyBlind)
-            const VoiceCommandOverlay(),
+          const GlobalVoiceOverlay(),
         ],
       ),
     );

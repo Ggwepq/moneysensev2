@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
@@ -475,13 +473,13 @@ class AuthenticityService {
       
       // TAGALOG WORD DICTIONARY (High Trust)
       final tagalogMap = {
-        'DALAWAMPUNG': '20',
-        'LIMAMPUNG': '50',
-        'SANDAAN': '100',
-        'DALAWANG DAAN': '200',
-        'LIMANG DAAN': '500',
         'SANG LIBO': '1000',
         'ISANG LIBO': '1000',
+        'PISO': '1',
+        'LIMANG PISO': '5',
+        'LIMA': '5',
+        'SAMPUNG PISO': '10',
+        'SAMPU': '10',
       };
       
       for (var entry in tagalogMap.entries) {
@@ -492,9 +490,8 @@ class AuthenticityService {
         }
       }
 
-      // NUMERIC CROSS-CHECK
       if (detectedDenom == null) {
-        final nums = ['1000', '500', '200', '100', '50', '20'];
+        final nums = ['1000', '500', '200', '100', '50', '20', '10', '5', '1'];
         for (var n in nums) {
           if (text.contains(n)) {
             debugPrint('[AuthenticityService/OCR] Numeric match: $n');
@@ -591,7 +588,9 @@ class AuthenticityService {
 
     final probs = _softmax(List<double>.from(output[0]));
     int maxIdx = 0;
-    for (int i=1; i<probs.length; i++) if (probs[i] > probs[maxIdx]) maxIdx = i;
+    for (int i=1; i<probs.length; i++) {
+      if (probs[i] > probs[maxIdx]) maxIdx = i;
+    }
 
     final label = _labels[maxIdx];
     return VerificationResult(

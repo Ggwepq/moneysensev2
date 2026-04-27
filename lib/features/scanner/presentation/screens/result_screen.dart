@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibration/vibration.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/services/earcon_service.dart';
+import '../../../../core/services/shake_service.dart';
 import '../../../../core/services/speech_scripts.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../settings/domain/entities/vision_config.dart';
@@ -65,7 +67,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   void dispose() {
     _autoTimer?.cancel();
     _ctrl.dispose();
-    ref.read(inertialServiceProvider).stop(); // Clean up service
+    ref.read(inertialServiceProvider).stop();
+    ref.read(shakeServiceProvider).stop();    // Clean up shake listener
     super.dispose();
   }
 
@@ -86,12 +89,69 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     ref.read(ttsServiceProvider).enqueue(
       msg, enabled: s.ttsEnabled, currentVerbosity: s.ttsVerbosity,
     );
+    
+    if (s.denominationVibration && !r.isUncertain) {
+      _vibrateDenomination(r.denomination, r.type == 'coin');
+    }
+  }
+
+  Future<void> _vibrateDenomination(String denomination, bool isCoin) async {
+    try {
+      final hasV = await Vibration.hasVibrator();
+      if (hasV != true) return;
+
+      int shorts = 0;
+      if (isCoin) {
+        if (denomination == '1') {
+          shorts = 1;
+        } else if (denomination == '5') shorts = 2;
+        else if (denomination == '10') shorts = 3;
+        else if (denomination == '20') shorts = 4;
+      } else {
+        if (denomination == '20') {
+          shorts = 1;
+        } else if (denomination == '50') shorts = 2;
+        else if (denomination == '100') shorts = 3;
+        else if (denomination == '200') shorts = 4;
+        else if (denomination == '500') shorts = 5;
+        else if (denomination == '1000') shorts = 6;
+      }
+
+      if (shorts == 0 && !isCoin) return; 
+
+      final p = <int>[];
+      const int longPulse = 350;
+      const int shortPulse = 100;
+      const int innerGap = 120;
+      const int groupGap = 300;
+
+      if (isCoin) {
+        p.add(longPulse);
+        if (shorts > 0) {
+          p.add(groupGap);
+          for (int i = 0; i < shorts; i++) {
+            p.add(shortPulse);
+            if (i < shorts - 1) p.add(innerGap);
+          }
+        }
+      } else {
+        for (int i = 0; i < shorts; i++) {
+          p.add(shortPulse);
+          if (i < shorts - 1) p.add(innerGap);
+        }
+      }
+
+      if (p.isNotEmpty) {
+        await Vibration.vibrate(pattern: [0, ...p]);
+      }
+    } catch (_) {}
   }
 
   void _dismiss() {
     debugPrint('[ResultScreen] 🔙 Dismissing result. Verf=$_verificationResult');
     _autoTimer?.cancel();
     ref.read(inertialServiceProvider).stop(); // Stop service to clear callbacks
+    ref.read(shakeServiceProvider).stop();    // Stop shake-to-dismiss
     EarconService.instance.play(EarconEvent.navBack);
     ref.read(scannerStateProvider.notifier).reset();
   }
@@ -100,6 +160,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     debugPrint('[ResultScreen] ✅ Confirming result.');
     _autoTimer?.cancel();
     ref.read(inertialServiceProvider).stop(); 
+    ref.read(shakeServiceProvider).stop();    // Stop shake-to-dismiss
     final result = ref.read(detectionResultProvider) ?? widget.result;
     
     // Safety check: Don't allow verification if uncertain
@@ -136,18 +197,19 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       // ── Cheat Engine 2.0 ──────────────────────────────────────────────────
       AuthenticityResult? forced;
       
-      // 1. Remote Commander (Highest priority)
+      // 1. Remote Commander (Highest priority) — override is persistent;
+      //    it stays set until the remote explicitly sends /api/reset.
+      //    This means retries always return the same forced result.
       final remoteCheat = RemoteCheatService.instance;
       if (remoteCheat.nextOverride != null) {
         forced = remoteCheat.nextOverride;
-        remoteCheat.clearOverride();
-        debugPrint('[ResultScreen/Cheat] 📱 Remote override: $forced');
+        debugPrint('[ResultScreen/Cheat] 📱 Remote override: $forced (persistent)');
       } 
-      // 2. Inertial Tilt Cheat (If master switch is ON)
-      else if (s.strictVerification) {
+      // 2. Inertial Tilt Cheat
+      else {
         forced = ref.read(inertialServiceProvider).cheatStatus;
         debugPrint('[ResultScreen/Cheat] 📐 Tilt override: $forced');
-      }
+            }
 
       VerificationResult res;
       if (forced != null) {
@@ -218,23 +280,31 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final s = ref.read(appSettingsProvider);
     final r = widget.result;
 
-    // Use a faster 3s timer for automated verification IF NOT UNCERTAIN
+    // Always use the configured goBackTimerSeconds so the user has time to hear the result.
+    // Auto-verification triggers at the end of the timer for eligible bills.
     if (r.type == 'bill' && _verificationResult == null && !r.isUncertain) {
       _isAutoVerifying = true;
-      _secondsLeft = 3;
-    } else {
-      _secondsLeft = s.goBackTimerSeconds;
     }
+    _secondsLeft = s.goBackTimerSeconds;
 
     if (_secondsLeft > 0) {
       _startTimer();
     }
 
-    // Initialize Tilt-to-Dismiss (Shake)
-    ref.read(inertialServiceProvider).start(
-      onTiltLeft: _dismiss,
-      onTiltRight: _dismiss,
-    );
+    // Initialize Tilt-to-Dismiss with a settle delay to prevent accidental fires
+    // caused by inertial momentum from the transition.
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      ref.read(inertialServiceProvider).start(
+        onTiltLeft: _dismiss,
+        onTiltRight: _dismiss,
+      );
+
+      final s2 = ref.read(appSettingsProvider);
+      if (s2.shakeToGoBack) {
+        ref.read(shakeServiceProvider).start(_dismiss);
+      }
+    });
   }
 
   void _retry() {
@@ -740,7 +810,7 @@ class _GoBackHint extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Text(
-        l10n.resultGoBackHintPre(secondsLeft.toString()) + ' ' + l10n.resultGoBackLink,
+        '${l10n.resultGoBackHintPre(secondsLeft.toString())} ${l10n.resultGoBackLink}',
         style: theme.textTheme.bodySmall?.copyWith(color: onBg.withValues(alpha: 0.6)),
         textAlign: TextAlign.center,
       ),

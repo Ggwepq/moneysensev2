@@ -25,13 +25,10 @@ enum VisionProfile { lowVision, partiallyBlind, fullyBlind }
 /// The user can override this independently in Settings → Accessibility.
 enum TtsVerbosity { minimal, standard, full }
 
+/// How much text information is displayed on screen.
+enum TextVerbosity { minimal, standard, full }
+
 /// How strongly the haptic / vibration engine responds.
-///
-/// [subtle]  : HapticFeedback only (no motor vibration), short patterns.
-/// [medium]  : HapticFeedback + short motor pulse.
-/// [strong]  : HapticFeedback + full motor vibration with rich patterns.
-///
-/// [VisionConfig] sets the default per profile; user can override.
 enum HapticIntensity { subtle, medium, strong }
 
 class AppSettings {
@@ -55,11 +52,13 @@ class AppSettings {
   final bool gesturalNavigation;
   final bool inertialNavigation;
   final bool voiceNavigation;
+  final bool clarifyVoiceCommands;
 
   // ── Accessibility ─────────────────────────────────────────────────────
   final VisionProfile visionProfile;
   final bool ttsEnabled;
   final TtsVerbosity ttsVerbosity;
+  final TextVerbosity textVerbosity;
   final double speechRate;
   final bool hapticFeedback;
   final HapticIntensity hapticIntensity;
@@ -67,10 +66,6 @@ class AppSettings {
   // ── Earcons ───────────────────────────────────────────────────────────
   /// Whether short audio cues play for scan events (independent of TTS).
   final bool earconEnabled;
-
-  /// [CHEAT] Forces all verification results to be counterfeit when enabled.
-  /// Labeled as "Strict Verification" in settings.
-  final bool strictVerification;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -84,14 +79,15 @@ class AppSettings {
     this.gesturalNavigation = true,
     this.inertialNavigation = true,
     this.voiceNavigation = false,
+    this.clarifyVoiceCommands = true,
     this.visionProfile = VisionProfile.lowVision,
     this.ttsEnabled = true,
     this.ttsVerbosity = TtsVerbosity.standard,
+    this.textVerbosity = TextVerbosity.standard,
     this.speechRate = 1.0,
     this.hapticFeedback = true,
     this.hapticIntensity = HapticIntensity.medium,
     this.earconEnabled = true,
-    this.strictVerification = false,
   });
 
   AppSettings copyWith({
@@ -106,14 +102,15 @@ class AppSettings {
     bool? gesturalNavigation,
     bool? inertialNavigation,
     bool? voiceNavigation,
+    bool? clarifyVoiceCommands,
     VisionProfile? visionProfile,
     bool? ttsEnabled,
     TtsVerbosity? ttsVerbosity,
+    TextVerbosity? textVerbosity,
     double? speechRate,
     bool? hapticFeedback,
     HapticIntensity? hapticIntensity,
     bool? earconEnabled,
-    bool? strictVerification,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -128,14 +125,15 @@ class AppSettings {
       gesturalNavigation: gesturalNavigation ?? this.gesturalNavigation,
       inertialNavigation: inertialNavigation ?? this.inertialNavigation,
       voiceNavigation: voiceNavigation ?? this.voiceNavigation,
+      clarifyVoiceCommands: clarifyVoiceCommands ?? this.clarifyVoiceCommands,
       visionProfile: visionProfile ?? this.visionProfile,
       ttsEnabled: ttsEnabled ?? this.ttsEnabled,
       ttsVerbosity: ttsVerbosity ?? this.ttsVerbosity,
+      textVerbosity: textVerbosity ?? this.textVerbosity,
       speechRate: speechRate ?? this.speechRate,
       hapticFeedback: hapticFeedback ?? this.hapticFeedback,
       hapticIntensity: hapticIntensity ?? this.hapticIntensity,
       earconEnabled: earconEnabled ?? this.earconEnabled,
-      strictVerification: strictVerification ?? this.strictVerification,
     );
   }
 
@@ -148,4 +146,5 @@ class AppSettings {
   }
 
   bool get isTagalog => language == AppLanguage.tagalog;
+  bool get isDarkMode => themeMode == AppThemeMode.dark;
 }

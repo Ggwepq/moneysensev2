@@ -157,3 +157,53 @@ class RetryIntent extends VoiceIntent {
   @override
   String toDescription(AppLocalizations l10n) => 'Retry last detection';
 }
+
+/// ── Settings Modification Intents ───────────────────────────────────────
+
+class ChangeLanguageIntent extends VoiceIntent {
+  final String language; // 'english' or 'tagalog'
+  const ChangeLanguageIntent(this.language);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Change language to $language';
+}
+
+class ChangeThemeIntent extends VoiceIntent {
+  final String theme; // 'light', 'dark', 'system'
+  const ChangeThemeIntent(this.theme);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Change theme to $theme';
+}
+
+class ChangeFontSizeIntent extends VoiceIntent {
+  final String size; // 'small', 'regular', 'large'
+  const ChangeFontSizeIntent(this.size);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Set font size to $size';
+}
+
+class ChangeSpeechRateIntent extends VoiceIntent {
+  final String rate; // 'slow', 'normal', 'fast'
+  const ChangeSpeechRateIntent(this.rate);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Set speech rate to $rate';
+}
+
+class ChangeVerbosityIntent extends VoiceIntent {
+  final String level; // 'minimal', 'standard', 'full'
+  const ChangeVerbosityIntent(this.level);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Set verbosity to $level';
+}
+
+class ChangeVisionProfileIntent extends VoiceIntent {
+  final String profile; // 'lowVision', 'partiallyBlind', 'fullyBlind'
+  const ChangeVisionProfileIntent(this.profile);
+
+  @override
+  String toDescription(AppLocalizations l10n) => 'Change vision profile to $profile';
+}

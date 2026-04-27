@@ -41,8 +41,8 @@ class DetectionResult {
   final String?     imagePath;
 
   ConfidenceLevel get confidenceLevel {
-    if (confidence >= 0.80) return ConfidenceLevel.veryConfident;
-    if (confidence >= 0.60) return ConfidenceLevel.confident;
+    if (confidence >= 0.75) return ConfidenceLevel.veryConfident;
+    if (confidence >= 0.50) return ConfidenceLevel.confident;
     return ConfidenceLevel.uncertain;
   }
 

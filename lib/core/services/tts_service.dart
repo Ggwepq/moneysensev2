@@ -194,6 +194,7 @@ class TtsService {
     }
     _debounceTimers.clear();
     _queue.clear();
+    // Update notifier BEFORE awaiting hardware stop so listeners respond instantly
     _isSpeaking = false;
     await _tts.stop();
   }

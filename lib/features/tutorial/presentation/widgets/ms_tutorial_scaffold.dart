@@ -76,7 +76,11 @@ class MsTutorialScaffold extends ConsumerStatefulWidget {
 class _MsTutorialScaffoldState extends ConsumerState<MsTutorialScaffold> {
   @override
   void dispose() {
-    ref.read(ttsServiceProvider).stop();
+    if (mounted) {
+      try {
+        ref.read(ttsServiceProvider).stop();
+      } catch (_) {}
+    }
     super.dispose();
   }
 

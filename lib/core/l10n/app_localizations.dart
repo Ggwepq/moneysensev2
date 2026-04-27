@@ -29,6 +29,11 @@ class AppLocalizations {
   String get simpleMode => isTagalog ? TlStrings.simpleMode : EnStrings.simpleMode;
   String get advancedMode => isTagalog ? TlStrings.advancedMode : EnStrings.advancedMode;
 
+  // Profile Transitions
+  String get ttsProfileLowVision => isTagalog ? TlStrings.ttsProfileLowVision : EnStrings.ttsProfileLowVision;
+  String get ttsProfilePartiallyBlind => isTagalog ? TlStrings.ttsProfilePartiallyBlind : EnStrings.ttsProfilePartiallyBlind;
+  String get ttsProfileFullyBlind => isTagalog ? TlStrings.ttsProfileFullyBlind : EnStrings.ttsProfileFullyBlind;
+
   // Sections
   String get sectionGeneral =>
       isTagalog ? TlStrings.sectionGeneral : EnStrings.sectionGeneral;
@@ -54,7 +59,22 @@ class AppLocalizations {
       isTagalog ? TlStrings.languageEnglish : EnStrings.languageEnglish;
   String get languageTagalog =>
       isTagalog ? TlStrings.languageTagalog : EnStrings.languageTagalog;
-  String get fontSize => isTagalog ? TlStrings.fontSize : EnStrings.fontSize;
+  String get fontSize =>
+      isTagalog ? TlStrings.fontSize : EnStrings.fontSize;
+  String get fontSizeSmall =>
+      isTagalog ? TlStrings.fontSizeSmall : EnStrings.fontSizeSmall;
+  String get fontSizeMedium =>
+      isTagalog ? TlStrings.fontSizeMedium : EnStrings.fontSizeMedium;
+  String get fontSizeLarge =>
+      isTagalog ? TlStrings.fontSizeLarge : EnStrings.fontSizeLarge;
+  String get speechRate =>
+      isTagalog ? TlStrings.speechRate : EnStrings.speechRate;
+  String get speechRateSlow =>
+      isTagalog ? TlStrings.speechRateSlow : EnStrings.speechRateSlow;
+  String get speechRateNormal =>
+      isTagalog ? TlStrings.speechRateNormal : EnStrings.speechRateNormal;
+  String get speechRateFast =>
+      isTagalog ? TlStrings.speechRateFast : EnStrings.speechRateFast;
 
   // General: subtitles
   String get themeSubtitle =>
@@ -71,6 +91,12 @@ class AppLocalizations {
   String get fontSizeSubtitleFull => isTagalog
       ? TlStrings.fontSizeSubtitleFull
       : EnStrings.fontSizeSubtitleFull;
+  String get speechRateSubtitle => isTagalog
+      ? TlStrings.speechRateSubtitle
+      : EnStrings.speechRateSubtitle;
+  String get speechRateSubtitleFull => isTagalog
+      ? TlStrings.speechRateSubtitleFull
+      : EnStrings.speechRateSubtitleFull;
 
   // Scanning: titles
   String get useFrontCamera =>
@@ -384,8 +410,7 @@ class AppLocalizations {
   String get visionLowVision =>
       isTagalog ? TlStrings.visionLowVision : EnStrings.visionLowVision;
   String get visionPartiallyBlind => isTagalog
-      ? TlStrings.visionPartiallyBlind
-      : EnStrings.visionPartiallyBlind;
+      ? TlStrings.visionPartiallyBlind : EnStrings.visionPartiallyBlind;
   String get visionFullyBlind =>
       isTagalog ? TlStrings.visionFullyBlind : EnStrings.visionFullyBlind;
   String get onboardingVisionOptions =>
@@ -894,10 +919,42 @@ class AppLocalizations {
   // Command Confirmation & Feedback
   String get voiceConfirmPrefix => isTagalog ? TlStrings.voiceConfirmPrefix : EnStrings.voiceConfirmPrefix;
   String get voiceConfirmSuffix => isTagalog ? TlStrings.voiceConfirmSuffix : EnStrings.voiceConfirmSuffix;
+
+  // Text Verbosity
+  String get textVerbosityTitle => isTagalog
+      ? TlStrings.textVerbosityTitle
+      : EnStrings.textVerbosityTitle;
+  String get textVerbositySubtitle => isTagalog
+      ? TlStrings.textVerbositySubtitle
+      : EnStrings.textVerbositySubtitle;
+  String get textVerbositySubtitleFull => isTagalog
+      ? TlStrings.textVerbositySubtitleFull
+      : EnStrings.textVerbositySubtitleFull;
+  String get textVerbosityMinimal => isTagalog
+      ? TlStrings.textVerbosityMinimal
+      : EnStrings.textVerbosityMinimal;
+  String get textVerbosityStandard => isTagalog
+      ? TlStrings.textVerbosityStandard
+      : EnStrings.textVerbosityStandard;
+  String get textVerbosityFull => isTagalog
+      ? TlStrings.textVerbosityFull
+      : EnStrings.textVerbosityFull;
+
+  // Clarify Voice Commands
+  String get clarifyVoiceCommandsTitle => isTagalog ? TlStrings.clarifyVoiceCommandsTitle : EnStrings.clarifyVoiceCommandsTitle;
+  String get clarifyVoiceCommandsSubtitle => isTagalog ? TlStrings.clarifyVoiceCommandsSubtitle : EnStrings.clarifyVoiceCommandsSubtitle;
+
   String get voiceActionSuccess => isTagalog ? TlStrings.voiceActionSuccess : EnStrings.voiceActionSuccess;
   String get voiceActionCancelled => isTagalog ? TlStrings.voiceActionCancelled : EnStrings.voiceActionCancelled;
   String get voiceListeningFeedback => isTagalog ? TlStrings.voiceListeningFeedback : EnStrings.voiceListeningFeedback;
   String get voiceFlashFrontError => isTagalog ? TlStrings.voiceFlashFrontError : EnStrings.voiceFlashFrontError;
+  String voiceCommandExecuting(String d) => isTagalog
+      ? '${TlStrings.voiceCommandExecuting}: $d'
+      : '${EnStrings.voiceCommandExecuting}: $d';
+
+  String get voiceCommandUnknown => isTagalog
+      ? TlStrings.voiceCommandUnknown
+      : EnStrings.voiceCommandUnknown;
 
   String get resultVerifyLabel => isTagalog ? TlStrings.resultVerifyLabel : EnStrings.resultVerifyLabel;
   String get resultVerifying => isTagalog ? TlStrings.resultVerifying : EnStrings.resultVerifying;
@@ -907,9 +964,6 @@ class AppLocalizations {
   String get resultManualCapturing => isTagalog ? TlStrings.resultManualCapturing : EnStrings.resultManualCapturing;
   String resultAutoVerifyHint(String seconds) => isTagalog ? TlStrings.resultAutoVerifyHint(seconds) : EnStrings.resultAutoVerifyHint(seconds);
   String get resultAutoVerifyCancel => isTagalog ? TlStrings.resultAutoVerifyCancel : EnStrings.resultAutoVerifyCancel;
-
-  String get strictVerificationTitle => isTagalog ? TlStrings.strictVerificationTitle : EnStrings.strictVerificationTitle;
-  String get strictVerificationSubtitle => isTagalog ? TlStrings.strictVerificationSubtitle : EnStrings.strictVerificationSubtitle;
 
   // Scanner status labels
   String get scannerStatusIdle =>

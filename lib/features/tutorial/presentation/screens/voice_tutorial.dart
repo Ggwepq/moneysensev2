@@ -65,6 +65,9 @@ class _VoiceTutorialState extends ConsumerState<VoiceTutorial> {
 
   @override
   void dispose() {
+    // Stop any tutorial audio immediately — prevents it from playing on the
+    // home screen after the user navigates back.
+    ref.read(ttsServiceProvider).stop();
     ref.read(voiceCommandServiceProvider).stopListening();
     super.dispose();
   }

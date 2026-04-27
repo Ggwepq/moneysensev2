@@ -49,15 +49,7 @@ class TutorialScreen extends ConsumerWidget {
               Navigator.of(context).maybePop();
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.help_outline_rounded),
-              tooltip: 'Help',
-              onPressed: () {
-                /* TODO */
-              },
-            ),
-          ],
+
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(

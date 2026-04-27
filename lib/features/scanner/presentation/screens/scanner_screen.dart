@@ -390,12 +390,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     if (ax < _minVelocity && ay < _minVelocity) return;
     if (ax >= ay) {
       if (ay / ax > _maxCrossRatio) return;
-      if (v.dx > 0) widget.onNavigate(0);
-      else          widget.onNavigate(2);
+      if (v.dx > 0) {
+        widget.onNavigate(0);
+      } else {
+        widget.onNavigate(2);
+      }
     } else {
       if (ax / ay > _maxCrossRatio) return;
-      if (v.dy < 0) _toggleFlash();
-      else          _toggleVoice();
+      if (v.dy < 0) {
+        _toggleFlash();
+      } else {
+        _toggleVoice();
+      }
     }
   }
 

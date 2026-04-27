@@ -29,6 +29,13 @@ abstract final class EnStrings {
   static const String languageEnglish = 'English';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Font Size';
+  static const String fontSizeSmall = 'Small';
+  static const String fontSizeMedium = 'Medium';
+  static const String fontSizeLarge = 'Large';
+  static const String speechRate = 'Speech Rate';
+  static const String speechRateSlow = 'Slow';
+  static const String speechRateNormal = 'Normal';
+  static const String speechRateFast = 'Fast';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -43,6 +50,10 @@ abstract final class EnStrings {
       'Adjust the text size to what is most comfortable for you.';
   static const String fontSizeSubtitleFull =
       "Drag the slider to make text larger or smaller. Your vision profile sets a minimum size floor. You can go larger, but not below your profile's floor.";
+  static const String speechRateSubtitle =
+      'Adjust how fast the app speaks results.';
+  static const String speechRateSubtitleFull =
+      'Drag the slider to make the voice faster or slower. A faster rate is often preferred by experienced users of screen readers, while a normal rate is easier to understand for most people.';
 
   // Scanning: titles
   static const String useFrontCamera = 'Use Front Camera';
@@ -284,11 +295,11 @@ abstract final class EnStrings {
 
   // Vision profile descriptions (shown in the tile below the pills)
   static const String visionLowVisionDesc =
-      'Visual UI with amplified text and contrast. TTS and haptics are optional.';
+      'If you have astigmatism or a high eye grade, choose Low Vision.';
   static const String visionPartiallyBlindDesc =
-      'Audio-assisted. TTS announces results and navigation automatically.';
+      'If you have serious eye conditions or limited sight, choose Partially Blind.';
   static const String visionFullyBlindDesc =
-      'Audio-primary. TTS narrates everything. Rich haptic patterns carry meaning.';
+      'If you have no functional vision, choose Fully Blind.';
 
   // ── Onboarding
   static const String onboardingWelcomeTitle = 'Welcome to MoneySense';
@@ -413,12 +424,12 @@ abstract final class EnStrings {
       'Welcome to MoneySense. Your accessible Philippine currency identifier. '
       'Say Proceed to continue.';
   static const String ttsOnboardingVision =
-      'How do you see? Choose a vision profile. '
+      'How do you see? Choose a vision profile: '
       'Low Vision, Partially Blind, or Fully Blind. '
-      'Say an option to choose it.';
+      'Say an option now.';
   static const String ttsOnboardingLanguage =
-      'Choose your language. English or Tagalog. '
-      'Say an option to choose it.';
+      'Choose your language: English or Tagalog. '
+      'Say an option now.';
   static const String ttsOnboardingProfileSelected = 'Vision profile set.';
 
   // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.
@@ -672,6 +683,13 @@ abstract final class EnStrings {
   static const String voiceActionCancelled = 'No problem. What shall I do instead?';
   static const String voiceListeningFeedback = 'I am listening.';
   static const String voiceFlashFrontError = 'I am sorry, but I cannot turn on the flashlight while you are using the front camera.';
+  static const String voiceCommandExecuting = 'Executing';
+  static const String voiceCommandUnknown = "I'm sorry, I didn't catch that. Could you say it again?";
+
+  // Profile Transitions
+  static const String ttsProfileLowVision = 'Profile set to Low Vision. Minimal speech and standard font size.';
+  static const String ttsProfilePartiallyBlind = 'Profile set to Partially Blind. Larger text and standard speech active.';
+  static const String ttsProfileFullyBlind = 'Profile set to Fully Blind. High contrast and full voice navigation enabled.';
 
   static const String resultVerifyLabel = 'Verify Authenticity';
   static const String resultRetryLabel = 'Retry';
@@ -683,8 +701,16 @@ abstract final class EnStrings {
   static const String resultManualCapturing = 'Identifying bill...';
   static String resultAutoVerifyHint(String seconds) => 'Verifying automatically in $seconds... ';
   static const String resultAutoVerifyCancel = 'Cancel';
-  static const String strictVerificationTitle = 'Strict Verification';
-  static const String strictVerificationSubtitle = 'Apply tight neural constraints to the verification model. Warning: This may occasionally result in inaccurate predictions.';
+  static const String clarifyVoiceCommandsTitle = 'Clarify Voice Commands';
+  static const String clarifyVoiceCommandsSubtitle = 'Ask "Yes or No" before executing commands.';
+
+  // Text Verbosity
+  static const String textVerbosityTitle = 'Text Verbosity';
+  static const String textVerbositySubtitle = 'How much information is shown on the screen.';
+  static const String textVerbositySubtitleFull = 'Minimal: results only. Standard: results and navigation. Full: detailed status and guidance.';
+  static const String textVerbosityMinimal = 'Minimal';
+  static const String textVerbosityStandard = 'Standard';
+  static const String textVerbosityFull = 'Full';
 
   // Share App
   static const String shareAppTitle = 'Share MoneySense';

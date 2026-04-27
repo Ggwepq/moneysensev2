@@ -18,13 +18,14 @@ abstract final class SettingsKeys {
   static const gesturalNavigation  = 'settings.gesturalNavigation';
   static const inertialNavigation  = 'settings.inertialNavigation';
   static const voiceNavigation     = 'settings.voiceNavigation';
+  static const clarifyVoiceCommands = 'settings.clarifyVoiceCommands';
   static const visionProfile       = 'settings.visionProfile';
   static const ttsEnabled          = 'settings.ttsEnabled';
   static const ttsVerbosity        = 'settings.ttsVerbosity';
+  static const textVerbosity       = 'settings.textVerbosity';
   static const hapticFeedback      = 'settings.hapticFeedback';
   static const earconEnabled        = 'settings.earconEnabled';
   static const hapticIntensity     = 'settings.hapticIntensity';
-  static const strictVerification   = 'settings.strictVerification';
 
   /// Set to true once the user completes onboarding.
   /// Absent or false = first run → show onboarding.
@@ -87,6 +88,9 @@ class SettingsStorage {
       voiceNavigation:
           _prefs.getBool(SettingsKeys.voiceNavigation) ??
               defaults.voiceNavigation,
+      clarifyVoiceCommands:
+          _prefs.getBool(SettingsKeys.clarifyVoiceCommands) ??
+              defaults.clarifyVoiceCommands,
       visionProfile: _readEnum(
         SettingsKeys.visionProfile,
         VisionProfile.values,
@@ -99,6 +103,11 @@ class SettingsStorage {
         TtsVerbosity.values,
         defaults.ttsVerbosity,
       ),
+      textVerbosity: _readEnum(
+        SettingsKeys.textVerbosity,
+        TextVerbosity.values,
+        defaults.textVerbosity,
+      ),
       hapticFeedback:
           _prefs.getBool(SettingsKeys.hapticFeedback) ?? defaults.hapticFeedback,
       earconEnabled:
@@ -108,9 +117,6 @@ class SettingsStorage {
         HapticIntensity.values,
         defaults.hapticIntensity,
       ),
-      strictVerification:
-          _prefs.getBool(SettingsKeys.strictVerification) ??
-              defaults.strictVerification,
     );
   }
 
@@ -133,13 +139,14 @@ class SettingsStorage {
     _prefs.setBool  (SettingsKeys.gesturalNavigation,  s.gesturalNavigation);
     _prefs.setBool  (SettingsKeys.inertialNavigation,  s.inertialNavigation);
     _prefs.setBool  (SettingsKeys.voiceNavigation,     s.voiceNavigation);
+    _prefs.setBool  (SettingsKeys.clarifyVoiceCommands,s.clarifyVoiceCommands);
     _prefs.setString(SettingsKeys.visionProfile,       s.visionProfile.name);
     _prefs.setBool  (SettingsKeys.ttsEnabled,          s.ttsEnabled);
     _prefs.setString(SettingsKeys.ttsVerbosity,        s.ttsVerbosity.name);
+    _prefs.setString(SettingsKeys.textVerbosity,       s.textVerbosity.name);
     _prefs.setBool  (SettingsKeys.hapticFeedback,      s.hapticFeedback);
     _prefs.setBool  (SettingsKeys.earconEnabled,       s.earconEnabled);
     _prefs.setString(SettingsKeys.hapticIntensity,     s.hapticIntensity.name);
-    _prefs.setBool  (SettingsKeys.strictVerification,  s.strictVerification);
   }
 
   /// Persist just [_lastTimerSeconds] separately.
