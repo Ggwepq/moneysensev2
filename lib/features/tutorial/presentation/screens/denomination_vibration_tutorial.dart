@@ -152,6 +152,7 @@ class _DenominationVibrationTutorialState
   @override
   void dispose() {
     try { Vibration.cancel(); } catch (_) {}
+    try { ref.read(ttsServiceProvider).stop(); } catch (_) {}
     super.dispose();
   }
 

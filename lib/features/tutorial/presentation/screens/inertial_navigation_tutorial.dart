@@ -78,33 +78,36 @@ class _InertialNavigationTutorialState
   @override
   void dispose() {
     _pollTimer?.cancel();
+    _pollTimer = null;
 
-    // Read everything we need before super.dispose() invalidates the ref.
-    final container = ProviderScope.containerOf(context, listen: false);
-    final enabled   = container.read(appSettingsProvider).inertialNavigation;
+    try {
+      ref.read(ttsServiceProvider).stop();
+    } catch (_) {}
 
-    // Stop the tutorial's sensor subscription immediately.
-    container.read(inertialServiceProvider).stop();
+    // Check mounted before accessing context or ref
+    if (mounted) {
+      // Access container before any async gaps or super.dispose
+      final container = ProviderScope.containerOf(context, listen: false);
+      final enabled = container.read(appSettingsProvider).inertialNavigation;
 
-    // Replicate the exact user action that is known to fix the service:
-    // toggle inertial off then back on. This forces InertialDetectorWidget
-    // to call svc.start() with its own navigation callbacks.
-    //
-    // Two separate microtasks are used so Riverpod processes each state
-    // change individually and cannot coalesce them into a single rebuild
-    // that skips the intermediate false → true transition.
-    if (enabled) {
-      final notifier = container.read(appSettingsProvider.notifier);
-      Future.microtask(() {
-        notifier.toggleInertialNavigation(false);
+      // Stop the tutorial's sensor subscription immediately
+      container.read(inertialServiceProvider).stop();
+
+      if (enabled) {
+        final notifier = container.read(appSettingsProvider.notifier);
+        // Using microtasks is fine, but we must be careful with references
         Future.microtask(() {
-          notifier.toggleInertialNavigation(true);
+          notifier.toggleInertialNavigation(false);
+          Future.microtask(() {
+            notifier.toggleInertialNavigation(true);
+          });
         });
-      });
+      }
     }
 
     super.dispose();
   }
+
 
   void _onDetected(String direction) {
     if (!mounted) return;
@@ -179,10 +182,10 @@ class _TiltHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final yellow  = _cfg.accentYellow;
-    final blue    = _cfg.accentBlue;
+    final yellow  = cfg.accentYellow;
+    final blue    = cfg.accentBlue;
     final bg    = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final phone = isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant;
 
@@ -314,10 +317,10 @@ class _TiltPlayground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final yellow  = _cfg.accentYellow;
-    final blue    = _cfg.accentBlue;
+    final yellow  = cfg.accentYellow;
+    final blue    = cfg.accentBlue;
     final theme      = Theme.of(context);
     final surface    = isDark ? AppColors.darkSurface    : AppColors.lightSurface;
     final border     = isDark ? AppColors.darkBorder     : AppColors.lightBorder;
@@ -467,10 +470,10 @@ class _TiltBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _cfg   = ProviderScope.containerOf(context, listen: false)
+    final cfg   = ProviderScope.containerOf(context, listen: false)
         .read(visionConfigProvider);
-    final yellow  = _cfg.accentYellow;
-    final blue    = _cfg.accentBlue;
+    final yellow  = cfg.accentYellow;
+    final blue    = cfg.accentBlue;
     final norm       = (rawX / _maxRaw).clamp(-1.0, 1.0); // +1 = left, -1 = right
     final trackColor = isDark
         ? AppColors.darkSurfaceVariant

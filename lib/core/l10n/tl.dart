@@ -29,6 +29,13 @@ abstract final class TlStrings {
   static const String languageEnglish = 'Ingles';
   static const String languageTagalog = 'Tagalog';
   static const String fontSize = 'Laki ng Teksto';
+  static const String fontSizeSmall = 'Maliit';
+  static const String fontSizeMedium = 'Katamtaman';
+  static const String fontSizeLarge = 'Malaki';
+  static const String speechRate = 'Bilis ng Pagsasalita';
+  static const String speechRateSlow = 'Mabagal';
+  static const String speechRateNormal = 'Normal';
+  static const String speechRateFast = 'Mabilis';
 
   // General: subtitles
   static const String themeSubtitle =
@@ -43,6 +50,10 @@ abstract final class TlStrings {
       'Ayusin ang laki ng teksto ayon sa iyong kaginhawahan.';
   static const String fontSizeSubtitleFull =
       'I-drag ang slider para palakihin o paliitin ang teksto. Ang iyong vision profile ay nagtatakda ng minimum na laki. Maaari kang pumunta ng mas mataas, ngunit hindi mas mababa sa floor ng iyong profile.';
+  static const String speechRateSubtitle =
+      'Ayusin kung gaano kabilis magsalita ang app.';
+  static const String speechRateSubtitleFull =
+      'I-drag ang slider para pabilisin o pabagalin ang boses. Ang mas mabilis na bilis ay karaniwang mas gusto ng mga sanay na gumamit ng screen reader.';
 
   // Scanning: titles
   static const String useFrontCamera = 'Gamitin ang Front Camera';
@@ -286,12 +297,13 @@ abstract final class TlStrings {
   static const String hapticIntensityStrong = 'Malakas';
 
   // Vision profile descriptions
+  // Vision profile descriptions
   static const String visionLowVisionDesc =
-      'Visual na UI na may pinapalaking teksto at contrast. Opsyonal ang TTS at haptics.';
+      'Kung ikaw ay may astigmatism o mataas ang grado ng mata, piliin ang Mababang Paningin.';
   static const String visionPartiallyBlindDesc =
-      'May tulong na audio. Awtomatikong binabalita ng TTS ang mga resulta at nabigasyon.';
+      'Kung ikaw ay may malalang kondisyon sa mata o limitado ang paningin, piliin ang Bahagyang Bulag.';
   static const String visionFullyBlindDesc =
-      'Audio ang pangunahin. Lahat ay binabalita ng TTS. Mga mayamang haptic pattern ang nagdadala ng kahulugan.';
+      'Kung ikaw ay wala nang kakayahang makakita, piliin ang Ganap na Bulag.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
   static const String onboardingWelcomeTitle =
@@ -409,12 +421,12 @@ abstract final class TlStrings {
       'Ang iyong accessible na identifier ng piso. '
       'Sabihin ang Ituloy para magpatuloy.';
   static const String ttsOnboardingVision =
-      'Paano ka nakakita? Pumili ng vision profile. '
+      'Paano ka nakakita? Pumili ng vision profile: '
       'Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag. '
-      'Sabihin ang isang opsyon para piliin ito.';
+      'Sabihin ang iyong pili ngayon.';
   static const String ttsOnboardingLanguage =
-      'Piliin ang iyong wika. Ingles o Tagalog. '
-      'Sabihin ang isang opsyon para piliin ito.';
+      'Piliin ang iyong wika: English o Tagalog. '
+      'Magsalita para pumili.';
   static const String ttsOnboardingProfileSelected =
       'Na-set na ang vision profile.';
 
@@ -669,6 +681,13 @@ abstract final class TlStrings {
   static const String voiceActionCancelled = 'Walang problema. Ano ang gagawin natin?';
   static const String voiceListeningFeedback = 'Nakikinig ako.';
   static const String voiceFlashFrontError = 'Paumanhin, pero hindi ko kayang buksan ang flashlight habang ginagamit mo ang front camera.';
+  static const String voiceCommandExecuting = 'Isinasagawa';
+  static const String voiceCommandUnknown = 'Paumanhin, hindi ko naintindihan. Maaari mo bang sabihin ulit?';
+
+  // Profile Transitions
+  static const String ttsProfileLowVision = 'Ang profile ay naitakda sa Mababang Paningin. Minimal na pagsasalita at karaniwang laki ng teksto.';
+  static const String ttsProfilePartiallyBlind = 'Ang profile ay naitakda sa Bahagyang Bulag. Malaking teksto at karaniwang pagsasalita ang aktibo.';
+  static const String ttsProfileFullyBlind = 'Ang profile ay naitakda sa Ganap na Bulag. High contrast at buong nabigasyon sa boses ang aktibo.';
 
   static const String resultVerifyLabel = 'I-verify ang Katunayan';
   static const String resultRetryLabel = 'Ulitin';
@@ -680,8 +699,16 @@ abstract final class TlStrings {
   static const String resultManualCapturing = 'Kinikilala ang pera...';
   static String resultAutoVerifyHint(String seconds) => 'Awtomatikong magpapatunay sa loob ng $seconds... ';
   static const String resultAutoVerifyCancel = 'Kanselahin';
-  static const String strictVerificationTitle = 'Strict Verification';
-  static const String strictVerificationSubtitle = 'Maglalapat ng mahigpit na neural constraints sa verification model. Babala: Maaari itong magresulta sa hindi tumpak na mga hula.';
+  static const String clarifyVoiceCommandsTitle = 'I-klaro ang mga Utos sa Boses';
+  static const String clarifyVoiceCommandsSubtitle = 'Humingi ng kumpirmasyon (Oo/Hindi) bago isagawa ang mga nakilalang utos.';
+
+  // Text Verbosity
+  static const String textVerbosityTitle = 'Antas ng Teksto';
+  static const String textVerbositySubtitle = 'Gaano karaming impormasyon ang ipinapakita sa screen.';
+  static const String textVerbositySubtitleFull = 'Minimal: resulta lang. Standard: resulta at nabigasyon. Buo: detalyadong gabay at status.';
+  static const String textVerbosityMinimal = 'Minimal';
+  static const String textVerbosityStandard = 'Karaniwan';
+  static const String textVerbosityFull = 'Buo';
 
   // Share App
   static const String shareAppTitle = 'Ibahagi ang MoneySense';

@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ms_segmented_selector.dart';
 import '../../../../shared/widgets/ms_settings_card.dart';
 import '../../../../shared/widgets/ms_slider_tile.dart';
 import '../../../../shared/widgets/ms_timer_tile.dart';
+import '../../../../shared/widgets/ms_swipe_back_wrapper.dart';
 import '../../../../shared/widgets/ms_toggle_tile.dart';
 import '../../../tutorial/domain/tutorial_route.dart';
 import '../../../tutorial/presentation/screens/tutorial_navigator.dart';
@@ -34,7 +35,7 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(appSettingsProvider.notifier);
     final visionConfig = ref.watch(visionConfigProvider);
     final l10n = AppLocalizations.of(settings.isTagalog);
-    final isFullVerbosity = settings.ttsVerbosity == TtsVerbosity.full;
+    final isFullVerbosity = settings.textVerbosity == TextVerbosity.full;
 
     // ── TTS helper: one line at every call site ──────────────────────────
     void say(TtsMessage msg) {
@@ -47,7 +48,7 @@ class SettingsScreen extends ConsumerWidget {
           );
     }
 
-    return _SwipeBackWrapper(
+    return MsSwipeBackWrapper(
       isGesturalNavigationEnabled: settings.gesturalNavigation,
       child: Scaffold(
         appBar: AppBar(
@@ -60,15 +61,7 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.of(context).maybePop();
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.help_outline_rounded),
-              tooltip: 'Help',
-              onPressed: () {
-                /* TODO */
-              },
-            ),
-          ],
+
         ),
         body: Column(
           children: [
@@ -204,31 +197,10 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           );
                         },
-                        showHelpButton: true,
                         onHelpTap: () => TutorialNavigator.push(
                           context,
                           TutorialRoute.denominationVibration,
                         ),
-                      ),
-                      MsToggleTile(
-                        title: l10n.strictVerificationTitle,
-                        subtitle: l10n.strictVerificationSubtitle,
-                        value: settings.strictVerification,
-                        onChanged: (v) {
-                          EarconService.instance.play(
-                            v
-                                ? EarconEvent.actionEnabled
-                                : EarconEvent.actionDisabled,
-                          );
-                          notifier.toggleStrictVerification(v);
-                          say(
-                            SettingsSpeech.toggled(
-                              l10n,
-                              l10n.strictVerificationTitle,
-                              v,
-                            ),
-                          );
-                        },
                       ),
                     ],
                   ),
@@ -282,6 +254,22 @@ class SettingsScreen extends ConsumerWidget {
                           context,
                           TutorialRoute.voice, // Assuming TutorialRoute.voice will exist
                         ),
+                      ),
+                      MsToggleTile(
+                        title: 'Clarify Voice Commands',
+                        subtitle: 'Ask "Yes or No" before executing commands',
+                        value: settings.clarifyVoiceCommands,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            v
+                                ? EarconEvent.actionEnabled
+                                : EarconEvent.actionDisabled,
+                          );
+                          notifier.toggleClarifyVoiceCommands(v);
+                          say(
+                            SettingsSpeech.toggled(l10n, 'Clarify Voice Commands', v),
+                          );
+                        },
                       ),
                       MsTimerTile(
                         title: l10n.goBackTimerOnResult,
@@ -427,7 +415,7 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       if (settings.ttsEnabled)
-                        _VerbosityTile(
+                        _TtsVerbosityTile(
                           label: l10n.ttsVerbosityTitle,
                           subtitle: isFullVerbosity
                               ? l10n.ttsVerbositySubtitleFull
@@ -454,6 +442,33 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           },
                         ),
+                      _TextVerbosityTile(
+                        label: l10n.textVerbosityTitle,
+                        subtitle: isFullVerbosity
+                            ? l10n.textVerbositySubtitleFull
+                            : l10n.textVerbositySubtitle,
+                        verbosity: settings.textVerbosity,
+                        l10n: l10n,
+                        visionConfig: visionConfig,
+                        onChanged: (v) {
+                          EarconService.instance.play(
+                            EarconEvent.actionConfirmed,
+                          );
+                          notifier.setTextVerbosity(v);
+                          final label = v == TextVerbosity.minimal
+                              ? l10n.textVerbosityMinimal
+                              : v == TextVerbosity.standard
+                              ? l10n.textVerbosityStandard
+                              : l10n.textVerbosityFull;
+                          say(
+                            SettingsSpeech.changed(
+                              l10n,
+                              l10n.textVerbosityTitle,
+                              label,
+                            ),
+                          );
+                        },
+                      ),
                       MsToggleTile(
                         title: l10n.hapticTitle,
                         subtitle: isFullVerbosity
@@ -527,24 +542,6 @@ class SettingsScreen extends ConsumerWidget {
                   MsSettingsCard(
                     children: [
                       MsActionTile(
-                        title: l10n.checkForUpdates,
-                        subtitle: l10n.checkForUpdatesSubtitle,
-                        icon: Icons.refresh_rounded,
-                        onTap: () {
-                          /* TODO */
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.shareAppTitle,
-                        subtitle: 'Download MoneySense using QR Code',
-                        icon: Icons.qr_code_2_rounded,
-                        onTap: () {
-                          EarconService.instance.play(EarconEvent.actionConfirmed);
-                          say(SettingsSpeech.shareApp(l10n));
-                          ShareAppModal.show(context);
-                        },
-                      ),
-                      MsActionTile(
                         title: l10n.playOnboardingSetup,
                         subtitle: l10n.playOnboardingSubtitle,
                         icon: Icons.play_arrow_rounded,
@@ -558,6 +555,16 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       MsActionTile(
+                        title: l10n.shareAppTitle,
+                        subtitle: 'Download MoneySense using QR Code',
+                        icon: Icons.qr_code_2_rounded,
+                        onTap: () {
+                          EarconService.instance.play(EarconEvent.actionConfirmed);
+                          say(SettingsSpeech.shareApp(l10n));
+                          ShareAppModal.show(context);
+                        },
+                      ),
+                      MsActionTile(
                         title: l10n.appInformation,
                         subtitle: l10n.appInformationSubtitle,
                         icon: Icons.info_outline_rounded,
@@ -566,22 +573,6 @@ class SettingsScreen extends ConsumerWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const AboutScreen()),
                           );
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.leaveAFeedback,
-                        subtitle: l10n.leaveAFeedbackSubtitle,
-                        icon: Icons.campaign_outlined,
-                        onTap: () {
-                          /* TODO */
-                        },
-                      ),
-                      MsActionTile(
-                        title: l10n.termsOfServices,
-                        subtitle: l10n.termsOfServicesSubtitle,
-                        icon: Icons.description_outlined,
-                        onTap: () {
-                          /* TODO */
                         },
                       ),
                     ],
@@ -886,8 +877,8 @@ class _VisionProfileTile extends StatelessWidget {
   }
 }
 
-class _VerbosityTile extends StatelessWidget {
-  const _VerbosityTile({
+class _TtsVerbosityTile extends StatelessWidget {
+  const _TtsVerbosityTile({
     required this.label,
     required this.subtitle,
     required this.verbosity,
@@ -944,6 +935,75 @@ class _VerbosityTile extends StatelessWidget {
               Icons.volume_mute_rounded,
               Icons.volume_down_rounded,
               Icons.volume_up_rounded,
+            ],
+            selected: verbosity,
+            onSelected: onChanged,
+            accentColor: visionConfig.accentYellow,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TextVerbosityTile extends StatelessWidget {
+  const _TextVerbosityTile({
+    required this.label,
+    required this.subtitle,
+    required this.verbosity,
+    required this.l10n,
+    required this.visionConfig,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String subtitle;
+  final TextVerbosity verbosity;
+  final AppLocalizations l10n;
+  final VisionConfig visionConfig;
+  final ValueChanged<TextVerbosity> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            label: '$label. $subtitle.',
+            excludeSemantics: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(subtitle, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          MsSegmentedSelector<TextVerbosity>(
+            options: TextVerbosity.values,
+            labels: [
+              l10n.textVerbosityMinimal,
+              l10n.textVerbosityStandard,
+              l10n.textVerbosityFull,
+            ],
+            leadingIcons: [
+              Icons.short_text_rounded,
+              Icons.notes_rounded,
+              Icons.article_rounded,
             ],
             selected: verbosity,
             onSelected: onChanged,
@@ -1029,39 +1089,6 @@ class _HapticIntensityTile extends StatelessWidget {
   }
 }
 
-class _SwipeBackWrapper extends StatelessWidget {
-  const _SwipeBackWrapper({
-    required this.child,
-    required this.isGesturalNavigationEnabled,
-  });
-  final Widget child;
-  final bool isGesturalNavigationEnabled;
-
-  static const double _minVelocity = 300.0;
-  static const double _maxCrossRatio = 0.55;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanEnd: (details) {
-        if (!isGesturalNavigationEnabled) return;
-        final v = details.velocity.pixelsPerSecond;
-        final ax = v.dx.abs();
-        final ay = v.dy.abs();
-        if (ax < _minVelocity) return;
-        if (ax < ay) return;
-        if (ay / ax > _maxCrossRatio) return;
-        if (v.dx < 0) {
-          EarconService.instance.play(EarconEvent.navBack);
-          Navigator.of(context).maybePop();
-        }
-      },
-      child: child,
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Reset Settings tile + dialog
 // ─────────────────────────────────────────────────────────────────────────────
 

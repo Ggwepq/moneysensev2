@@ -64,18 +64,34 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void _pushSettings() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedSettings(_l10n));
+    // Pause passive listening while settings is open.
+    ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromLeft(const SimpleSettingsScreen())).then((_) {
+      if (!mounted) return;
       // Kill any lingering settings/tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
+      // Restore passive listening on return.
+      final s = ref.read(appSettingsProvider);
+      if (s.voiceNavigation) {
+        ref.read(voiceCommandServiceProvider).startPassiveListening();
+      }
     });
   }
 
   void _pushTutorial() {
     EarconService.instance.play(EarconEvent.navForward);
     _enqueue(NavSpeech.openedTutorial(_l10n));
+    // Pause passive listening while tutorial is open.
+    ref.read(voiceCommandServiceProvider).stopListening();
     Navigator.of(context).push(_slideFromRight(const TutorialScreen())).then((_) {
+      if (!mounted) return;
       // Kill any lingering tutorial audio when returning to home
       ref.read(ttsServiceProvider).stop();
+      // Restore passive listening on return.
+      final s = ref.read(appSettingsProvider);
+      if (s.voiceNavigation) {
+        ref.read(voiceCommandServiceProvider).startPassiveListening();
+      }
     });
   }
 
@@ -113,8 +129,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        pageBuilder: (_, _, _) => page,
+        transitionsBuilder: (_, anim, _, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(-1.0, 0),
             end: Offset.zero,
@@ -125,8 +141,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       );
 
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        pageBuilder: (_, _, _) => page,
+        transitionsBuilder: (_, anim, _, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0),
             end: Offset.zero,
@@ -176,7 +192,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 onTap: () {
                   if (settings.voiceNavigation && !isFullyBlind) {
                     HapticFeedback.lightImpact();
-                    ref.read(voiceCommandServiceProvider).startActiveListening(withPrompt: true);
+                    final status = ref.read(voiceCommandStatusProvider);
+                    ref.read(voiceCommandServiceProvider).startActiveListening(
+                      withPrompt: status == VoiceStatus.idle || status == VoiceStatus.error,
+                    );
                   }
                 },
                 behavior: HitTestBehavior.opaque,

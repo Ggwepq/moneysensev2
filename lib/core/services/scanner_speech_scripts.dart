@@ -31,8 +31,8 @@ abstract final class ScannerSpeech {
       // Denomination + type
       text = l10n.ttsScanResultWithType(denomination, type);
     } else {
-      // Full: denomination + type + confidence warning if low
-      if (confidence < 0.80) {
+      // Full: denomination + type + confidence warning if not "Very Confident"
+      if (confidence < 0.75) {
         text = l10n.ttsScanResultLowConfidence(denomination, type);
       } else {
         text = l10n.ttsScanResultWithType(denomination, type);

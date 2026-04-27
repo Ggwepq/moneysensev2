@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../features/settings/presentation/providers/settings_provider.dart';
+import '../../../core/services/voice/voice_command_service.dart';
 import '../../../features/settings/domain/entities/app_settings.dart';
 import '../../l10n/app_localizations.dart';
-import 'voice_command_service.dart';
 
 /// A minimalist globally floated overlay that animates into view only when the voice engine is active.
 /// Reverted to production UI: non-persistent, clean, and helpful.
@@ -53,71 +53,74 @@ class VoiceCommandOverlay extends ConsumerWidget {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeOutBack,
-      top: isVisible ? 50 : -200, // Slightly more space for the "bounce"
+      top: isVisible ? 50 : -200,
       left: 12,
       right: 12,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              color: bgColor.withValues(alpha: isDark ? 0.7 : 0.8),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: accentColor.withValues(alpha: 0.25),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 32,
-                  offset: const Offset(0, 8),
+      child: IgnorePointer(
+        ignoring: !isVisible,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: bgColor.withValues(alpha: isDark ? 0.7 : 0.8),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: accentColor.withValues(alpha: 0.25),
+                  width: 1.5,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                _PulseMic(color: accentColor),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isVisible && status == VoiceStatus.passiveListening 
-                            ? l10n.voiceStatusStandingBy 
-                            : l10n.voiceListeningLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: accentColor.withValues(alpha: 0.8),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        displayMessage.isNotEmpty ? displayMessage : '...',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 32,
+                    offset: const Offset(0, 8),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 24),
-                  onPressed: () => ref.read(voiceCommandServiceProvider).stopListening(),
-                  color: textColor.withValues(alpha: 0.5),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                children: [
+                  _PulseMic(color: accentColor),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isVisible && status == VoiceStatus.passiveListening 
+                              ? l10n.voiceStatusStandingBy 
+                              : l10n.voiceListeningLabel,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: accentColor.withValues(alpha: 0.8),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          displayMessage.isNotEmpty ? displayMessage : '...',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 24),
+                    onPressed: () => ref.read(voiceCommandServiceProvider).stopListening(),
+                    color: textColor.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -18,6 +18,7 @@ class VisionConfig {
     required this.fontScaleFloor,
     required this.contrastLevel,
     required this.defaultTtsVerbosity,
+    required this.defaultTextVerbosity,
     required this.defaultHapticIntensity,
     required this.autoAnnounceResults,
     required this.announceNavigation,
@@ -39,6 +40,7 @@ class VisionConfig {
   final ContrastLevel contrastLevel;
 
   final TtsVerbosity defaultTtsVerbosity;
+  final TextVerbosity defaultTextVerbosity;
   final HapticIntensity defaultHapticIntensity;
   final bool autoAnnounceResults;
   final bool announceNavigation;
@@ -127,6 +129,7 @@ class VisionConfig {
         fontScaleFloor:         1.0,
         contrastLevel:          ContrastLevel.normal,
         defaultTtsVerbosity:    TtsVerbosity.minimal,
+        defaultTextVerbosity:   TextVerbosity.minimal,
         defaultHapticIntensity: HapticIntensity.subtle,
         autoAnnounceResults:    false,
         announceNavigation:     false,
@@ -138,6 +141,7 @@ class VisionConfig {
         fontScaleFloor:         1.3,
         contrastLevel:          ContrastLevel.elevated,
         defaultTtsVerbosity:    TtsVerbosity.standard,
+        defaultTextVerbosity:   TextVerbosity.standard,
         defaultHapticIntensity: HapticIntensity.medium,
         autoAnnounceResults:    true,
         announceNavigation:     true,
@@ -148,7 +152,8 @@ class VisionConfig {
         profile:                VisionProfile.fullyBlind,
         fontScaleFloor:         1.6,
         contrastLevel:          ContrastLevel.maximum,
-        defaultTtsVerbosity:    TtsVerbosity.full,
+        defaultTtsVerbosity:    TtsVerbosity.standard,
+        defaultTextVerbosity:   TextVerbosity.standard,
         defaultHapticIntensity: HapticIntensity.strong,
         autoAnnounceResults:    true,
         announceNavigation:     true,

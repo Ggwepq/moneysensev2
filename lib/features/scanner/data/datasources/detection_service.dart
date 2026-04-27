@@ -1,6 +1,4 @@
 import 'dart:isolate';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -152,25 +150,25 @@ void _persistentIsolateEntry(SendPort setupPort) {
             final U = (message.uBytes[uIdx] & 0xFF) - 128;
             final V = (message.vBytes[vIdx] & 0xFF) - 128;
 
-            double r_v = (Y + 1.402 * V).clamp(0.0, 255.0);
-            double g_v = (Y - 0.344136 * U - 0.714136 * V).clamp(0.0, 255.0);
-            double b_v = (Y + 1.772 * U).clamp(0.0, 255.0);
+            double rV = (Y + 1.402 * V).clamp(0.0, 255.0);
+            double gV = (Y - 0.344136 * U - 0.714136 * V).clamp(0.0, 255.0);
+            double bV = (Y + 1.772 * U).clamp(0.0, 255.0);
 
             if (!isQuantized) {
-              r_v /= 255.0;
-              g_v /= 255.0;
-              b_v /= 255.0;
+              rV /= 255.0;
+              gV /= 255.0;
+              bV /= 255.0;
             }
 
             if (isNCHW) {
-              tensor[(0 * inSize * inSize) + (y * inSize + x)] = isQuantized ? r_v.toInt() : r_v;
-              tensor[(1 * inSize * inSize) + (y * inSize + x)] = isQuantized ? g_v.toInt() : g_v;
-              tensor[(2 * inSize * inSize) + (y * inSize + x)] = isQuantized ? b_v.toInt() : b_v;
+              tensor[(0 * inSize * inSize) + (y * inSize + x)] = isQuantized ? rV.toInt() : rV;
+              tensor[(1 * inSize * inSize) + (y * inSize + x)] = isQuantized ? gV.toInt() : gV;
+              tensor[(2 * inSize * inSize) + (y * inSize + x)] = isQuantized ? bV.toInt() : bV;
             } else {
               final dstIdx = (y * inSize + x) * 3;
-              tensor[dstIdx]     = isQuantized ? r_v.toInt() : r_v;
-              tensor[dstIdx + 1] = isQuantized ? g_v.toInt() : g_v;
-              tensor[dstIdx + 2] = isQuantized ? b_v.toInt() : b_v;
+              tensor[dstIdx]     = isQuantized ? rV.toInt() : rV;
+              tensor[dstIdx + 1] = isQuantized ? gV.toInt() : gV;
+              tensor[dstIdx + 2] = isQuantized ? bV.toInt() : bV;
             }
           }
         }
