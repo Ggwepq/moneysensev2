@@ -297,12 +297,13 @@ abstract final class TlStrings {
   static const String hapticIntensityStrong = 'Malakas';
 
   // Vision profile descriptions
+  // Vision profile descriptions
   static const String visionLowVisionDesc =
-      'Para sa may matataas na grado ng salamin (75-500), may astigmatism, o malabo pa rin ang paningin kahit may suot na salamin.';
+      'Kung ikaw ay may astigmatism o mataas ang grado ng mata, piliin ang Mababang Paningin.';
   static const String visionPartiallyBlindDesc =
-      'Para sa mga may malalang problema sa mata, limitado ang paningin, o di na nakukuha ng salamin ang paglabo ng mata.';
+      'Kung ikaw ay may malalang kondisyon sa mata o limitado ang paningin, piliin ang Bahagyang Bulag.';
   static const String visionFullyBlindDesc =
-      'Para sa mga wala nang kakayahang makakita. Audio at vibration ang pangunahing gabay sa paggamit.';
+      'Kung ikaw ay wala nang kakayahang makakita, piliin ang Ganap na Bulag.';
 
   // ── Onboarding ────────────────────────────────────────────────────────────
   static const String onboardingWelcomeTitle =
@@ -420,12 +421,12 @@ abstract final class TlStrings {
       'Ang iyong accessible na identifier ng piso. '
       'Sabihin ang Ituloy para magpatuloy.';
   static const String ttsOnboardingVision =
-      'Paano ka nakakita? Pumili ng vision profile. '
+      'Paano ka nakakita? Pumili ng vision profile: '
       'Mababang Paningin, Bahagyang Bulag, o Ganap na Bulag. '
-      'Sabihin ang isang opsyon para piliin ito.';
+      'Sabihin ang iyong pili ngayon.';
   static const String ttsOnboardingLanguage =
-      'Piliin ang iyong wika. Ingles o Tagalog. '
-      'Sabihin ang isang opsyon para piliin ito.';
+      'Piliin ang iyong wika: English o Tagalog. '
+      'Magsalita para pumili.';
   static const String ttsOnboardingProfileSelected =
       'Na-set na ang vision profile.';
 

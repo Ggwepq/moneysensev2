@@ -84,11 +84,10 @@ abstract final class OnboardingSpeech {
   /// Spoken when the vision profile step is shown.
   static TtsMessage visionStep(AppLocalizations l10n) =>
       TtsMessage.navigation(
-        '${l10n.onboardingVisionTitle}. '
         '${l10n.ttsOnboardingVision} '
-        '${l10n.visionLowVision}. ${l10n.visionLowVisionDesc}. '
-        '${l10n.visionPartiallyBlind}. ${l10n.visionPartiallyBlindDesc}. '
-        '${l10n.visionFullyBlind}. ${l10n.visionFullyBlindDesc}.',
+        '${l10n.visionLowVision}: ${l10n.visionLowVisionDesc} '
+        '${l10n.visionPartiallyBlind}: ${l10n.visionPartiallyBlindDesc} '
+        '${l10n.visionFullyBlind}: ${l10n.visionFullyBlindDesc}',
         id: 'onboarding.vision',
       );
 
@@ -99,12 +98,12 @@ abstract final class OnboardingSpeech {
 
   /// Spoken when the language step is shown.
   static TtsMessage languageStep(AppLocalizations l10n) =>
-      TtsMessage.navigation('${l10n.language}. ${l10n.onboardingLanguageOptions}',
+      TtsMessage.navigation(l10n.ttsOnboardingLanguage,
           id: 'onboarding.language');
 
   /// Spoken when the permission step is shown.
   static TtsMessage permStep(AppLocalizations l10n) =>
-      TtsMessage.navigation('${l10n.onboardingPermissionTitle}. MoneySense needs access to the Camera and Microphone. Say Proceed or Yes to grant permissions.',
+      TtsMessage.navigation('Permissions: MoneySense needs access to the Camera and Microphone to help you identify currency. Say Proceed or Yes to grant access.',
           id: 'onboarding.perm');
 
   /// Spoken when the final step is shown.

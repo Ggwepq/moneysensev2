@@ -98,7 +98,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             _next();
           }
         } else if (_isVoiceActive) {
-          _enqueueListening();
+          // A tiny delay ensures the audio session is fully clear of TTS before opening mic
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted && !ref.read(ttsServiceProvider).isSpeakingNotifier.value) {
+              _enqueueListening();
+            }
+          });
         }
       }
     }

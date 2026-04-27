@@ -295,11 +295,11 @@ abstract final class EnStrings {
 
   // Vision profile descriptions (shown in the tile below the pills)
   static const String visionLowVisionDesc =
-      'For people with high prescriptions (75-500), astigmatism, or vision issues that affect daily tasks even with glasses.';
+      'If you have astigmatism or a high eye grade, choose Low Vision.';
   static const String visionPartiallyBlindDesc =
-      'For those with very limited vision, serious eye conditions, or vision only in one eye that cannot be corrected by lenses.';
+      'If you have serious eye conditions or limited sight, choose Partially Blind.';
   static const String visionFullyBlindDesc =
-      'For individuals with no functional vision. Relies primarily on audio and haptic feedback.';
+      'If you have no functional vision, choose Fully Blind.';
 
   // ── Onboarding
   static const String onboardingWelcomeTitle = 'Welcome to MoneySense';
@@ -310,7 +310,7 @@ abstract final class EnStrings {
       'We\'ll adjust the app to best serve your needs.';
   static const String visionLowVision = 'Low Vision';
   static const String visionPartiallyBlind = 'Partially Blind';
-  static const String visionFullyBlind = 'Completely Blind';
+  static const String visionFullyBlind = 'Fully Blind';
   static const String onboardingVisionOptions = 'Please say: Low Vision, Partially Blind, or Fully Blind.';
 
   static const String voiceNavigation = 'Voice Navigation';
@@ -424,12 +424,12 @@ abstract final class EnStrings {
       'Welcome to MoneySense. Your accessible Philippine currency identifier. '
       'Say Proceed to continue.';
   static const String ttsOnboardingVision =
-      'How do you see? Choose a vision profile. '
+      'How do you see? Choose a vision profile: '
       'Low Vision, Partially Blind, or Fully Blind. '
-      'Say an option to choose it.';
+      'Say an option now.';
   static const String ttsOnboardingLanguage =
-      'Choose your language. English or Tagalog. '
-      'Say an option to choose it.';
+      'Choose your language: English or Tagalog. '
+      'Say an option now.';
   static const String ttsOnboardingProfileSelected = 'Vision profile set.';
 
   // Tagalog onboarding TTS is in tl.dart and routed through AppLocalizations.

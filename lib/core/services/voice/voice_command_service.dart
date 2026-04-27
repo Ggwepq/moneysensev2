@@ -181,14 +181,14 @@ class VoiceCommandService {
       final listenFor = isConfirmation ? const Duration(seconds: 18) : const Duration(seconds: 15);
       final pauseFor = isConfirmation ? const Duration(seconds: 8) : const Duration(seconds: 7);
 
-      await _stopHardware(playEarcon: false);
+      await _stopHardware(playEarcon: false, suppressIdle: true);
       
       // 🚀 CRITICAL FIX: Explicitly wait for TTS to finish before opening mic.
       // This prevents the scanner or tutorial feedback from drowning out the user.
       await _waitForTts();
       
       // Small settle time after TTS stops
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       
       await _startHardware(
         listenFor: listenFor,
@@ -221,7 +221,7 @@ class VoiceCommandService {
     _pendingIntent = null;
 
     _enqueue(() async {
-      await _stopHardware(playEarcon: true);
+      await _stopHardware(playEarcon: true, suppressIdle: false);
       _isChangingState = false;
     });
   }
@@ -230,14 +230,16 @@ class VoiceCommandService {
   // Internal hardware helpers
   // ──────────────────────────────────────────────────────────────────────────
 
-  Future<void> _stopHardware({bool playEarcon = false}) async {
-    debugPrint('[VoiceService] _stopHardware(playEarcon: $playEarcon)');
+  Future<void> _stopHardware({bool playEarcon = false, bool suppressIdle = false}) async {
+    debugPrint('[VoiceService] _stopHardware(playEarcon: $playEarcon, suppressIdle: $suppressIdle)');
     if (playEarcon) EarconService.instance.play(EarconEvent.actionDisabled);
     if (_speech.isListening) {
       await _speech.cancel();
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 200));
     }
-    ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+    if (!suppressIdle) {
+      ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
+    }
   }
 
   Future<void> _startHardware({
@@ -306,7 +308,7 @@ class VoiceCommandService {
         _enqueue(() async {
           await _startHardware(
             listenFor: const Duration(minutes: 1),
-            pauseFor: const Duration(seconds: 20),
+            pauseFor: const Duration(seconds: 15),
             cancelOnError: false,
             passive: false,
           );
@@ -335,11 +337,11 @@ class VoiceCommandService {
         return;
       }
       if (_isPassiveMode || _isPersistentActive) {
-        _schedulePassiveRestart(delay: const Duration(milliseconds: 400));
+        // Keep current status (listening) during the short restart gap to avoid UI flickering.
+        _schedulePassiveRestart(delay: const Duration(milliseconds: 150));
       } else if (_isActiveMode) {
         _isActiveMode = false;
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
-        // NOTE: Passive listening restoration is removed.
       } else {
         debugPrint('[VoiceService] Unhandled stop ignored (transitionary).');
         ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
@@ -442,7 +444,7 @@ class VoiceCommandService {
       debugPrint('[VoiceService] Snappy Execution: Found ${intent.runtimeType} in partial result. Stopping mic.');
       
       // Stop mic immediately to give feedback and prevent double-execution
-      _stopHardware(playEarcon: false);
+      _stopHardware(playEarcon: false, suppressIdle: true);
       _executeStandardIntent(intent);
       return;
     }
@@ -474,7 +476,7 @@ class VoiceCommandService {
         intent is StartVoiceSetupIntent) {
       
       debugPrint('[VoiceService] Snappy Onboarding: Found ${intent.runtimeType}');
-      _stopHardware(playEarcon: false);
+      _stopHardware(playEarcon: false, suppressIdle: true);
       ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.processing;
       ref.read(voiceCommandExecutorProvider).execute(intent);
       _intentController.add(intent);
