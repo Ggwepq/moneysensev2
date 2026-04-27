@@ -116,7 +116,10 @@ class VoiceCommandExecutor {
             MaterialPageRoute(builder: (_) => const TutorialScreen()),
           );
           Future.delayed(const Duration(milliseconds: 300), () {
-            TutorialNavigator.push(context, TutorialRoute.voice);
+            final ctx = navigatorKey.currentContext;
+            if (ctx != null && ctx.mounted) {
+              TutorialNavigator.push(ctx, TutorialRoute.voice);
+            }
           });
         } else if (intent.target == NavTarget.home) {
           final scannerState = ref.read(scannerStateProvider);
@@ -167,7 +170,10 @@ class VoiceCommandExecutor {
               MaterialPageRoute(builder: (_) => const TutorialScreen()),
             );
             Future.delayed(const Duration(milliseconds: 300), () {
-              TutorialNavigator.push(context, targetRoute);
+              final ctx = navigatorKey.currentContext;
+              if (ctx != null && ctx.mounted) {
+                TutorialNavigator.push(ctx, targetRoute);
+              }
             });
           }
         }

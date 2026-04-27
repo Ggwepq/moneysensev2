@@ -357,15 +357,24 @@ class VoiceCommandService {
         } else {
           EarconService.instance.play(EarconEvent.actionDisabled);
         }
-      } else {
-        debugPrint('[VoiceService] Unhandled stop ignored (transitionary).');
-        ref.read(voiceCommandStatusProvider.notifier).state = VoiceStatus.idle;
       }
+    } else if (status == 'listening') {
+      if (_isPassiveMode) {
+        ref.read(voiceCommandStatusProvider.notifier).state =
+            VoiceStatus.passiveListening;
+      } else {
+        ref.read(voiceCommandStatusProvider.notifier).state =
+            VoiceStatus.activeListening;
+      }
+    } else if (status == 'processing') {
+      ref.read(voiceCommandStatusProvider.notifier).state =
+          VoiceStatus.processing;
     }
   }
 
   void _onError(SpeechRecognitionError error) {
     debugPrint('[VoiceService] onError: ${error.errorMsg}');
+    _isChangingState = false;
     final delay = error.errorMsg.contains('network')
         ? const Duration(seconds: 3)
         : const Duration(seconds: 1);

@@ -129,8 +129,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   PageRoute<void> _slideFromLeft(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        pageBuilder: (_, _, _) => page,
+        transitionsBuilder: (_, anim, _, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(-1.0, 0),
             end: Offset.zero,
@@ -141,8 +141,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       );
 
   PageRoute<void> _slideFromRight(Widget page) => PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        pageBuilder: (_, _, _) => page,
+        transitionsBuilder: (_, anim, _, child) => SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0),
             end: Offset.zero,
