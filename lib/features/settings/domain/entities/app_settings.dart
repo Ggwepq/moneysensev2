@@ -75,7 +75,7 @@ class AppSettings {
     this.useFlashlight = false,
     this.denominationVibration = true,
     this.shakeToGoBack = true,
-    this.goBackTimerSeconds = 20,
+    this.goBackTimerSeconds = 3,
     this.gesturalNavigation = true,
     this.inertialNavigation = true,
     this.voiceNavigation = false,

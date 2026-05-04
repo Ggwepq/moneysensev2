@@ -254,13 +254,28 @@ class RemoteCheatService {
     try {
       final interfaces =
           await NetworkInterface.list(type: InternetAddressType.IPv4);
+      
+      // Preferred interfaces: wlan, wifi, eth (not loopback, not cellular)
+      final preferredInterface = interfaces.cast<NetworkInterface?>().firstWhere(
+        (i) {
+          final name = i!.name.toLowerCase();
+          return name.contains('wlan') || name.contains('wifi') || name.contains('eth');
+        },
+        orElse: () => null,
+      );
+
+      if (preferredInterface != null) {
+        return preferredInterface.addresses.first.address;
+      }
+
+      // Fallback: first non-loopback
       for (var interface in interfaces) {
         if (!interface.name.contains('lo')) {
           return interface.addresses.first.address;
         }
       }
     } catch (_) {}
-    return 'localhost';
+    return '127.0.0.1'; // Safer fallback than 'localhost' for URI parsing
   }
 }
 
