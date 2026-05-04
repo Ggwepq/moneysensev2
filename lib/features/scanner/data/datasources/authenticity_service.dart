@@ -448,7 +448,26 @@ class AuthenticityService {
         input = InputImage.fromFilePath(tempFile.path);
       }
       final recognizedText = await _textRecognizer.processImage(input);
-      final text = recognizedText.text.toUpperCase();
+      
+      // ── Serial Number Filtering ───────────────────────────────────────────
+      // We process line-by-line to disregard text that looks like a 
+      // Philippine currency serial number (typically 2 letters followed by digits).
+      // This prevents serial numbers like "AB100234" from being misread as "100".
+      final buffer = StringBuffer();
+      final serialRegex = RegExp(r'^[A-Z]{1,2}[0-9]{5,8}$');
+      
+      for (final block in recognizedText.blocks) {
+        for (final line in block.lines) {
+          final lineText = line.text.toUpperCase().trim();
+          if (serialRegex.hasMatch(lineText)) {
+            debugPrint('[AuthenticityService/OCR] Disregarding serial number: "$lineText"');
+            continue;
+          }
+          buffer.writeln(lineText);
+        }
+      }
+      
+      final text = buffer.toString();
       
       debugPrint('[AuthenticityService/OCR] Raw Recognized Text: "${text.replaceAll("\n", " ")}"');
       
@@ -463,8 +482,10 @@ class AuthenticityService {
       for (var k in alertKeys) {
         if (text.contains(k)) {
           alerts.add(k);
-        } else if (k.length >= 6) {
-          final prefix = k.substring(0, 5);
+        } else if (k.length >= 7) {
+          // Only allow prefix matching for longer security keywords to avoid false positives
+          // e.g. "SAMPO" from "SAMPOL" matches "SAMPUNG PISO" (10 php).
+          final prefix = k.substring(0, 6);
           if (text.contains(prefix)) alerts.add('$prefix...');
         }
       }
@@ -472,14 +493,19 @@ class AuthenticityService {
       String? detectedDenom;
       
       // TAGALOG WORD DICTIONARY (High Trust)
+      // Order of keys matters: check more specific phrases before generic ones.
       final tagalogMap = {
         'SANG LIBO': '1000',
         'ISANG LIBO': '1000',
-        'PISO': '1',
-        'LIMANG PISO': '5',
-        'LIMA': '5',
+        'LIMANG DAAN': '500',
+        'DALAWANG DAAN': '200',
+        'ISANG DAAN': '100',
+        'SANG DAAN': '100',
+        'LIMAMPUNG PISO': '50',
+        'DALAWAMPUNG PISO': '20',
         'SAMPUNG PISO': '10',
-        'SAMPU': '10',
+        'LIMANG PISO': '5',
+        'PISO': '1', 
       };
       
       for (var entry in tagalogMap.entries) {
@@ -533,36 +559,6 @@ class AuthenticityService {
       width: image.width > image.height ? 224 : null, 
       height: image.height >= image.width ? 224 : null);
     img.compositeImage(canvas, resized, dstX: (224 - resized.width) ~/ 2, dstY: (224 - resized.height) ~/ 2);
-    
-    // Cache the processed input image for debugging
-    try {
-      final debugPath = args['debugPath'] as String;
-      final processedFile = File('$debugPath/debug_processed_input.jpg');
-      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
-      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
-    } catch (e) {
-      // Ignore errors in background isolate
-    }
-    
-    // Cache the processed input image for debugging
-    try {
-      final debugPath = args['debugPath'] as String;
-      final processedFile = File('$debugPath/debug_processed_input.jpg');
-      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
-      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
-    } catch (e) {
-      // Ignore errors in background isolate
-    }
-    
-    // Cache the processed input image for debugging
-    try {
-      final debugPath = args['debugPath'] as String;
-      final processedFile = File('$debugPath/debug_processed_input.jpg');
-      processedFile.writeAsBytesSync(img.encodeJpg(canvas));
-      debugPrint('[AuthenticityIsolate] 💾 Saved debug_processed_input.jpg');
-    } catch (e) {
-      // Ignore errors in background isolate
-    }
     
     // Cache the processed input image for debugging
     try {
