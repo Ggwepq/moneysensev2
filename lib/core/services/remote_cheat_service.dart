@@ -34,7 +34,7 @@ class MoneySensePeer {
 ///   when [startScanning] is called and closed when [stopScanning] is called
 ///   (or the stream is cancelled).  This prevents the advertisement socket
 ///   from being closed by scanner teardown.
-/// • [_override] is PERSISTENT: once a remote device sets it, it stays until
+/// • Overrides are PERSISTENT: once a remote device sets them, they stay until
 ///   the remote explicitly calls /api/reset.  This means retries on the
 ///   target device will always get the same forced result without the remote
 ///   needing to spam commands.
@@ -45,8 +45,11 @@ class RemoteCheatService {
   // ── Server / Advertisement ────────────────────────────────────────────────
   HttpServer? _server;
 
-  /// Persistent override — NOT cleared on read.  Only /api/reset clears it.
+  /// Persistent authenticity override — NOT cleared on read.  Only /api/reset clears it.
   AuthenticityResult? _override;
+
+  /// Persistent denomination override — forces the target to display a specific denomination.
+  String? _denomOverride;
 
   String? _localIp;
   String? _deviceName;
@@ -64,6 +67,7 @@ class RemoteCheatService {
   final _discoveredPeers = <String, MoneySensePeer>{}; // IP → Peer
 
   AuthenticityResult? get nextOverride => _override;
+  String? get denomOverride => _denomOverride;
   String? get serverUrl => _server != null ? 'http://$_localIp:${_server!.port}' : null;
   String? get deviceName => _deviceName;
 
@@ -117,6 +121,7 @@ class RemoteCheatService {
     _advSocket?.close();
     _advSocket = null;
     _override = null;
+    _denomOverride = null;
     debugPrint('[RemoteCheatService] ⏹ Service stopped.');
   }
 
@@ -207,21 +212,40 @@ class RemoteCheatService {
   void _handleHttpRequest(HttpRequest request) {
     final path = request.uri.path;
 
+    // ── Verification Overrides ─────────────────────────────────────────────
     if (path == '/api/genuine') {
-      // Persistent override — stays until /api/reset is called.
       _override = AuthenticityResult.genuine;
       _sendJsonResponse(request, {'status': 'ok', 'override': 'genuine'});
-      debugPrint('[RemoteCheatService] 📡 Override set → GENUINE (persistent)');
+      debugPrint('[RemoteCheatService] 📡 Verification → GENUINE (persistent)');
     } else if (path == '/api/counterfeit') {
       _override = AuthenticityResult.counterfeit;
       _sendJsonResponse(request, {'status': 'ok', 'override': 'counterfeit'});
-      debugPrint('[RemoteCheatService] 📡 Override set → COUNTERFEIT (persistent)');
-    } else if (path == '/api/reset') {
+      debugPrint('[RemoteCheatService] 📡 Verification → COUNTERFEIT (persistent)');
+    }
+    // ── Denomination Overrides ─────────────────────────────────────────────
+    else if (path.startsWith('/api/denom/')) {
+      final denom = path.split('/').last;
+      if (denom == 'reset') {
+        _denomOverride = null;
+        _sendJsonResponse(request, {'status': 'ok', 'denomOverride': 'none'});
+        debugPrint('[RemoteCheatService] 📡 Denomination override cleared → AI results');
+      } else {
+        _denomOverride = denom;
+        _sendJsonResponse(request, {'status': 'ok', 'denomOverride': denom});
+        debugPrint('[RemoteCheatService] 📡 Denomination → ₱$denom (persistent)');
+      }
+    }
+    // ── Global ─────────────────────────────────────────────────────────────
+    else if (path == '/api/reset') {
       _override = null;
-      _sendJsonResponse(request, {'status': 'ok', 'override': 'none'});
-      debugPrint('[RemoteCheatService] 📡 Override cleared → AI results');
+      _denomOverride = null;
+      _sendJsonResponse(request, {'status': 'ok', 'override': 'none', 'denomOverride': 'none'});
+      debugPrint('[RemoteCheatService] 📡 All overrides cleared → AI results');
     } else if (path == '/api/status') {
-      _sendJsonResponse(request, {'override': _override?.name ?? 'none'});
+      _sendJsonResponse(request, {
+        'override': _override?.name ?? 'none',
+        'denomOverride': _denomOverride ?? 'none',
+      });
     } else {
       request.response
         ..statusCode = HttpStatus.notFound
