@@ -453,8 +453,9 @@ class AuthenticityService {
       // We process line-by-line to disregard text that looks like a 
       // Philippine currency serial number (typically 2 letters followed by digits).
       // This prevents serial numbers like "AB100234" from being misread as "100".
+      // We also catch OCR misreads like "AB 100234" or "A8100234" (letter→digit confusion).
       final buffer = StringBuffer();
-      final serialRegex = RegExp(r'^[A-Z]{1,2}[0-9]{5,8}$');
+      final serialRegex = RegExp(r'^[A-Z0-9]{1,3}\s?[0-9]{4,8}$');
       
       for (final block in recognizedText.blocks) {
         for (final line in block.lines) {
@@ -469,7 +470,7 @@ class AuthenticityService {
       
       final text = buffer.toString();
       
-      debugPrint('[AuthenticityService/OCR] Raw Recognized Text: "${text.replaceAll("\n", " ")}"');
+      debugPrint('[AuthenticityService/OCR] Filtered Text: "${text.replaceAll("\n", " ").trim()}"');
       
       final alerts = <String>[];
       // Intelligent Fragment Detection
@@ -492,8 +493,11 @@ class AuthenticityService {
 
       String? detectedDenom;
       
-      // TAGALOG WORD DICTIONARY (High Trust)
-      // Order of keys matters: check more specific phrases before generic ones.
+      // ── TAGALOG WORD DICTIONARY (High Trust) ──────────────────────────────
+      // Order matters: most specific phrases FIRST.
+      // IMPORTANT: Do NOT add a standalone 'PISO' entry — the word "PISO" 
+      // appears on EVERY denomination of Philippine currency and will always
+      // match, causing all bills to be identified as 1 peso.
       final tagalogMap = {
         'SANG LIBO': '1000',
         'ISANG LIBO': '1000',
@@ -502,12 +506,29 @@ class AuthenticityService {
         'ISANG DAAN': '100',
         'SANG DAAN': '100',
         'LIMAMPUNG PISO': '50',
+        'LIMAMPU': '50',
         'DALAWAMPUNG PISO': '20',
+        'DALAWAMPU': '20',
         'SAMPUNG PISO': '10',
+        'SAMPU': '10',
         'LIMANG PISO': '5',
-        'PISO': '1', 
+        'ISANG PISO': '1',
       };
       
+      // ── ENGLISH DENOMINATION DICTIONARY ───────────────────────────────────
+      final englishMap = {
+        'ONE THOUSAND': '1000',
+        'FIVE HUNDRED': '500',
+        'TWO HUNDRED': '200',
+        'ONE HUNDRED': '100',
+        'FIFTY': '50',
+        'TWENTY': '20',
+        'TEN PESOS': '10',
+        'FIVE PESOS': '5',
+        'ONE PESO': '1',
+      };
+
+      // Check Tagalog phrases first (most bills are primarily in Filipino)
       for (var entry in tagalogMap.entries) {
         if (text.contains(entry.key)) {
           debugPrint('[AuthenticityService/OCR] Tagalog word matched: ${entry.key} → ${entry.value}');
@@ -515,11 +536,29 @@ class AuthenticityService {
           break;
         }
       }
-
+      
+      // Then try English phrases
       if (detectedDenom == null) {
-        final nums = ['1000', '500', '200', '100', '50', '20', '10', '5', '1'];
+        for (var entry in englishMap.entries) {
+          if (text.contains(entry.key)) {
+            debugPrint('[AuthenticityService/OCR] English word matched: ${entry.key} → ${entry.value}');
+            detectedDenom = entry.value;
+            break;
+          }
+        }
+      }
+
+      // Numeric fallback — search from largest to smallest to prevent
+      // partial matches (e.g. "100" inside "1000" is fine since we check "1000" first).
+      // Use word-boundary-like matching to avoid matching digits inside serial numbers.
+      if (detectedDenom == null) {
+        final nums = ['1000', '500', '200', '100', '50', '20', '10', '5'];
+        final numRegex = <String, RegExp>{
+          for (final n in nums)
+            n: RegExp('(?:^|[^0-9])$n(?:[^0-9]|\$)'),
+        };
         for (var n in nums) {
-          if (text.contains(n)) {
+          if (numRegex[n]!.hasMatch(text)) {
             debugPrint('[AuthenticityService/OCR] Numeric match: $n');
             detectedDenom = n;
             break; 
