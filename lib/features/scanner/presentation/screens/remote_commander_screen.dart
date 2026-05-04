@@ -17,6 +17,7 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
   MoneySensePeer? _selectedPeer;
   late AnimationController _radarController;
   Stream<List<MoneySensePeer>>? _scanStream;
+  int _controlTab = 0; // 0 = Identification, 1 = Verification
   
   @override
   void initState() {
@@ -50,10 +51,22 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
       await http.get(url).timeout(const Duration(seconds: 2));
       
       if (mounted) {
+        String label = cmd.toUpperCase();
+        Color color = Colors.grey;
+        
+        if (cmd == 'genuine') { label = '✓ GENUINE'; color = Colors.green; }
+        else if (cmd == 'counterfeit') { label = '✗ COUNTERFEIT'; color = Colors.red; }
+        else if (cmd.startsWith('denom/')) { 
+          final d = cmd.split('/').last;
+          label = '₱$d FORCED';
+          color = const Color(0xFF00E3FD);
+        }
+        else if (cmd == 'reset') { label = 'RESET'; color = Colors.grey; }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sent: ${cmd.toUpperCase()} to ${_selectedPeer!.name}'),
-            backgroundColor: cmd == 'genuine' ? Colors.green : (cmd == 'counterfeit' ? Colors.red : Colors.grey),
+            content: Text('Sent: $label to ${_selectedPeer!.name}'),
+            backgroundColor: color,
             duration: const Duration(milliseconds: 800),
           ),
         );
@@ -80,9 +93,6 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                // Stop the current scan stream and restart it fresh so that
-                // the UDP socket is re-opened and peer discovery works again
-                // without requiring an app restart.
                 RemoteCheatService.instance.stopScanning();
                 setState(() => _selectedPeer = null);
                 _startScan();
@@ -178,50 +188,229 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
   }
 
   Widget _buildControlPanel() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
+    return Column(
+      children: [
+        // ── Peer Info ───────────────────────────────────────────────────────
+        const Gap(16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.phone_android_rounded, size: 36, color: Color(0xFF00E3FD)),
+        ),
+        const Gap(8),
+        Text(
+          _selectedPeer!.name,
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          _selectedPeer!.ip,
+          style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+        ),
+        const Gap(20),
+
+        // ── Tab Selector ─────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.phone_android_rounded, size: 48, color: Color(0xFF00E3FD)),
+            padding: const EdgeInsets.all(4),
+            child: Row(
+              children: [
+                _buildTab('Identification', 0, Icons.search_rounded),
+                _buildTab('Verification', 1, Icons.verified_user_rounded),
+              ],
+            ),
           ),
-          const Gap(16),
-          Text(
-            'Controlling: ${_selectedPeer!.name}',
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Gap(24),
+
+        // ── Tab Content ─────────────────────────────────────────────────────
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _controlTab == 0
+                ? _buildIdentificationTab()
+                : _buildVerificationTab(),
           ),
-          Text(
-            _selectedPeer!.ip,
-            style: TextStyle(color: Colors.white.withOpacity(0.4)),
-          ),
-          const Gap(48),
-          _buildActionButton(
-            label: 'FORCE GENUINE',
-            color: Colors.green,
-            icon: Icons.check_circle_rounded,
-            onTap: () => _sendCommand('genuine'),
-          ),
-          const Gap(16),
-          _buildActionButton(
-            label: 'FORCE COUNTERFEIT',
-            color: Colors.red,
-            icon: Icons.error_rounded,
-            onTap: () => _sendCommand('counterfeit'),
-          ),
-          const Gap(40),
-          TextButton.icon(
+        ),
+
+        // ── Reset Button ────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: TextButton.icon(
             onPressed: () => _sendCommand('reset'),
             icon: const Icon(Icons.refresh_rounded, color: Colors.white54, size: 18),
-            label: const Text('Reset to AI Results', style: TextStyle(color: Colors.white54)),
+            label: const Text('Reset All Overrides', style: TextStyle(color: Colors.white54)),
           ),
-        ],
+        ),
+        const Gap(8),
+      ],
+    );
+  }
+
+  Widget _buildTab(String label, int index, IconData icon) {
+    final isActive = _controlTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _controlTab = index);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFF00E3FD).withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive ? const Color(0xFF00E3FD).withOpacity(0.4) : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: isActive ? const Color(0xFF00E3FD) : Colors.white38),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? const Color(0xFF00E3FD) : Colors.white38,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  // ── Identification Tab ──────────────────────────────────────────────────
+
+  Widget _buildIdentificationTab() {
+    const denominations = [
+      _DenomInfo('1', 'coin', Color(0xFFB0BEC5), '₱1'),
+      _DenomInfo('5', 'coin', Color(0xFFFFD54F), '₱5'),
+      _DenomInfo('10', 'coin', Color(0xFF90A4AE), '₱10'),
+      _DenomInfo('20', 'bill', Color(0xFFFF7043), '₱20'),
+      _DenomInfo('50', 'bill', Color(0xFFEF5350), '₱50'),
+      _DenomInfo('100', 'bill', Color(0xFFAB47BC), '₱100'),
+      _DenomInfo('200', 'bill', Color(0xFF66BB6A), '₱200'),
+      _DenomInfo('500', 'bill', Color(0xFFFFC107), '₱500'),
+      _DenomInfo('1000', 'bill', Color(0xFF42A5F5), '₱1000'),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Force the scanned denomination to show a specific value.',
+          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+        ),
+        const Gap(16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 1.3,
+          ),
+          itemCount: denominations.length,
+          itemBuilder: (context, index) {
+            final d = denominations[index];
+            return _buildDenomButton(d);
+          },
+        ),
+        const Gap(16),
+        Center(
+          child: TextButton.icon(
+            onPressed: () => _sendCommand('denom/reset'),
+            icon: Icon(Icons.clear_rounded, color: Colors.white.withOpacity(0.4), size: 16),
+            label: Text('Clear Denomination Override', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDenomButton(_DenomInfo d) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _sendCommand('denom/${d.value}'),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: d.color.withOpacity(0.5), width: 2),
+            gradient: LinearGradient(
+              colors: [d.color.withOpacity(0.15), d.color.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                d.type == 'coin' ? Icons.circle_outlined : Icons.credit_card_rounded,
+                color: d.color,
+                size: 22,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                d.label,
+                style: TextStyle(
+                  color: d.color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                d.type,
+                style: TextStyle(color: d.color.withOpacity(0.5), fontSize: 10),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Verification Tab ────────────────────────────────────────────────────
+
+  Widget _buildVerificationTab() {
+    return Column(
+      children: [
+        Text(
+          'Force the authenticity result to show genuine or counterfeit.',
+          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+        ),
+        const Gap(24),
+        _buildActionButton(
+          label: 'FORCE GENUINE',
+          color: Colors.green,
+          icon: Icons.check_circle_rounded,
+          onTap: () => _sendCommand('genuine'),
+        ),
+        const Gap(16),
+        _buildActionButton(
+          label: 'FORCE COUNTERFEIT',
+          color: Colors.red,
+          icon: Icons.error_rounded,
+          onTap: () => _sendCommand('counterfeit'),
+        ),
+      ],
     );
   }
 
@@ -262,6 +451,15 @@ class _RemoteCommanderScreenState extends ConsumerState<RemoteCommanderScreen> w
       ),
     );
   }
+}
+
+class _DenomInfo {
+  final String value;
+  final String type;
+  final Color color;
+  final String label;
+
+  const _DenomInfo(this.value, this.type, this.color, this.label);
 }
 
 class _RadarPainter extends CustomPainter {

@@ -13,6 +13,7 @@ import 'package:moneysensev2/features/settings/domain/entities/app_settings.dart
 import '../../data/datasources/authenticity_service.dart';
 import 'package:moneysensev2/core/services/earcon_service.dart';
 import 'package:moneysensev2/core/services/voice/voice_command_service.dart';
+import 'package:moneysensev2/core/services/remote_cheat_service.dart';
 
 
 export '../../data/datasources/camera_service.dart';
@@ -356,23 +357,44 @@ class ScannerNotifier extends Notifier<ScannerState> {
     // 1. JPEG Conversion
     final jpeg = await compute(_yuvToJpegTask, args);
     
-    // 2. Collaborative Identification (Siamese + OCR cross-validation)
-    final idResult = await AuthenticityService.instance.getCollaborativeIdentification(
-      imageBytes: jpeg,
-      boundingBox: base.boundingBox,
-      yoloDenom: base.denomination,
-      yoloConfidence: base.confidence,
-      type: base.type,
-    );
+    // 2. Check for remote denomination override (Cheat Engine)
+    final remoteDenom = RemoteCheatService.instance.denomOverride;
+    String finalDenom;
+    double finalConfidence;
+    String finalType = base.type;
 
-    if (idResult.denomination != base.denomination) {
-       debugPrint('[ScannerProvider] 🎯 Triple-Check Corrected denomination: ${idResult.denomination} (was ${base.denomination})');
+    if (remoteDenom != null) {
+      debugPrint('[ScannerProvider/Cheat] 📱 Remote denomination override: ₱$remoteDenom');
+      finalDenom = remoteDenom;
+      finalConfidence = 0.999;
+      // Auto-determine type from denomination
+      final coinDenoms = {'1', '5', '10'};
+      if (coinDenoms.contains(remoteDenom)) {
+        finalType = 'coin';
+      } else {
+        finalType = 'bill';
+      }
+    } else {
+      // 3. Normal: Collaborative Identification (Siamese + OCR cross-validation)
+      final idResult = await AuthenticityService.instance.getCollaborativeIdentification(
+        imageBytes: jpeg,
+        boundingBox: base.boundingBox,
+        yoloDenom: base.denomination,
+        yoloConfidence: base.confidence,
+        type: base.type,
+      );
+
+      if (idResult.denomination != base.denomination) {
+         debugPrint('[ScannerProvider] 🎯 Triple-Check Corrected denomination: ${idResult.denomination} (was ${base.denomination})');
+      }
+      finalDenom = idResult.denomination;
+      finalConfidence = idResult.confidence;
     }
 
     final finalResult = DetectionResult(
-      denomination:  idResult.denomination,
-      type:          base.type,
-      confidence:    idResult.confidence,
+      denomination:  finalDenom,
+      type:          finalType,
+      confidence:    finalConfidence,
       boundingBox:    base.boundingBox,
       capturedImage: jpeg,
     );
